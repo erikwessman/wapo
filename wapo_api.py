@@ -9,6 +9,7 @@ from selenium.webdriver.support import expected_conditions as EC
 
 def get_todays_wapo_url():
     options = Options()
+    options.add_argument("--headless")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
 
@@ -34,6 +35,7 @@ def get_todays_wapo_url():
         btn_footer = wait.until(EC.element_to_be_clickable((By.ID, "footer-btn")))
         btn_footer.click()
 
+        # Wait for things to load
         time.sleep(2)
 
         btn_invite = wait.until(EC.element_to_be_clickable((By.CLASS_NAME, "nav-social-play-invite-icon")))
