@@ -24,7 +24,7 @@ async def wapo(ctx):
             url = wapo_api.get_todays_wapo_url()
             await message.edit(content=url)
         except Exception:
-            await ctx.send('Error fetching URL')
+            await message.edit(content='Error fetching URL')
 
 
 bot.run(os.getenv("DISCORD_TOKEN"))

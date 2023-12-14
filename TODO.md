@@ -1,0 +1,6 @@
+- [ ] Better messages (embed?)
+- [ ] React to reaction events
+- [ ] Get the time to complete (react with check?)
+- [ ] Get a certain day of the week's puzzle (e.g. !wapo tuesday)
+- [ ] Update Google Sheets with time automatically
+- [ ] Remote hosting
