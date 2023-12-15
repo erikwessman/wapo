@@ -4,12 +4,15 @@ from discord.ext import commands
 from dotenv import load_dotenv
 
 import wapo_api
+from const import (
+        CHANNEL_ID,
+        GITHUB_REPOSITORY,
+        GITHUB_ICON
+)
 
 
 load_dotenv()
 
-# Wapo channel
-CHANNEL_ID = 1184096292905943120
 
 # Allow one !wapo request at a time
 is_generating_url = False
@@ -28,29 +31,27 @@ async def wapo(ctx):
         embed_loading = discord.Embed(
                 title="Washington Post Daily Crossword",
                 description="Fetching URL...",
-                color=discord.Color.teal()
+                color=discord.Color.teal(),
         )
+        embed_loading.set_footer(text=GITHUB_REPOSITORY, icon_url=GITHUB_ICON)
         message = await ctx.send(embed=embed_loading)
 
         try:
             is_generating_url = True
             url = wapo_api.get_todays_wapo_url()
 
-            embed_success = discord.Embed(
-                    title="Washington Post Daily Crossword",
-                    url=url,
-                    description="URL generated!",
-                    color=discord.Color.green()
-            )
+            embed_success = embed_loading.copy()
+            embed_success.url = url
+            embed_success.description = "URL generated!"
+            embed_success.color = discord.Color.green()
 
             await message.edit(embed=embed_success)
 
         except Exception:
-            embed_error = discord.Embed(
-                    title="Washington Post Daily Crossword",
-                    description="Error fetching URL",
-                    color=discord.Color.red()
-            )
+            embed_error = embed_loading.copy()
+            embed_error.description = "Error fetching URL"
+            embed_error.color = discord.Color.red()
+
             await message.edit(embed=embed_error)
 
         finally:

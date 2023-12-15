@@ -1,9 +1,13 @@
 - [X] Better messages (embed?)
 - [ ] React to reaction events
 - [X] Allow one URL generation at a time
+- [X] GitHub in footer
 - [ ] Check if completed
-- [ ] Gambling!
 - [ ] Get the time to complete
+- [ ] Gambling!
+    - [ ] Map each user id to a wapo token count
+    - [ ] When completing one crossword, award all users with at least one token
+    - [ ] Based on the day of the week and the time to complete, award more tokens
 - [ ] Get a certain day of the week's puzzle (e.g. !wapo tuesday)
 - [ ] Update Google Sheets with time automatically
 - [ ] Remote hosting
