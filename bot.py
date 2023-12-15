@@ -8,11 +8,13 @@ import wapo_api
 
 load_dotenv()
 
+# Wapo channel
+CHANNEL_ID = 1184096292905943120
+
 intents = discord.Intents.default()
 intents.message_content = True
 
 bot = commands.Bot(intents=intents, command_prefix='!')
-CHANNEL_ID = 1184096292905943120
 
 
 @bot.command()
@@ -35,7 +37,7 @@ async def wapo(ctx):
                     color=discord.Color.green()
             )
 
-            await message.edit(content=embed_success)
+            await message.edit(embed=embed_success)
 
         except Exception:
             embed_error = discord.Embed(
@@ -43,7 +45,7 @@ async def wapo(ctx):
                     description="Error fetching URL",
                     color=discord.Color.red()
             )
-            await message.edit(content=embed_error)
+            await message.edit(embed=embed_error)
 
 
 bot.run(os.getenv("DISCORD_TOKEN"))
