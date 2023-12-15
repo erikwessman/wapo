@@ -18,13 +18,32 @@ CHANNEL_ID = 1184096292905943120
 @bot.command()
 async def wapo(ctx):
     if CHANNEL_ID == ctx.channel.id:
-        message = await ctx.send('Fetching URL...')
+        embed_loading = discord.Embed(
+                title="Washington Post Daily Crossword",
+                description="Fetching URL...",
+                color=discord.Color.teal()
+        )
+        message = await ctx.send(embed=embed_loading)
 
         try:
             url = wapo_api.get_todays_wapo_url()
-            await message.edit(content=url)
+
+            embed_success = discord.Embed(
+                    title="Washington Post Daily Crossword",
+                    url=url,
+                    description="URL generated!",
+                    color=discord.Color.green()
+            )
+
+            await message.edit(content=embed_success)
+
         except Exception:
-            await message.edit(content='Error fetching URL')
+            embed_error = discord.Embed(
+                    title="Washington Post Daily Crossword",
+                    description="Error fetching URL",
+                    color=discord.Color.red()
+            )
+            await message.edit(content=embed_error)
 
 
 bot.run(os.getenv("DISCORD_TOKEN"))
