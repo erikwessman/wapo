@@ -11,6 +11,9 @@ load_dotenv()
 # Wapo channel
 CHANNEL_ID = 1184096292905943120
 
+# Allow one !wapo request at a time
+is_generating_url = False
+
 intents = discord.Intents.default()
 intents.message_content = True
 
@@ -19,7 +22,9 @@ bot = commands.Bot(intents=intents, command_prefix='!')
 
 @bot.command()
 async def wapo(ctx):
-    if CHANNEL_ID == ctx.channel.id:
+    global is_generating_url
+
+    if CHANNEL_ID == ctx.channel.id and not is_generating_url:
         embed_loading = discord.Embed(
                 title="Washington Post Daily Crossword",
                 description="Fetching URL...",
@@ -28,6 +33,7 @@ async def wapo(ctx):
         message = await ctx.send(embed=embed_loading)
 
         try:
+            is_generating_url = True
             url = wapo_api.get_todays_wapo_url()
 
             embed_success = discord.Embed(
@@ -46,6 +52,9 @@ async def wapo(ctx):
                     color=discord.Color.red()
             )
             await message.edit(embed=embed_error)
+
+        finally:
+            is_generating_url = False
 
 
 bot.run(os.getenv("DISCORD_TOKEN"))

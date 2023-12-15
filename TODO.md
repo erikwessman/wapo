@@ -1,6 +1,9 @@
-- [ ] Better messages (embed?)
+- [X] Better messages (embed?)
 - [ ] React to reaction events
-- [ ] Get the time to complete (react with check?)
+- [X] Allow one URL generation at a time
+- [ ] Check if completed
+- [ ] Gambling!
+- [ ] Get the time to complete
 - [ ] Get a certain day of the week's puzzle (e.g. !wapo tuesday)
 - [ ] Update Google Sheets with time automatically
 - [ ] Remote hosting
