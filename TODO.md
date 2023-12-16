@@ -1,7 +1,7 @@
 - [X] Better messages (embed?)
 - [X] Allow one URL generation at a time
 - [X] GitHub in footer
-- [ ] React to reaction events
+- [X] React to reaction events
 - [ ] Check if completed
 - [ ] Get the time to complete
 - [ ] Gambling!

@@ -4,6 +4,7 @@ from discord.ext import commands
 from dotenv import load_dotenv
 
 import wapo_api
+import helper
 from const import CHANNEL_ID, GITHUB_REPOSITORY, GITHUB_ICON
 
 
@@ -58,11 +59,15 @@ async def wapo(ctx):
 async def on_reaction_add(reaction, user):
     if reaction.message.author == bot.user:
         if reaction.emoji == "👍" or reaction.emoji == "✅":
-            # TODO
-            # Get the puzzle link
-            # Check that the puzzle is solved
-            # Get the day and the time to solve
-            pass
+            puzzle_link = reaction.embeds[0].description
+
+            if not wapo_api.is_complete(puzzle_link):
+                return
+
+            puzzle_weekday = helper.get_day_of_week(puzzle_link)
+            puzzle_time = wapo_api.get_time_to_solve(puzzle_link)
+
+            print(f"{puzzle_weekday} puzzle took {puzzle_time}")
 
 
 bot.run(os.getenv("DISCORD_TOKEN"))
