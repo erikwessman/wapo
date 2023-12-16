@@ -7,7 +7,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 
-def get_wapo_url(day: str = None):
+def _get_driver():
     options = Options()
     options.add_argument("--headless")
     options.add_argument("--no-sandbox")
@@ -16,7 +16,11 @@ def get_wapo_url(day: str = None):
     geckodriver_path = "/snap/bin/geckodriver"
     service = Service(executable_path=geckodriver_path)
 
-    driver = webdriver.Firefox(options=options, service=service)
+    return webdriver.Firefox(options=options, service=service)
+
+
+def get_wapo_url(day: str = None):
+    driver = _get_driver()
 
     try:
         driver.get("https://www.washingtonpost.com/crossword-puzzles/daily/")
@@ -59,9 +63,28 @@ def get_wapo_url(day: str = None):
 
 
 def is_complete(url: str) -> bool:
-    # Given a URL to a WaPo crossword
-    # Check that the crossword is complete
-    pass
+    driver = _get_driver()
+
+    try:
+        driver.get(url)
+
+        wait = WebDriverWait(driver, 5)
+
+        btn_accept_cookies = wait.until(
+            EC.element_to_be_clickable((By.ID, "onetrust-accept-btn-handler"))
+        )
+        btn_accept_cookies.click()
+
+        crossword_frame = wait.until(
+            EC.element_to_be_clickable((By.ID, "iframe-xword"))
+        )
+        driver.switch_to.frame(crossword_frame)
+
+        modal_title = wait.until(EC.presence_of_element_located(By.CLASS_NAME, "modal-title"))
+        return modal_title.text == "Congratulations!"
+
+    finally:
+        driver.quit()
 
 
 def get_time_to_solve(url: str) -> int:
