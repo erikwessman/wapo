@@ -3,10 +3,10 @@
 - [X] GitHub in footer
 - [X] React to reaction events
 - [X] Check if completed
-- [ ] Get the time to complete
+- [X] Get the time to complete
 - [X] Get the day completed
 - [X] Calculate score
-- [ ] Write the day (e.g. 18/12 - 2023) in the puzzle message
+- [X] Write the day (e.g. 18/12 - 2023) in the puzzle message
 - [ ] Gambling!
     - [ ] Map each user id to a wapo token count
     - [ ] When completing one crossword, reward all users with tokens

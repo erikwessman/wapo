@@ -39,10 +39,14 @@ def main():
             try:
                 is_generating_url = True
                 url = wapo_api.get_wapo_url()
+                date_str = helper.get_puzzle_date(url)
+                weekday_str = helper.get_puzzle_weekday(url)
 
                 embed_success = embed_loading.copy()
                 embed_success.url = url
-                embed_success.description = "URL generated!"
+                embed_success.description = (
+                    f"URL for {weekday_str} generated! ({date_str})"
+                )
                 embed_success.color = discord.Color.green()
 
                 await message.edit(embed=embed_success)
