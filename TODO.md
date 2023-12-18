@@ -4,9 +4,8 @@
 - [X] React to reaction events
 - [X] Check if completed
 - [ ] Get the time to complete
-- [ ] Get the day completed
-- [ ] Calculate score
-- [ ] Maybe rewrite so we dont have a bunch of global variables (switch to a class?)
+- [X] Get the day completed
+- [X] Calculate score
 - [ ] Write the day (e.g. 18/12 - 2023) in the puzzle message
 - [ ] Gambling!
     - [ ] Map each user id to a wapo token count

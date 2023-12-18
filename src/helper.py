@@ -19,7 +19,7 @@ def get_puzzle_weekday(date_str: str) -> str:
     """
     Get the day of the week for the crossword, e.g. "Monday"
     """
-    date_obj = datetime.strptime(date_str, "%d-%m-%y")
+    date_obj = datetime.strptime(date_str, "%d-%m-%Y")
     day_of_week = calendar.day_name[date_obj.weekday()]
     return day_of_week
 

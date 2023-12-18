@@ -94,6 +94,35 @@ def is_complete(url: str) -> bool:
 
 
 def get_puzzle_time(url: str) -> int:
-    # Given a URL to a WaPo crossword
-    # Get the time it took to solve in seconds
-    pass
+    driver = _get_driver()
+
+    try:
+        driver.get(url)
+
+        wait = WebDriverWait(driver, 5)
+
+        btn_accept_cookies = wait.until(
+            EC.element_to_be_clickable((By.ID, "onetrust-accept-btn-handler"))
+        )
+        btn_accept_cookies.click()
+
+        crossword_frame = wait.until(
+            EC.element_to_be_clickable((By.ID, "iframe-xword"))
+        )
+        driver.switch_to.frame(crossword_frame)
+
+        time_str = wait.until(
+            EC.visibility_of_element_located((By.ID, "clock_str"))
+        )  # "X minutes and Y seconds"
+
+        parts = time_str.text.split(" ")
+        numbers = [p for p in parts if p.isdigit()]
+
+        return int(numbers[0]) * 60 + int(numbers[1])
+
+    except Exception as e:
+        print(f"Unable to get puzzle complete time: {e}")
+        return False
+
+    finally:
+        driver.quit()
