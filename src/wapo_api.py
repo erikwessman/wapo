@@ -80,14 +80,20 @@ def is_complete(url: str) -> bool:
         )
         driver.switch_to.frame(crossword_frame)
 
-        modal_title = wait.until(EC.presence_of_element_located(By.CLASS_NAME, "modal-title"))
+        modal_title = wait.until(
+            EC.visibility_of_element_located((By.CLASS_NAME, "modal-title"))
+        )
         return modal_title.text == "Congratulations!"
+
+    except Exception as e:
+        print(f"Unable to check puzzle complete: {e}")
+        return False
 
     finally:
         driver.quit()
 
 
-def get_time_to_solve(url: str) -> int:
+def get_puzzle_time(url: str) -> int:
     # Given a URL to a WaPo crossword
     # Get the time it took to solve in seconds
     pass

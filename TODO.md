@@ -4,11 +4,15 @@
 - [X] React to reaction events
 - [X] Check if completed
 - [ ] Get the time to complete
+- [ ] Get the day completed
+- [ ] Calculate score
+- [ ] Maybe rewrite so we dont have a bunch of global variables (switch to a class?)
+- [ ] Write the day (e.g. 18/12 - 2023) in the puzzle message
 - [ ] Gambling!
     - [ ] Map each user id to a wapo token count
-    - [ ] When completing one crossword, reward all users with at least one token
-        - [ ] Only reward if it was completed in the last 7 days
+    - [ ] When completing one crossword, reward all users with tokens
     - [ ] Based on the day of the week and the time to complete, reward more tokens
+    - [ ] Have a set of completed days (dont reward the same day)
 - [ ] Logging
 - [ ] Get a certain day of the week's puzzle (e.g. !wapo tuesday)
 - [ ] Update Google Sheets with time automatically
