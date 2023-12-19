@@ -85,10 +85,6 @@ def is_complete(url: str) -> bool:
         )
         return modal_title.text == "Congratulations!"
 
-    except Exception as e:
-        print(f"Unable to check puzzle complete: {e}")
-        return False
-
     finally:
         driver.quit()
 
@@ -119,10 +115,6 @@ def get_puzzle_time(url: str) -> int:
         numbers = [p for p in parts if p.isdigit()]
 
         return int(numbers[0]) * 60 + int(numbers[1])
-
-    except Exception as e:
-        print(f"Unable to get puzzle complete time: {e}")
-        return False
 
     finally:
         driver.quit()

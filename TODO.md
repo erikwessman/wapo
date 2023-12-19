@@ -7,6 +7,7 @@
 - [X] Get the day completed
 - [X] Calculate score
 - [X] Write the day (e.g. 18/12 - 2023) in the puzzle message
+- [X] Encapsulate bot in a class
 - [ ] Gambling!
     - [ ] Map each user id to a wapo token count
     - [ ] When completing one crossword, reward all users with tokens
