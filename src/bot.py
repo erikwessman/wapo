@@ -66,43 +66,42 @@ class WaPoBotCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
-        if user == self.bot.user:
-            return
-
-        if reaction.message.channel.id != CHANNEL_ID:
+        if user == self.bot.user or reaction.message.channel.id != CHANNEL_ID:
             return
 
         if reaction.emoji != "👍" and reaction.emoji != "✅":
             return
 
-        if len(reaction.embeds) == 0:
+        if len(reaction.message.embeds) == 0:
             return
 
-        print("there is an embed")
-
-        puzzle_link = reaction.embeds[0].description
+        puzzle_link = reaction.message.embeds[0].url
 
         if not helper.is_message_url(puzzle_link):
             return
 
-        print("the embed does contain a url")
-
-        bot_message = await reaction.message.channel.send(
-            "Checking if puzzle is complete..."
+        embed_loading = discord.Embed(
+            title="Crossword Checker",
+            description="Checking if crossword is complete...",
+            color=discord.Color.teal(),
         )
+        embed_loading.set_footer(text=GITHUB_REPOSITORY, icon_url=GITHUB_ICON)
+        message = await reaction.message.channel.send(embed=embed_loading)
 
-        try:
-            if not wapo_api.is_complete(puzzle_link):
-                await bot_message.edit(content="Puzzle is not complete!")
-                return
-        except Exception as e:
-            print(f"Unable to check puzzle is complete: {e}")
+        if not wapo_api.is_complete(puzzle_link):
+            embed_error = embed_loading.copy()
+            embed_error.description = "Crossword is not complete"
+            embed_error.color = discord.Color.red()
+            await message.edit(embed=embed_error)
             return
 
         puzzle_date = helper.get_puzzle_date(puzzle_link)
 
         if puzzle_date in self.solved:
-            await bot_message.edit(content="You already solved this crossword")
+            embed_warning = embed_loading.copy()
+            embed_warning.description = "Crossword is already solved"
+            embed_warning.color = discord.Color.orange()
+            await message.edit(embed=embed_warning)
             return
 
         self.solved.add(puzzle_date)
@@ -111,9 +110,12 @@ class WaPoBotCog(commands.Cog):
         puzzle_time = wapo_api.get_puzzle_time(puzzle_link)
         puzzle_reward = helper.get_puzzle_reward(puzzle_weekday, puzzle_time)
 
-        await bot_message.edit(
-            content=f"You completed the puzzle! You get {puzzle_reward} point(s)!"
+        embed_success = embed_loading.copy()
+        embed_success.description = (
+            f"Crossword complete! You get {puzzle_reward}x token(s)! 🪙"
         )
+        embed_success.color = discord.Color.green()
+        await message.edit(embed=embed_success)
 
 
 async def main():
