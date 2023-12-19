@@ -20,6 +20,19 @@ def _get_driver():
 
 
 def get_wapo_url(day: str = None):
+    """
+    Retrieves the URL of the latest Washington Post crossword puzzle.
+
+    Parameters:
+    - day (str, optional): The specific day for which the crossword URL is needed. Defaults to None, which fetches the latest crossword puzzle.
+
+    Returns:
+    - str: The URL of the specified day's crossword puzzle.
+
+    Raises:
+    - WebDriverException: If there are issues in controlling the browser through WebDriver.
+    - TimeoutException: If the expected elements do not appear within the given time.
+    """
     driver = _get_driver()
 
     try:
@@ -63,6 +76,19 @@ def get_wapo_url(day: str = None):
 
 
 def is_complete(url: str) -> bool:
+    """
+    Checks if the crossword puzzle at the given URL is completed.
+
+    Parameters:
+    - url (str): The URL of the crossword puzzle to be checked.
+
+    Returns:
+    - bool: True if the crossword puzzle is completed, False otherwise.
+
+    Raises:
+    - WebDriverException: If there are issues in controlling the browser through WebDriver.
+    - TimeoutException: If the expected elements do not appear within the given time.
+    """
     driver = _get_driver()
 
     try:
@@ -90,6 +116,19 @@ def is_complete(url: str) -> bool:
 
 
 def get_puzzle_time(url: str) -> int:
+    """
+    Retrieves the time taken to complete a crossword puzzle from a given URL.
+
+    Parameters:
+    - url (str): The URL of the crossword puzzle.
+
+    Returns:
+    - int: The completion time of the puzzle in seconds.
+
+    Raises:
+    - WebDriverException: If there are issues in controlling the browser through WebDriver.
+    - TimeoutException: If the expected elements do not appear within the given time.
+    """
     driver = _get_driver()
 
     try:
@@ -109,7 +148,7 @@ def get_puzzle_time(url: str) -> int:
 
         time_str = wait.until(
             EC.visibility_of_element_located((By.ID, "clock_str"))
-        )  # "X minutes and Y seconds"
+        )  # returns "X minutes and Y seconds"
 
         parts = time_str.text.split(" ")
         numbers = [p for p in parts if p.isdigit()]

@@ -6,7 +6,13 @@ import calendar
 
 def get_puzzle_date(url: str) -> str:
     """
-    Get the date of the crossword, e.g. "17-12-2023"
+    Extracts the date of the crossword puzzle from its URL.
+
+    Parameters:
+    - url (str): The URL of the crossword puzzle.
+
+    Returns:
+    - str: The date of the crossword in the format "DD-MM-YYYY".
     """
     parsed_url = urlparse(url)
     query_params = parse_qs(parsed_url.query)
@@ -17,7 +23,13 @@ def get_puzzle_date(url: str) -> str:
 
 def get_puzzle_weekday(date_str: str) -> str:
     """
-    Get the day of the week for the crossword, e.g. "Monday"
+    Determines the day of the week for a given date string.
+
+    Parameters:
+    - date_str (str): The date of the crossword puzzle in the format "DD-MM-YYYY".
+
+    Returns:
+    - str: The name of the weekday corresponding to the given date.
     """
     date_obj = datetime.strptime(date_str, "%d-%m-%Y")
     day_of_week = calendar.day_name[date_obj.weekday()]
@@ -26,7 +38,14 @@ def get_puzzle_weekday(date_str: str) -> str:
 
 def get_puzzle_reward(day: str, complete_time: int) -> int:
     """
-    Calculate the reward for a puzzle
+    Calculates the reward score for completing a crossword puzzle based on the day and completion time.
+
+    Parameters:
+    - day (str): The day of the week when the crossword puzzle was completed.
+    - complete_time (int): The time taken to complete the puzzle in seconds.
+
+    Returns:
+    - int: The calculated reward score.
     """
     day_score_table = {
         "Monday": 1,
@@ -52,6 +71,12 @@ def get_puzzle_reward(day: str, complete_time: int) -> int:
 
 def is_message_url(message: str) -> bool:
     """
-    Check if a message is a valid URL
+    Determines whether a given message string is a valid URL.
+
+    Parameters:
+    - message (str): The message string to be validated.
+
+    Returns:
+    - bool: True if the message is a valid URL, False otherwise.
     """
     return validators.url(message)
