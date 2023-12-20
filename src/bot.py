@@ -13,10 +13,10 @@ from const import (
     CHANNEL_ID,
     GITHUB_REPOSITORY,
     GITHUB_ICON,
-    EMOJI_SUNGLASSES,
-    EMOJI_HEART_EYES,
-    EMOJI_THINKING,
-    EMOJI_GRINNING,
+    EMOJI_ROCKET,
+    EMOJI_PENGUIN,
+    EMOJI_OCTOPUS,
+    EMOJI_SANTA,
 )
 
 
@@ -90,22 +90,22 @@ class WaPoBotCog(commands.Cog):
             return
 
         progress = [0, 0, 0, 0]
-        emojis = [EMOJI_SUNGLASSES, EMOJI_HEART_EYES, EMOJI_THINKING, EMOJI_GRINNING]
-        goal = 20
+        race_length = 20
+        emojis = [EMOJI_ROCKET, EMOJI_PENGUIN, EMOJI_OCTOPUS, EMOJI_SANTA]
 
         race_embed = get_embed(
             "Horse Race",
-            get_race_string(progress, emojis, goal),
+            get_race_string(progress, emojis, race_length),
             discord.Color.purple(),
         )
         message = await ctx.send(embed=race_embed)
 
-        while max(progress) < goal:
+        while max(progress) < race_length:
             random_index = random.randint(0, len(progress) - 1)
             progress[random_index] += 1
 
             updated_message = race_embed.copy()
-            updated_message.description = get_race_string(progress, emojis, goal)
+            updated_message.description = get_race_string(progress, emojis, race_length)
             await message.edit(embed=updated_message)
 
             race_embed = updated_message
@@ -188,17 +188,17 @@ def get_embed(
     return embed
 
 
-def get_race_string(progress, emojis, goal) -> str:
-    if len(progress) != len(emojis):
-        raise Exception("Progress and emojis must be of the same size")
+def get_race_string(progress, symbols, race_length) -> str:
+    if len(progress) != len(symbols):
+        raise Exception("Progress and symbols must have the same length")
 
-    if max(progress) > goal:
-        raise Exception("Progress must be smaller than or equal to goal")
+    if max(progress) > race_length:
+        raise Exception("Progress must be less than or equal to goal")
 
     lines = []
     lines.append("```")
-    for i, line_progress in enumerate(progress):
-        line = "#" * line_progress + emojis[i] + "." * (goal - line_progress)
+    for i, line_prog in enumerate(progress):
+        line = "#" * line_prog + symbols[i] + "." * (race_length - line_prog)
         lines.append(line)
     lines.append("```")
 
