@@ -91,7 +91,7 @@ class WaPoBotCog(commands.Cog):
 
         progress = [0, 0, 0, 0]
         emojis = [EMOJI_SUNGLASSES, EMOJI_HEART_EYES, EMOJI_THINKING, EMOJI_GRINNING]
-        goal = 10
+        goal = 20
 
         race_embed = get_embed(
             "Horse Race",
@@ -198,7 +198,7 @@ def get_race_string(progress, emojis, goal) -> str:
     lines = []
     lines.append("```")
     for i, line_progress in enumerate(progress):
-        line = "#" * line_progress + emojis[i] + "." * (goal - (line_progress + 1))
+        line = "#" * line_progress + emojis[i] + "." * (goal - line_progress)
         lines.append(line)
     lines.append("```")
 

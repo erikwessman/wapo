@@ -17,7 +17,7 @@
     - [ ] Make sure you cant gamble more than you have
     - [ ] Make sure winnings are correct (shared 2nd place should give 1.5x)
     - [ ] Reward the ID that !gamble'd
-    - [ ] Print the gamblers name
+    - [X] Print the gamblers name
 - [ ] Logging
 - [ ] Get a certain day of the week's puzzle (e.g. !wapo tuesday)
 - [ ] Update Google Sheets with time automatically
