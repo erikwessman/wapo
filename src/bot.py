@@ -1,5 +1,6 @@
 import os
 import time
+import math
 import random
 import asyncio
 import discord
@@ -82,7 +83,10 @@ class WaPoBotCog(commands.Cog):
             bet_amount = int(bet_amount)
             assert 1 <= bet_index <= 4
         except Exception:
-            await ctx.send(content="Incorrect !gamble arguments")
+            await ctx.send(
+                content="!gamble takes two arguments: which line to\
+                    bet on and the bet amount"
+            )
             return
 
         progress = [0, 0, 0, 0]
@@ -105,12 +109,15 @@ class WaPoBotCog(commands.Cog):
             await message.edit(embed=updated_message)
 
             race_embed = updated_message
-            time.sleep(0.25)
+            time.sleep(0.1)
 
-        winnings = get_gamble_result(progress, bet_index - 1, bet_amount)
+        author = ctx.author.name
+        nr_tokens_won = get_gamble_result(progress, bet_index - 1, bet_amount)
 
         result_embed = get_embed(
-            "Horse Race Results", f"You win {winnings}x token(s)!", discord.Color.gold()
+            "Horse Race Results",
+            f"{author} won {nr_tokens_won} token(s)!",
+            discord.Color.gold(),
         )
         await ctx.send(embed=result_embed)
 
@@ -173,13 +180,15 @@ class WaPoBotCog(commands.Cog):
         await message.edit(embed=embed_success)
 
 
-def get_embed(title: str, description: str, color: discord.Color, url: str = None):
+def get_embed(
+    title: str, description: str, color: discord.Color, url: str = None
+) -> discord.Embed:
     embed = discord.Embed(title=title, description=description, color=color, url=url)
     embed.set_footer(text=GITHUB_REPOSITORY, icon_url=GITHUB_ICON)
     return embed
 
 
-def get_race_string(progress, emojis, goal):
+def get_race_string(progress, emojis, goal) -> str:
     if len(progress) != len(emojis):
         raise Exception("Progress and emojis must be of the same size")
 
@@ -188,20 +197,20 @@ def get_race_string(progress, emojis, goal):
 
     lines = []
     lines.append("```")
-    for i, p in enumerate(progress):
-        line = "#" * p + emojis[i] + "." * (goal - (p + 1))
+    for i, line_progress in enumerate(progress):
+        line = "#" * line_progress + emojis[i] + "." * (goal - (line_progress + 1))
         lines.append(line)
     lines.append("```")
 
     return "\n\n".join(lines)
 
 
-def get_gamble_result(standings, bet_index, bet_amount):
+def get_gamble_result(standings, bet_index, bet_amount) -> int:
     result = standings[bet_index]
     position = sorted(standings, reverse=True).index(result)
 
     winnings_table = {0: 2, 1: 1.5, 2: 0.5, 3: 0}
-    return winnings_table[position] * bet_amount
+    return math.floor(winnings_table[position] * bet_amount)
 
 
 async def main():

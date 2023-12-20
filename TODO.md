@@ -8,12 +8,16 @@
 - [X] Calculate score
 - [X] Write the day (e.g. 18/12 - 2023) in the puzzle message
 - [X] Encapsulate bot in a class
-- [ ] Gambling!
+- [X] Gambling!
     - [X] Map each user id to a wapo token count
     - [X] When completing one crossword, reward all users with tokens
     - [X] Based on the day of the week and the time to complete, reward more tokens
     - [X] Have a set of completed days (dont reward the same day)
-    - [ ] Implement horse racing
+    - [X] Implement horse racing
+    - [ ] Make sure you cant gamble more than you have
+    - [ ] Make sure winnings are correct (shared 2nd place should give 1.5x)
+    - [ ] Reward the ID that !gamble'd
+    - [ ] Print the gamblers name
 - [ ] Logging
 - [ ] Get a certain day of the week's puzzle (e.g. !wapo tuesday)
 - [ ] Update Google Sheets with time automatically

@@ -16,8 +16,8 @@ def get_puzzle_date(url: str) -> str:
     """
     parsed_url = urlparse(url)
     query_params = parse_qs(parsed_url.query)
-    id_value = query_params["id"][0]
-    date_str = id_value.removeprefix("tca")
+    puzzle_id = query_params["id"][0]
+    date_str = puzzle_id.removeprefix("tca")
     return f"{date_str[4:6]}-{date_str[2:4]}-20{date_str[0:2]}"
 
 
