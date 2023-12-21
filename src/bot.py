@@ -9,6 +9,7 @@ from dotenv import load_dotenv
 
 import wapo_api
 import helper
+from token_api import TokenAPI
 from const import (
     CHANNEL_ID,
     GITHUB_REPOSITORY,
@@ -23,6 +24,7 @@ from const import (
 class WaPoBot(commands.Bot):
     def __init__(self, command_prefix, intents):
         super().__init__(command_prefix=command_prefix, intents=intents)
+        self.token_api = TokenAPI("data/tokens.json")
 
     async def on_ready(self):
         print(f"{self.user} has connected!")
@@ -31,11 +33,84 @@ class WaPoBot(commands.Bot):
         print(f"Command error: {error}")
 
 
-class WaPoBotCog(commands.Cog):
+class TokenCog(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+
+    @commands.command()
+    async def tokens(self, ctx):
+        author_id = ctx.author.id
+        author_tokens = self.bot.token_api.get_tokens(author_id)
+        await ctx.send(content=f"You have {author_tokens}")
+
+    @commands.command()
+    async def gamble(self, ctx, bet_index, bet_amount):
+        try:
+            bet_index = int(bet_index)
+            bet_amount = int(bet_amount)
+        except Exception:
+            await ctx.send(
+                content="!gamble takes two arguments: which line to\
+                    bet on and the bet amount"
+            )
+            return
+
+        if not 1 <= bet_index <= 4:
+            await ctx.send(content="You must gamble on lines 1-4")
+            return
+
+        if bet_amount < 1:
+            await ctx.send(content="You must gamble at least 1 token")
+            return
+
+        author_id = ctx.author.id
+        author_name = ctx.author.name
+        author_tokens = self.bot.token_api.get_tokens(author_id)
+
+        if author_tokens < bet_amount:
+            await ctx.send(content="Not enough tokens")
+            return
+
+        progress = [0, 0, 0, 0]
+        race_length = 20
+        symbols = [EMOJI_ROCKET, EMOJI_PENGUIN, EMOJI_OCTOPUS, EMOJI_SANTA]
+
+        race_embed = get_embed(
+            "Horse Race",
+            get_race_string(progress, symbols, race_length),
+            discord.Color.purple(),
+        )
+        message = await ctx.send(embed=race_embed)
+
+        while max(progress) < race_length:
+            random_index = random.randint(0, len(progress) - 1)
+            progress[random_index] += 1
+
+            updated_message = race_embed.copy()
+            updated_message.description = get_race_string(
+                progress, symbols, race_length
+            )
+            await message.edit(embed=updated_message)
+
+            race_embed = updated_message
+            time.sleep(0.1)
+
+        nr_tokens_won = get_gamble_result(progress, bet_index - 1, bet_amount)
+
+        self.bot.token_api.update_tokens(author_id, nr_tokens_won)
+
+        result_embed = get_embed(
+            "Horse Race Results",
+            f"{author_name} won {nr_tokens_won} token(s)!",
+            discord.Color.gold(),
+        )
+        await ctx.send(embed=result_embed)
+
+
+class CrosswordCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         self.is_generating_url = False
-        self.players = {}
         self.solved = set()
 
     @commands.command()
@@ -75,67 +150,6 @@ class WaPoBotCog(commands.Cog):
 
             finally:
                 self.is_generating_url = False
-
-    @commands.command()
-    async def gamble(self, ctx, bet_index, bet_amount):
-        try:
-            bet_index = int(bet_index)
-            bet_amount = int(bet_amount)
-        except Exception:
-            await ctx.send(
-                content="!gamble takes two arguments: which line to\
-                    bet on and the bet amount"
-            )
-            return
-
-        if not 1 <= bet_index <= 4:
-            await ctx.send(content="You must gamble on lines 1-4")
-            return
-
-        if bet_amount < 1:
-            await ctx.send(content="You must gamble at least 1 token")
-            return
-
-        author_id = ctx.author.id
-        author_name = ctx.author.name
-        author_tokens = self.players.get(author_id, 0)
-
-        if author_tokens < bet_amount:
-            await ctx.send(content="Not enough tokens")
-            return
-
-        progress = [0, 0, 0, 0]
-        race_length = 20
-        symbols = [EMOJI_ROCKET, EMOJI_PENGUIN, EMOJI_OCTOPUS, EMOJI_SANTA]
-
-        race_embed = get_embed(
-            "Horse Race",
-            get_race_string(progress, symbols, race_length),
-            discord.Color.purple(),
-        )
-        message = await ctx.send(embed=race_embed)
-
-        while max(progress) < race_length:
-            random_index = random.randint(0, len(progress) - 1)
-            progress[random_index] += 1
-
-            updated_message = race_embed.copy()
-            updated_message.description = get_race_string(progress, symbols, race_length)
-            await message.edit(embed=updated_message)
-
-            race_embed = updated_message
-            time.sleep(0.1)
-
-        nr_tokens_won = get_gamble_result(progress, bet_index - 1, bet_amount)
-
-        self.players[author_id] += nr_tokens_won
-
-        result_embed = get_embed(
-            "Horse Race Results",
-            f"{author_name} won {nr_tokens_won} token(s)!",
-            discord.Color.gold(),
-        )
-        await ctx.send(embed=result_embed)
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
@@ -184,12 +198,11 @@ class WaPoBotCog(commands.Cog):
         puzzle_time = wapo_api.get_puzzle_time(puzzle_link)
         puzzle_reward = helper.get_puzzle_reward(puzzle_weekday, puzzle_time)
 
-        for p in self.players:
-            self.players[p] += puzzle_reward
+        # TODO: reward tokens
 
         embed_success = get_embed(
             "Crossword Checker",
-            f"Crossword complete! {puzzle_reward}x token(s) rewarded 🪙",
+            f"Crossword complete! {puzzle_reward} token(s) rewarded 🪙",
             discord.Color.green(),
         )
 
@@ -234,9 +247,11 @@ async def main():
     intents = discord.Intents.default()
     intents.message_content = True
     intents.reactions = True
+    intents.members = True
 
     bot = WaPoBot(command_prefix="!", intents=intents)
-    await bot.add_cog(WaPoBotCog(bot))
+    await bot.add_cog(TokenCog(bot))
+    await bot.add_cog(CrosswordCog(bot))
     await bot.start(os.getenv("DISCORD_TOKEN"))
 
 
