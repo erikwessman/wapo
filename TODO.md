@@ -16,8 +16,10 @@
     - [X] Implement horse racing
     - [ ] Make sure you cant gamble more than you have
     - [ ] Make sure winnings are correct (shared 2nd place should give 1.5x)
-    - [ ] Reward the ID that !gamble'd
+    - [X] Reward the ID that !gamble'd
     - [X] Print the gamblers name
+- [ ] Reward all players in server with tokens when crossword complete
+- [ ] Add tests
 - [ ] Logging
 - [ ] Get a certain day of the week's puzzle (e.g. !wapo tuesday)
 - [ ] Update Google Sheets with time automatically

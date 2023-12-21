@@ -81,7 +81,6 @@ class WaPoBotCog(commands.Cog):
         try:
             bet_index = int(bet_index)
             bet_amount = int(bet_amount)
-            assert 1 <= bet_index <= 4
         except Exception:
             await ctx.send(
                 content="!gamble takes two arguments: which line to\
@@ -89,13 +88,29 @@ class WaPoBotCog(commands.Cog):
             )
             return
 
+        if not 1 <= bet_index <= 4:
+            await ctx.send(content="You must gamble on lines 1-4")
+            return
+
+        if bet_amount < 1:
+            await ctx.send(content="You must gamble at least 1 token")
+            return
+
+        author_id = ctx.author.id
+        author_name = ctx.author.name
+        author_tokens = self.players.get(author_id, 0)
+
+        if author_tokens < bet_amount:
+            await ctx.send(content="Not enough tokens")
+            return
+
         progress = [0, 0, 0, 0]
         race_length = 20
-        emojis = [EMOJI_ROCKET, EMOJI_PENGUIN, EMOJI_OCTOPUS, EMOJI_SANTA]
+        symbols = [EMOJI_ROCKET, EMOJI_PENGUIN, EMOJI_OCTOPUS, EMOJI_SANTA]
 
         race_embed = get_embed(
             "Horse Race",
-            get_race_string(progress, emojis, race_length),
+            get_race_string(progress, symbols, race_length),
             discord.Color.purple(),
         )
         message = await ctx.send(embed=race_embed)
@@ -105,18 +120,19 @@ class WaPoBotCog(commands.Cog):
             progress[random_index] += 1
 
             updated_message = race_embed.copy()
-            updated_message.description = get_race_string(progress, emojis, race_length)
+            updated_message.description = get_race_string(progress, symbols, race_length)
             await message.edit(embed=updated_message)
 
             race_embed = updated_message
             time.sleep(0.1)
 
-        author = ctx.author.name
         nr_tokens_won = get_gamble_result(progress, bet_index - 1, bet_amount)
+
+        self.players[author_id] += nr_tokens_won
 
         result_embed = get_embed(
             "Horse Race Results",
-            f"{author} won {nr_tokens_won} token(s)!",
+            f"{author_name} won {nr_tokens_won} token(s)!",
             discord.Color.gold(),
         )
         await ctx.send(embed=result_embed)
@@ -185,6 +201,7 @@ def get_embed(
 ) -> discord.Embed:
     embed = discord.Embed(title=title, description=description, color=color, url=url)
     embed.set_footer(text=GITHUB_REPOSITORY, icon_url=GITHUB_ICON)
+
     return embed
 
 
