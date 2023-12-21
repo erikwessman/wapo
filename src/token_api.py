@@ -42,3 +42,6 @@ class TokenAPI:
         data = self._read_data()
 
         return list(data.keys())
+
+    def has_player(self, player_id):
+        return player_id in self.get_players()

@@ -38,10 +38,20 @@ class TokenCog(commands.Cog):
         self.bot = bot
 
     @commands.command()
+    async def register(self, ctx):
+        author_id = str(ctx.author.id)
+
+        if self.bot.token_api.has_player(author_id):
+            await ctx.send(content="Player already registered")
+        else:
+            self.bot.token_api.set_tokens(author_id, 0)
+            await ctx.send(content="Registered player")
+
+    @commands.command()
     async def tokens(self, ctx):
-        author_id = ctx.author.id
+        author_id = str(ctx.author.id)
         author_tokens = self.bot.token_api.get_tokens(author_id)
-        await ctx.send(content=f"You have {author_tokens}")
+        await ctx.send(content=f"You have {author_tokens} tokens")
 
     @commands.command()
     async def gamble(self, ctx, bet_index, bet_amount):
@@ -63,7 +73,7 @@ class TokenCog(commands.Cog):
             await ctx.send(content="You must gamble at least 1 token")
             return
 
-        author_id = ctx.author.id
+        author_id = str(ctx.author.id)
         author_name = ctx.author.name
         author_tokens = self.bot.token_api.get_tokens(author_id)
 
@@ -198,11 +208,15 @@ class CrosswordCog(commands.Cog):
         puzzle_time = wapo_api.get_puzzle_time(puzzle_link)
         puzzle_reward = helper.get_puzzle_reward(puzzle_weekday, puzzle_time)
 
-        # TODO: reward tokens
+        players = self.bot.token_api.get_players()
+
+        for player in players:
+            self.bot.token_api.update_tokens(player, puzzle_reward)
 
         embed_success = get_embed(
             "Crossword Checker",
-            f"Crossword complete! {puzzle_reward} token(s) rewarded 🪙",
+            f"Crossword complete! {puzzle_reward} token(s) \
+                   rewarded to {len(players)} players",
             discord.Color.green(),
         )
 
@@ -247,7 +261,6 @@ async def main():
     intents = discord.Intents.default()
     intents.message_content = True
     intents.reactions = True
-    intents.members = True
 
     bot = WaPoBot(command_prefix="!", intents=intents)
     await bot.add_cog(TokenCog(bot))
