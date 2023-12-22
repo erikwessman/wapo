@@ -228,6 +228,31 @@ class CrosswordCog(commands.Cog):
         await message.edit(embed=embed_success)
 
 
+class WaPoHelp(commands.HelpCommand):
+    def get_command_signature(self, command):
+        return "%s%s %s" % (
+            self.context.clean_prefix,
+            command.qualified_name,
+            command.signature,
+        )
+
+    async def send_bot_help(self, mapping):
+        embed = discord.Embed(title="Help", color=discord.Color.blurple())
+
+        for cog, commands in mapping.items():
+            filtered = await self.filter_commands(commands, sort=True)
+            command_signatures = [self.get_command_signature(c) for c in filtered]
+
+            if command_signatures:
+                cog_name = getattr(cog, "qualified_name", "No Category")
+                embed.add_field(
+                    name=cog_name, value="\n".join(command_signatures), inline=False
+                )
+
+        channel = self.get_destination()
+        await channel.send(embed=embed)
+
+
 def get_embed(
     title: str, description: str, color: discord.Color, url: str = None
 ) -> discord.Embed:
@@ -268,6 +293,7 @@ async def main():
     intents.reactions = True
 
     bot = WaPoBot(command_prefix="!", intents=intents)
+    bot.help_command = WaPoHelp()
     await bot.add_cog(TokenCog(bot))
     await bot.add_cog(CrosswordCog(bot))
     await bot.start(os.getenv("DISCORD_TOKEN"))

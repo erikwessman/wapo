@@ -21,8 +21,8 @@
 - [X] Create token api for managing tokens
 - [X] Reward all players with tokens when crossword complete
 - [X] Cooldown on commands
+- [X] Better error handling & better error messages
 - [ ] Better !help command
-- [ ] Better error handling & better error messages
 - [ ] Logging
 - [ ] Testing
 - [ ] Get a certain day of the week's puzzle (e.g. !wapo tuesday)
