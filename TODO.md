@@ -18,12 +18,13 @@
     - [X] Reward the ID that !gamble'd
     - [X] Print the gamblers name
     - [ ] Make sure winnings are correct (shared 2nd place should give 1.5x)
-- [ ] Create token api for managing tokens
-- [ ] Reward all players in server with tokens when crossword complete
-- [ ] Better error handling
-- [ ] Better error messages
+- [X] Create token api for managing tokens
+- [X] Reward all players with tokens when crossword complete
+- [ ] Cooldown on commands
+- [ ] Better !help command
+- [ ] Better error handling & better error messages
 - [ ] Logging
-- [ ] Add tests
+- [ ] Testing
 - [ ] Get a certain day of the week's puzzle (e.g. !wapo tuesday)
 - [ ] Update Google Sheets with time automatically
 - [ ] Remote hosting

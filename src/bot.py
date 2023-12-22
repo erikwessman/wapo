@@ -38,22 +38,26 @@ class TokenCog(commands.Cog):
         self.bot = bot
 
     @commands.command()
+    @commands.cooldown(1, 5, commands.BucketType.user)
     async def register(self, ctx):
         author_id = str(ctx.author.id)
+        author_name = ctx.author.name
 
         if self.bot.token_api.has_player(author_id):
-            await ctx.send(content="Player already registered")
+            await ctx.send(content=f"{author_name} already registered")
         else:
             self.bot.token_api.set_tokens(author_id, 0)
-            await ctx.send(content="Registered player")
+            await ctx.send(content=f"Registered {author_name}")
 
     @commands.command()
+    @commands.cooldown(1, 5, commands.BucketType.user)
     async def tokens(self, ctx):
         author_id = str(ctx.author.id)
         author_tokens = self.bot.token_api.get_tokens(author_id)
         await ctx.send(content=f"You have {author_tokens} tokens")
 
     @commands.command()
+    @commands.cooldown(1, 30, commands.BucketType.user)
     async def gamble(self, ctx, bet_index, bet_amount):
         try:
             bet_index = int(bet_index)
@@ -120,10 +124,10 @@ class TokenCog(commands.Cog):
 class CrosswordCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.is_generating_url = False
         self.solved = set()
 
     @commands.command()
+    @commands.cooldown(1, 60, commands.BucketType.server)
     async def wapo(self, ctx):
         if CHANNEL_ID == ctx.channel.id and not self.is_generating_url:
             embed_loading = get_embed(
@@ -134,8 +138,6 @@ class CrosswordCog(commands.Cog):
             message = await ctx.send(embed=embed_loading)
 
             try:
-                self.is_generating_url = True
-
                 url = wapo_api.get_wapo_url()
                 date_str = helper.get_puzzle_date(url)
                 weekday_str = helper.get_puzzle_weekday(date_str)
@@ -157,9 +159,6 @@ class CrosswordCog(commands.Cog):
                 await message.edit(embed=embed_error)
 
                 print(f"Unable to get URL: {e}")
-
-            finally:
-                self.is_generating_url = False
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):
