@@ -58,6 +58,7 @@ class TokenCog(commands.Cog):
 
         self.bot.token_api.update_tokens(author_id, -amount)
         self.bot.token_api.update_tokens(user.id, amount)
+
         await ctx.send(content=f"Gave {user.name} {amount} token(s)")
 
     @send.error
@@ -219,7 +220,9 @@ class CrosswordCog(commands.Cog):
 
         if not wapo_api.is_complete(puzzle_link):
             embed_error = get_embed(
-                "Crossword Checker", "Crossword is not complete", discord.Color.red()
+                "Crossword Checker",
+                "Crossword is not complete",
+                discord.Color.red()
             )
             await message.edit(embed=embed_error)
             return
