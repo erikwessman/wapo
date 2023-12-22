@@ -30,7 +30,9 @@ class WaPoBot(commands.Bot):
         print(f"{self.user} has connected!")
 
     async def on_command_error(self, ctx, error):
-        print(f"Command error: {error}")
+        # TODO: Log stuff here
+
+        print(error)
 
 
 class TokenCog(commands.Cog):
@@ -38,19 +40,24 @@ class TokenCog(commands.Cog):
         self.bot = bot
 
     @commands.command()
-    @commands.cooldown(1, 5, commands.BucketType.user)
+    @commands.cooldown(1, 10, commands.BucketType.user)
     async def register(self, ctx):
         author_id = str(ctx.author.id)
         author_name = ctx.author.name
 
         if self.bot.token_api.has_player(author_id):
-            await ctx.send(content=f"{author_name} already registered")
+            raise commands.CommandError(f"{author_name} already registered")
         else:
             self.bot.token_api.set_tokens(author_id, 0)
             await ctx.send(content=f"Registered {author_name}")
 
+    @register.error
+    async def register_error(self, ctx, error):
+        if isinstance(error, commands.CommandError):
+            await ctx.send(content=f"`!register error`: {error}")
+
     @commands.command()
-    @commands.cooldown(1, 5, commands.BucketType.user)
+    @commands.cooldown(1, 10, commands.BucketType.user)
     async def tokens(self, ctx):
         author_id = str(ctx.author.id)
         author_tokens = self.bot.token_api.get_tokens(author_id)
@@ -58,32 +65,19 @@ class TokenCog(commands.Cog):
 
     @commands.command()
     @commands.cooldown(1, 30, commands.BucketType.user)
-    async def gamble(self, ctx, bet_index, bet_amount):
-        try:
-            bet_index = int(bet_index)
-            bet_amount = int(bet_amount)
-        except Exception:
-            await ctx.send(
-                content="!gamble takes two arguments: which line to\
-                    bet on and the bet amount"
-            )
-            return
-
+    async def gamble(self, ctx, bet_index: int, bet_amount: int):
         if not 1 <= bet_index <= 4:
-            await ctx.send(content="You must gamble on lines 1-4")
-            return
+            raise commands.BadArgument("You must gamble on lines 1-4")
 
         if bet_amount < 1:
-            await ctx.send(content="You must gamble at least 1 token")
-            return
+            raise commands.BadArgument("You must gamble at least 1 token")
 
         author_id = str(ctx.author.id)
         author_name = ctx.author.name
         author_tokens = self.bot.token_api.get_tokens(author_id)
 
         if author_tokens < bet_amount:
-            await ctx.send(content="Not enough tokens")
-            return
+            raise commands.CommandError("Not enough tokens")
 
         progress = [0, 0, 0, 0]
         race_length = 20
@@ -120,6 +114,13 @@ class TokenCog(commands.Cog):
         )
         await ctx.send(embed=result_embed)
 
+    @gamble.error
+    async def gamble_error(self, ctx, error):
+        if isinstance(error, commands.BadArgument):
+            await ctx.send(content="`!gamble error`: Incorrect arguments")
+        elif isinstance(error, commands.CommandError):
+            await ctx.send(content=f"`!gamble error`: {error}")
+
 
 class CrosswordCog(commands.Cog):
     def __init__(self, bot):
@@ -127,15 +128,15 @@ class CrosswordCog(commands.Cog):
         self.solved = set()
 
     @commands.command()
-    @commands.cooldown(1, 60, commands.BucketType.server)
+    @commands.cooldown(1, 60, commands.BucketType.default)
     async def wapo(self, ctx):
-        if CHANNEL_ID == ctx.channel.id and not self.is_generating_url:
+        if CHANNEL_ID == ctx.channel.id:
             embed_loading = get_embed(
                 "Washington Post Daily Crossword",
                 "Fetching URL...",
                 discord.Color.teal(),
             )
-            message = await ctx.send(embed=embed_loading)
+            ctx.sent_message = await ctx.send(embed=embed_loading)
 
             try:
                 url = wapo_api.get_wapo_url()
@@ -148,17 +149,22 @@ class CrosswordCog(commands.Cog):
                     discord.Color.green(),
                     url,
                 )
-                await message.edit(embed=embed_success)
+                await ctx.sent_message.edit(embed=embed_success)
 
-            except Exception as e:
-                embed_error = get_embed(
-                    "Washington Post Daily Crossword",
-                    "Error fetching URL",
-                    discord.Color.red(),
-                )
-                await message.edit(embed=embed_error)
+            except Exception as error:
+                raise commands.CommandError("An error occurred.") from error
 
-                print(f"Unable to get URL: {e}")
+    @wapo.error
+    async def wapo_error(self, ctx, error):
+        if hasattr(ctx, "sent_message"):
+            embed_error = get_embed(
+                "Washington Post Daily Crossword",
+                "Error fetching URL",
+                discord.Color.red(),
+            )
+            await ctx.sent_message.edit(embed=embed_error)
+        else:
+            await ctx.send(f"An error occurred: {error}")
 
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction, user):

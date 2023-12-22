@@ -20,7 +20,7 @@
     - [ ] Make sure winnings are correct (shared 2nd place should give 1.5x)
 - [X] Create token api for managing tokens
 - [X] Reward all players with tokens when crossword complete
-- [ ] Cooldown on commands
+- [X] Cooldown on commands
 - [ ] Better !help command
 - [ ] Better error handling & better error messages
 - [ ] Logging
