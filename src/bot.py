@@ -4,6 +4,7 @@ import math
 import random
 import asyncio
 import discord
+from typing import List
 from discord.ext import commands
 from dotenv import load_dotenv
 
@@ -108,32 +109,22 @@ class TokenCog(commands.Cog):
 
         self.bot.token_api.update_tokens(author_id, -amount)
 
-        progress = [0, 0, 0, 0]
+        race_values = [0, 0, 0, 0]
         race_length = 20
-        symbols = [EMOJI_ROCKET, EMOJI_PENGUIN, EMOJI_OCTOPUS, EMOJI_SANTA]
+        race_symbols = [EMOJI_ROCKET, EMOJI_PENGUIN, EMOJI_OCTOPUS, EMOJI_SANTA]
 
         race_embed = get_embed(
             "Horse Race",
-            get_race_string(progress, symbols, race_length),
+            get_race_string(race_values, race_symbols, race_length),
             discord.Color.purple(),
         )
-        message = await ctx.send(embed=race_embed)
+        race_message = await ctx.send(embed=race_embed)
 
-        while max(progress) < race_length:
-            random_index = random.randint(0, len(progress) - 1)
-            progress[random_index] += 1
+        standings = await simulate_race(
+            race_values, race_length, race_symbols, race_message, race_embed
+        )
 
-            updated_message = race_embed.copy()
-            updated_message.description = get_race_string(
-                progress, symbols, race_length
-            )
-            await message.edit(embed=updated_message)
-
-            race_embed = updated_message
-            time.sleep(0.1)
-
-        nr_tokens_won = get_gamble_result(progress, row - 1, amount)
-
+        nr_tokens_won = get_gamble_result(standings, row - 1, amount)
         self.bot.token_api.update_tokens(author_id, nr_tokens_won)
 
         result_embed = get_embed(
@@ -220,9 +211,7 @@ class CrosswordCog(commands.Cog):
 
         if not wapo_api.is_complete(puzzle_link):
             embed_error = get_embed(
-                "Crossword Checker",
-                "Crossword is not complete",
-                discord.Color.red()
+                "Crossword Checker", "Crossword is not complete", discord.Color.red()
             )
             await message.edit(embed=embed_error)
             return
@@ -289,8 +278,37 @@ def get_embed(
 ) -> discord.Embed:
     embed = discord.Embed(title=title, description=description, color=color, url=url)
     embed.set_footer(text=GITHUB_REPOSITORY, icon_url=GITHUB_ICON)
-
     return embed
+
+
+async def simulate_race(
+    race_values: List[int],
+    race_length: int,
+    race_symbols: List[str],
+    race_message: discord.Message,
+    race_embed: discord.Embed,
+):
+    reached_threshold_indices = []
+    below_threshold = set(range(len(race_values)))
+
+    while below_threshold:
+        index = random.choice(list(below_threshold))
+        race_values[index] += 1
+
+        if race_values[index] >= race_length:
+            below_threshold.remove(index)
+            reached_threshold_indices.append(index)
+
+        updated_message = race_embed.copy()
+        updated_message.description = get_race_string(
+            race_values, race_symbols, race_length
+        )
+        await race_message.edit(embed=updated_message)
+
+        race_embed = updated_message
+        time.sleep(0.1)
+
+    return reached_threshold_indices
 
 
 def get_race_string(progress, symbols, race_length) -> str:
@@ -310,12 +328,10 @@ def get_race_string(progress, symbols, race_length) -> str:
     return "\n\n".join(lines)
 
 
-def get_gamble_result(standings, row, amount) -> int:
-    result = standings[row]
-    position = sorted(standings, reverse=True).index(result)
-
+def get_gamble_result(standings: List[int], row: int, amount: int) -> int:
+    bet_result_index = standings.index(row)
     winnings_table = {0: 2, 1: 1.5, 2: 0.5, 3: 0}
-    return math.floor(winnings_table[position] * amount)
+    return math.floor(winnings_table[bet_result_index] * amount)
 
 
 async def main():
