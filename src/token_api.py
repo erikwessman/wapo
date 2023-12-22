@@ -21,7 +21,8 @@ class TokenAPI:
     def update_tokens(self, player_id, nr_tokens):
         data = self._read_data()
 
-        current_tokens = data.get(player_id, 0)
+        player_id_str = str(player_id)
+        current_tokens = data.get(player_id_str, 0)
         data[player_id] = current_tokens + nr_tokens
 
         self._write_data(data)
@@ -29,14 +30,16 @@ class TokenAPI:
     def set_tokens(self, player_id, nr_tokens):
         data = self._read_data()
 
-        data[player_id] = nr_tokens
+        player_id_str = str(player_id)
+        data[player_id_str] = nr_tokens
 
         self._write_data(data)
 
     def get_tokens(self, player_id):
         data = self._read_data()
 
-        return data.get(player_id, 0)
+        player_id_str = str(player_id)
+        return data.get(player_id_str, 0)
 
     def get_players(self):
         data = self._read_data()
@@ -44,4 +47,4 @@ class TokenAPI:
         return list(data.keys())
 
     def has_player(self, player_id):
-        return player_id in self.get_players()
+        return str(player_id) in self.get_players()

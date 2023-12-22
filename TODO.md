@@ -22,7 +22,12 @@
 - [X] Reward all players with tokens when crossword complete
 - [X] Cooldown on commands
 - [X] Better error handling & better error messages
-- [ ] Better !help command
+- [X] Better !help command
+- [X] Remove tokens first when gambling, then reward (15, not 20)
+- [X] !send command
+- [X] Dont allow negative tokens in give and send
+- [X] Command not found message
+- [ ] Fix channel id check
 - [ ] Logging
 - [ ] Testing
 - [ ] Get a certain day of the week's puzzle (e.g. !wapo tuesday)

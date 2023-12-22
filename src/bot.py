@@ -34,15 +34,41 @@ class WaPoBot(commands.Bot):
 
         print(error)
 
+        if isinstance(error, commands.CommandNotFound):
+            await ctx.send(content=error)
+
 
 class TokenCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
     @commands.command()
+    async def send(self, ctx, user: discord.User, amount: int):
+        author_id = ctx.author.id
+        author_tokens = self.bot.token_api.get_tokens(author_id)
+
+        if author_id == user.id:
+            raise commands.BadArgument("Cannot send tokens to yourself")
+
+        if amount < 1:
+            raise commands.BadArgument("Cannot send less than 1 token")
+
+        if author_tokens < amount:
+            raise commands.BadArgument("Insufficient tokens")
+
+        self.bot.token_api.update_tokens(author_id, -amount)
+        self.bot.token_api.update_tokens(user.id, amount)
+        await ctx.send(content=f"Gave {user.name} {amount} token(s)")
+
+    @send.error
+    async def send_error(self, ctx, error):
+        if isinstance(error, commands.CommandError):
+            await ctx.send(content=f"`!send` error: {error}")
+
+    @commands.command()
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def register(self, ctx):
-        author_id = str(ctx.author.id)
+        author_id = ctx.author.id
         author_name = ctx.author.name
 
         if self.bot.token_api.has_player(author_id):
@@ -54,30 +80,32 @@ class TokenCog(commands.Cog):
     @register.error
     async def register_error(self, ctx, error):
         if isinstance(error, commands.CommandError):
-            await ctx.send(content=f"`!register error`: {error}")
+            await ctx.send(content=f"`!register` error: {error}")
 
     @commands.command()
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def tokens(self, ctx):
-        author_id = str(ctx.author.id)
+        author_id = ctx.author.id
         author_tokens = self.bot.token_api.get_tokens(author_id)
         await ctx.send(content=f"You have {author_tokens} tokens")
 
     @commands.command()
     @commands.cooldown(1, 30, commands.BucketType.user)
-    async def gamble(self, ctx, bet_index: int, bet_amount: int):
-        if not 1 <= bet_index <= 4:
-            raise commands.BadArgument("You must gamble on lines 1-4")
+    async def gamble(self, ctx, row: int, amount: int):
+        if not 1 <= row <= 4:
+            raise commands.BadArgument("You must gamble on rows 1-4")
 
-        if bet_amount < 1:
+        if amount < 1:
             raise commands.BadArgument("You must gamble at least 1 token")
 
-        author_id = str(ctx.author.id)
+        author_id = ctx.author.id
         author_name = ctx.author.name
         author_tokens = self.bot.token_api.get_tokens(author_id)
 
-        if author_tokens < bet_amount:
-            raise commands.CommandError("Not enough tokens")
+        if author_tokens < amount:
+            raise commands.CommandError("Insufficient tokens")
+
+        self.bot.token_api.update_tokens(author_id, -amount)
 
         progress = [0, 0, 0, 0]
         race_length = 20
@@ -103,7 +131,7 @@ class TokenCog(commands.Cog):
             race_embed = updated_message
             time.sleep(0.1)
 
-        nr_tokens_won = get_gamble_result(progress, bet_index - 1, bet_amount)
+        nr_tokens_won = get_gamble_result(progress, row - 1, amount)
 
         self.bot.token_api.update_tokens(author_id, nr_tokens_won)
 
@@ -117,9 +145,9 @@ class TokenCog(commands.Cog):
     @gamble.error
     async def gamble_error(self, ctx, error):
         if isinstance(error, commands.BadArgument):
-            await ctx.send(content="`!gamble error`: Incorrect arguments")
+            await ctx.send(content="`!gamble` error: Incorrect arguments")
         elif isinstance(error, commands.CommandError):
-            await ctx.send(content=f"`!gamble error`: {error}")
+            await ctx.send(content=f"`!gamble` error: {error}")
 
 
 class CrosswordCog(commands.Cog):
@@ -239,8 +267,8 @@ class WaPoHelp(commands.HelpCommand):
     async def send_bot_help(self, mapping):
         embed = discord.Embed(title="Help", color=discord.Color.blurple())
 
-        for cog, commands in mapping.items():
-            filtered = await self.filter_commands(commands, sort=True)
+        for cog, cmds in mapping.items():
+            filtered = await self.filter_commands(cmds, sort=True)
             command_signatures = [self.get_command_signature(c) for c in filtered]
 
             if command_signatures:
@@ -279,12 +307,12 @@ def get_race_string(progress, symbols, race_length) -> str:
     return "\n\n".join(lines)
 
 
-def get_gamble_result(standings, bet_index, bet_amount) -> int:
-    result = standings[bet_index]
+def get_gamble_result(standings, row, amount) -> int:
+    result = standings[row]
     position = sorted(standings, reverse=True).index(result)
 
     winnings_table = {0: 2, 1: 1.5, 2: 0.5, 3: 0}
-    return math.floor(winnings_table[position] * bet_amount)
+    return math.floor(winnings_table[position] * amount)
 
 
 async def main():
