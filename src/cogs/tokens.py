@@ -38,13 +38,13 @@ class TokenCog(commands.Cog):
         await ctx.send(content=f"Gave {user.name} {amount} token(s)")
 
     @send.error
-    async def send_error(self, ctx, error):
+    async def send_error(self, ctx: commands.Context, error):
         if isinstance(error, commands.CommandError):
             await ctx.send(content=f"`!send` error: {error}")
 
     @commands.command()
     @commands.cooldown(1, 10, commands.BucketType.user)
-    async def register(self, ctx):
+    async def register(self, ctx: commands.Context):
         author_id = ctx.author.id
         author_name = ctx.author.name
 
@@ -55,20 +55,20 @@ class TokenCog(commands.Cog):
             await ctx.send(content=f"Registered {author_name}")
 
     @register.error
-    async def register_error(self, ctx, error):
+    async def register_error(self, ctx: commands.Context, error):
         if isinstance(error, commands.CommandError):
             await ctx.send(content=f"`!register` error: {error}")
 
     @commands.command()
     @commands.cooldown(1, 10, commands.BucketType.user)
-    async def tokens(self, ctx):
+    async def tokens(self, ctx: commands.Context):
         author_id = ctx.author.id
         author_tokens = self.bot.token_api.get_tokens(author_id)
         await ctx.send(content=f"You have {author_tokens} tokens")
 
     @commands.command()
     @commands.cooldown(1, 30, commands.BucketType.user)
-    async def gamble(self, ctx, row: int, amount: int):
+    async def gamble(self, ctx: commands.Context, row: int, amount: int):
         if not 1 <= row <= 4:
             raise commands.BadArgument("You must gamble on rows 1-4")
 
@@ -97,7 +97,7 @@ class TokenCog(commands.Cog):
         await ctx.send(embed=result_embed)
 
     @gamble.error
-    async def gamble_error(self, ctx, error):
+    async def gamble_error(self, ctx: commands.Context, error):
         if isinstance(error, commands.BadArgument):
             await ctx.send(content="`!gamble` error: Incorrect arguments")
         elif isinstance(error, commands.CommandError):
@@ -134,6 +134,7 @@ def simulate_race(values: List[int], length: int):
     standings = []
     below_threshold = set(range(len(values)))
 
+    # Increment a random element until every horse has reached the goal
     while below_threshold:
         index = random.choice(list(below_threshold))
         values[index] += 1
@@ -145,12 +146,15 @@ def simulate_race(values: List[int], length: int):
         yield values, standings
 
 
-def get_race_string(cur_values, cur_standings, symbols, race_length) -> str:
+def get_race_string(cur_values: List[int],
+                    cur_standings: List[int],
+                    symbols: List[str],
+                    race_length: int) -> str:
     if len(cur_values) != len(symbols):
-        raise Exception("Progress and symbols must have the same length")
+        raise Exception("Values and symbols must have the same length")
 
     if max(cur_values) > race_length:
-        raise Exception("Progress must be less than or equal to goal")
+        raise Exception("Values must be less than or equal to goal")
 
     lines = []
     lines.append("```")

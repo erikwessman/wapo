@@ -14,7 +14,7 @@ class CrosswordCog(commands.Cog):
 
     @commands.command()
     @commands.cooldown(1, 60, commands.BucketType.default)
-    async def wapo(self, ctx):
+    async def wapo(self, ctx: commands.Context):
         if CHANNEL_ID == ctx.channel.id:
             embed_loading = get_embed(
                 "Washington Post Daily Crossword",
@@ -40,7 +40,7 @@ class CrosswordCog(commands.Cog):
                 raise commands.CommandError("An error occurred.") from error
 
     @wapo.error
-    async def wapo_error(self, ctx, error):
+    async def wapo_error(self, ctx: commands.Context, error):
         if hasattr(ctx, "sent_message"):
             embed_error = get_embed(
                 "Washington Post Daily Crossword",
@@ -52,7 +52,7 @@ class CrosswordCog(commands.Cog):
             await ctx.send(f"An error occurred: {error}")
 
     @commands.Cog.listener()
-    async def on_reaction_add(self, reaction, user):
+    async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User):
         if user == self.bot.user or reaction.message.channel.id != CHANNEL_ID:
             return
 

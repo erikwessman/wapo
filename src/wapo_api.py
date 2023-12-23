@@ -19,7 +19,7 @@ def _get_driver():
     return webdriver.Firefox(options=options, service=service)
 
 
-def get_wapo_url(day: str = None):
+def get_wapo_url(day: str = None) -> str:
     """
     Retrieves the URL of the latest Washington Post crossword puzzle.
 

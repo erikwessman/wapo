@@ -3,7 +3,7 @@ import os
 
 
 class TokenAPI:
-    def __init__(self, file_path):
+    def __init__(self, file_path: str):
         self.file_path = file_path
 
         if not os.path.exists(file_path):
@@ -18,7 +18,7 @@ class TokenAPI:
         with open(self.file_path, "w") as file:
             json.dump(data, file, indent=4)
 
-    def update_tokens(self, player_id, nr_tokens):
+    def update_tokens(self, player_id: int, nr_tokens: int):
         data = self._read_data()
 
         player_id_str = str(player_id)
@@ -27,7 +27,7 @@ class TokenAPI:
 
         self._write_data(data)
 
-    def set_tokens(self, player_id, nr_tokens):
+    def set_tokens(self, player_id: int, nr_tokens: int):
         data = self._read_data()
 
         player_id_str = str(player_id)
@@ -35,7 +35,7 @@ class TokenAPI:
 
         self._write_data(data)
 
-    def get_tokens(self, player_id):
+    def get_tokens(self, player_id: int):
         data = self._read_data()
 
         player_id_str = str(player_id)
@@ -46,5 +46,5 @@ class TokenAPI:
 
         return list(data.keys())
 
-    def has_player(self, player_id):
+    def has_player(self, player_id: str) -> bool:
         return str(player_id) in self.get_players()
