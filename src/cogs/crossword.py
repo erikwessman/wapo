@@ -105,8 +105,8 @@ class CrosswordCog(commands.Cog):
 
         embed_success = get_embed(
             "Crossword Checker",
-            f"Crossword complete! {puzzle_reward} token(s) \
-                   rewarded to {len(players)} players",
+            (f"Crossword complete! {puzzle_reward} token(s)")
+            (f" rewarded to {len(players)} players"),
             discord.Color.green(),
         )
 
