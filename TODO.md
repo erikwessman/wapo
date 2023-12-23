@@ -30,9 +30,9 @@
 - [X] Print winner number in gambling message
 - [X] Move cogs to separate files
 - [X] Add typing
+- [X] Add tests
 - [ ] Fix channel id check
 - [ ] Add logging
-- [ ] Add tests
 - [ ] Get a certain day of the week's puzzle (e.g. !wapo tuesday)
 - [ ] Update Google Sheets with time automatically
 - [ ] Remote hosting

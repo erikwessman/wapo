@@ -2,9 +2,11 @@ from src import helper
 
 
 def test_get_puzzle_date():
-    url = ("https://www.washingtonpost.com/crossword-puzzles/daily/?"
-           "id=tca231219&set=wapo-daily&puzzleType=crossword&"
-           "playId=6d503407-bd5f-4857-a127-3b521c01e58e")
+    url = (
+        "https://www.washingtonpost.com/crossword-puzzles/daily/?"
+        "id=tca231219&set=wapo-daily&puzzleType=crossword&"
+        "playId=6d503407-bd5f-4857-a127-3b521c01e58e"
+    )
     url_date = helper.get_puzzle_date(url)
     assert url_date == "19-12-2023"
 

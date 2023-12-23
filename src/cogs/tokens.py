@@ -146,10 +146,12 @@ def simulate_race(values: List[int], length: int):
         yield values, standings
 
 
-def get_race_string(cur_values: List[int],
-                    cur_standings: List[int],
-                    symbols: List[str],
-                    race_length: int) -> str:
+def get_race_string(
+    cur_values: List[int],
+    cur_standings: List[int],
+    symbols: List[str],
+    race_length: int,
+) -> str:
     if len(cur_values) != len(symbols):
         raise Exception("Values and symbols must have the same length")
 
