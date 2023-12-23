@@ -28,6 +28,7 @@
 - [X] Dont allow negative tokens in give and send
 - [X] Command not found message
 - [ ] Fix channel id check
+- [ ] Fix typing
 - [ ] Logging
 - [ ] Testing
 - [ ] Get a certain day of the week's puzzle (e.g. !wapo tuesday)
