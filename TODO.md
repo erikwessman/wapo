@@ -27,6 +27,8 @@
 - [X] !send command
 - [X] Dont allow negative tokens in give and send
 - [X] Command not found message
+- [ ] Print winner number in gambling message
+- [ ] Move cogs to separate files
 - [ ] Fix channel id check
 - [ ] Fix typing
 - [ ] Logging

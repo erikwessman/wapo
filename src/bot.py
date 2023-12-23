@@ -276,7 +276,7 @@ async def handle_race_message(ctx: commands.Context):
 
     embed = get_embed(
         "Horse Race",
-        get_race_string(values, symbols, length),
+        get_race_string(values, [], symbols, length),
         discord.Color.purple(),
     )
     message = await ctx.send(embed=embed)
@@ -284,7 +284,7 @@ async def handle_race_message(ctx: commands.Context):
     for cur_values, cur_standings in simulate_race(values, length):
         updated_message = embed.copy()
         updated_message.description = get_race_string(
-            cur_values, symbols, length
+            cur_values, cur_standings, symbols, length
         )
         await message.edit(embed=updated_message)
 
@@ -295,7 +295,7 @@ async def handle_race_message(ctx: commands.Context):
 
 
 def simulate_race(values: List[int], length: int):
-    reached_threshold_indices = []
+    standings = []
     below_threshold = set(range(len(values)))
 
     while below_threshold:
@@ -304,24 +304,31 @@ def simulate_race(values: List[int], length: int):
 
         if values[index] >= length:
             below_threshold.remove(index)
-            reached_threshold_indices.append(index)
+            standings.append(index)
 
-        yield values, reached_threshold_indices
+        yield values, standings
 
 
-def get_race_string(progress, symbols, race_length) -> str:
-    if len(progress) != len(symbols):
+def get_race_string(cur_values, cur_standings, symbols, race_length) -> str:
+    if len(cur_values) != len(symbols):
         raise Exception("Progress and symbols must have the same length")
 
-    if max(progress) > race_length:
+    if max(cur_values) > race_length:
         raise Exception("Progress must be less than or equal to goal")
 
     lines = []
     lines.append("```")
-    for i, line_prog in enumerate(progress):
-        line = "#" * line_prog + symbols[i] + "." * (race_length - line_prog)
+    for i, line_prog in enumerate(cur_values):
+        line = ""
+        line += "#" * line_prog
+        line += symbols[i]
+        line += "." * (race_length - line_prog)
         lines.append(line)
     lines.append("```")
+
+    for i, standing in enumerate(cur_standings):
+        # Add 1 to standing to compensate for the ```
+        lines[standing + 1] += f"({i+1})"
 
     return "\n\n".join(lines)
 
