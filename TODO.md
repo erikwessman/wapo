@@ -17,7 +17,7 @@
     - [X] Make sure you cant gamble more than you have
     - [X] Reward the ID that !gamble'd
     - [X] Print the gamblers name
-    - [ ] Make sure winnings are correct (shared 2nd place should give 1.5x)
+    - [X] Make sure winnings are correct (shared 2nd place should give 1.5x)
 - [X] Create token api for managing tokens
 - [X] Reward all players with tokens when crossword complete
 - [X] Cooldown on commands
@@ -27,12 +27,12 @@
 - [X] !send command
 - [X] Dont allow negative tokens in give and send
 - [X] Command not found message
-- [ ] Print winner number in gambling message
-- [ ] Move cogs to separate files
+- [X] Print winner number in gambling message
+- [X] Move cogs to separate files
 - [ ] Fix channel id check
-- [ ] Fix typing
-- [ ] Logging
-- [ ] Testing
+- [ ] Add typing
+- [ ] Add logging
+- [ ] Add tests
 - [ ] Get a certain day of the week's puzzle (e.g. !wapo tuesday)
 - [ ] Update Google Sheets with time automatically
 - [ ] Remote hosting

@@ -7,7 +7,6 @@ from dotenv import load_dotenv
 from token_api import TokenAPI
 from cogs.crossword import CrosswordCog
 from cogs.tokens import TokenCog
-from const import GITHUB_REPOSITORY, GITHUB_ICON
 
 
 class WaPoBot(commands.Bot):
