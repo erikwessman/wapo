@@ -46,5 +46,5 @@ class TokenAPI:
 
         return list(data.keys())
 
-    def has_player(self, player_id: str) -> bool:
+    def has_player(self, player_id: int) -> bool:
         return str(player_id) in self.get_players()
