@@ -10,7 +10,6 @@ from const import CHANNEL_ID
 class CrosswordCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.solved = set()
 
     @commands.command()
     @commands.cooldown(1, 60, commands.BucketType.default)
@@ -74,16 +73,9 @@ class CrosswordCog(commands.Cog):
         )
         message = await reaction.message.channel.send(embed=embed_loading)
 
-        if not wapo_api.is_complete(puzzle_link):
-            embed_error = get_embed(
-                "Crossword Checker", "Crossword is not complete", discord.Color.red()
-            )
-            await message.edit(embed=embed_error)
-            return
-
         puzzle_date = helper.get_puzzle_date(puzzle_link)
 
-        if puzzle_date in self.solved:
+        if self.bot.crossword_manager.has_crossword(puzzle_date):
             embed_warning = get_embed(
                 "Crossword Checker",
                 "Crossword is already solved",
@@ -92,7 +84,16 @@ class CrosswordCog(commands.Cog):
             await message.edit(embed=embed_warning)
             return
 
-        self.solved.add(puzzle_date)
+        if not wapo_api.is_complete(puzzle_link):
+            embed_error = get_embed(
+                "Crossword Checker",
+                "Crossword is not complete",
+                discord.Color.red()
+            )
+            await message.edit(embed=embed_error)
+            return
+
+        self.bot.crossword_manager.save_crossword(puzzle_date)
 
         puzzle_weekday = helper.get_puzzle_weekday(puzzle_date)
         puzzle_time = wapo_api.get_puzzle_time(puzzle_link)
