@@ -4,7 +4,7 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 
-from token_api import TokenAPI
+from managers import TokenManager, CrosswordManager
 from cogs.crossword import CrosswordCog
 from cogs.gamble import GambleCog
 from cogs.token import TokenCog
@@ -13,7 +13,8 @@ from cogs.token import TokenCog
 class WaPoBot(commands.Bot):
     def __init__(self, command_prefix, intents):
         super().__init__(command_prefix=command_prefix, intents=intents)
-        self.token_api = TokenAPI("data/tokens.json")
+        self.token_manager = TokenManager("data/tokens.json")
+        self.crossword_manager = CrosswordManager("data/crosswords.json")
 
     async def on_ready(self):
         print(f"{self.user} has connected!")

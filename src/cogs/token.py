@@ -9,7 +9,7 @@ class TokenCog(commands.Cog):
     @commands.command()
     async def send(self, ctx, user: discord.User, amount: int):
         author_id = ctx.author.id
-        author_tokens = self.bot.token_api.get_tokens(author_id)
+        author_tokens = self.bot.token_manager.get_tokens(author_id)
 
         if author_id == user.id:
             raise commands.BadArgument("Cannot send tokens to yourself")
@@ -20,8 +20,8 @@ class TokenCog(commands.Cog):
         if author_tokens < amount:
             raise commands.BadArgument("Insufficient tokens")
 
-        self.bot.token_api.update_tokens(author_id, -amount)
-        self.bot.token_api.update_tokens(user.id, amount)
+        self.bot.token_manager.update_tokens(author_id, -amount)
+        self.bot.token_manager.update_tokens(user.id, amount)
 
         await ctx.send(content=f"Gave {user.name} {amount} token(s)")
 
@@ -36,10 +36,10 @@ class TokenCog(commands.Cog):
         author_id = ctx.author.id
         author_name = ctx.author.name
 
-        if self.bot.token_api.has_player(author_id):
+        if self.bot.token_manager.has_player(author_id):
             raise commands.CommandError(f"{author_name} already registered")
         else:
-            self.bot.token_api.set_tokens(author_id, 0)
+            self.bot.token_manager.set_tokens(author_id, 0)
             await ctx.send(content=f"Registered {author_name}")
 
     @register.error
@@ -51,5 +51,5 @@ class TokenCog(commands.Cog):
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def tokens(self, ctx: commands.Context):
         author_id = ctx.author.id
-        author_tokens = self.bot.token_api.get_tokens(author_id)
+        author_tokens = self.bot.token_manager.get_tokens(author_id)
         await ctx.send(content=f"You have {author_tokens} tokens")

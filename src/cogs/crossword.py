@@ -98,10 +98,10 @@ class CrosswordCog(commands.Cog):
         puzzle_time = wapo_api.get_puzzle_time(puzzle_link)
         puzzle_reward = helper.get_puzzle_reward(puzzle_weekday, puzzle_time)
 
-        players = self.bot.token_api.get_players()
+        players = self.bot.token_manager.get_players()
 
         for player in players:
-            self.bot.token_api.update_tokens(player, puzzle_reward)
+            self.bot.token_manager.update_tokens(player, puzzle_reward)
 
         embed_success = get_embed(
             "Crossword Checker",
