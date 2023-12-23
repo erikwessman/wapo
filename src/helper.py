@@ -1,7 +1,7 @@
 from urllib.parse import urlparse, parse_qs
 from datetime import datetime
-import validators
 import calendar
+import validators
 import discord
 
 from const import GITHUB_REPOSITORY, GITHUB_ICON
@@ -72,9 +72,9 @@ def get_puzzle_reward(day: str, complete_time: int) -> int:
 
     score = day_score_table[day]
 
-    for t in time_multiplier_table:
-        if complete_time <= t:
-            score *= time_multiplier_table[t]
+    for time_s in time_multiplier_table:
+        if complete_time <= time_s:
+            score *= time_multiplier_table[time_s]
             break
 
     return score

@@ -55,7 +55,7 @@ class CrosswordCog(commands.Cog):
         if user == self.bot.user or reaction.message.channel.id != CHANNEL_ID:
             return
 
-        if reaction.emoji != "👍" and reaction.emoji != "✅":
+        if reaction.emoji not in ("👍", "✅"):
             return
 
         if len(reaction.message.embeds) == 0:

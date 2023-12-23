@@ -111,8 +111,8 @@ def is_complete(url: str) -> bool:
         )
         return modal_title.text == "Congratulations!"
 
-    except Exception as e:
-        print(f"Unable to check puzzle complete: {e}")
+    except Exception as error:
+        print(f"Unable to check puzzle complete: {error}")
         return False
 
     finally:

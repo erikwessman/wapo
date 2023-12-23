@@ -29,12 +29,13 @@ class WaPoBot(commands.Bot):
 
 
 class WaPoHelp(commands.HelpCommand):
+    """
+    Helper class that prints a better !help command
+    """
+
     def get_command_signature(self, command):
-        return "%s%s %s" % (
-            self.context.clean_prefix,
-            command.qualified_name,
-            command.signature,
-        )
+        return (f"{self.context.clean_prefix}{command.qualified_name} "
+                f"{command.signature}")
 
     async def send_bot_help(self, mapping):
         embed = discord.Embed(title="Help", color=discord.Color.blurple())

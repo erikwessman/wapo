@@ -38,9 +38,9 @@ class TokenCog(commands.Cog):
 
         if self.bot.token_manager.has_player(author_id):
             raise commands.CommandError(f"{author_name} already registered")
-        else:
-            self.bot.token_manager.set_tokens(author_id, 0)
-            await ctx.send(content=f"Registered {author_name}")
+
+        self.bot.token_manager.set_tokens(author_id, 0)
+        await ctx.send(content=f"Registered {author_name}")
 
     @register.error
     async def register_error(self, ctx: commands.Context, error):

@@ -1,8 +1,8 @@
 import math
 import random
 import asyncio
-import discord
 from typing import List
+import discord
 from discord.ext import commands
 
 from helper import get_embed

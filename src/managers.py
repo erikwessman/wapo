@@ -3,6 +3,10 @@ import os
 
 
 class TokenManager:
+    """
+    Manages players' tokens persistently
+    """
+
     def __init__(self, file_path: str):
         self.file_path = file_path
 
@@ -51,6 +55,10 @@ class TokenManager:
 
 
 class CrosswordManager:
+    """
+    Manages completed crosswords persistently
+    """
+
     def __init__(self, file_path: str):
         self.file_path = file_path
 
