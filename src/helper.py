@@ -2,6 +2,17 @@ from urllib.parse import urlparse, parse_qs
 from datetime import datetime
 import validators
 import calendar
+import discord
+
+from const import GITHUB_REPOSITORY, GITHUB_ICON
+
+
+def get_embed(
+    title: str, description: str, color: discord.Color, url: str = None
+) -> discord.Embed:
+    embed = discord.Embed(title=title, description=description, color=color, url=url)
+    embed.set_footer(text=GITHUB_REPOSITORY, icon_url=GITHUB_ICON)
+    return embed
 
 
 def get_puzzle_date(url: str) -> str:
