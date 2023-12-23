@@ -31,6 +31,8 @@
 - [X] Move cogs to separate files
 - [X] Add typing
 - [X] Add tests
+- [X] Create gambling cog
+- [ ] Save completed crosswords to JSON
 - [ ] Fix channel id check
 - [ ] Add logging
 - [ ] Get a certain day of the week's puzzle (e.g. !wapo tuesday)

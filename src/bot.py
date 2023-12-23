@@ -6,7 +6,8 @@ from dotenv import load_dotenv
 
 from token_api import TokenAPI
 from cogs.crossword import CrosswordCog
-from cogs.tokens import TokenCog
+from cogs.gamble import GambleCog
+from cogs.token import TokenCog
 
 
 class WaPoBot(commands.Bot):
@@ -58,8 +59,9 @@ async def main():
 
     bot = WaPoBot(command_prefix="!", intents=intents)
     bot.help_command = WaPoHelp()
-    await bot.add_cog(TokenCog(bot))
     await bot.add_cog(CrosswordCog(bot))
+    await bot.add_cog(GambleCog(bot))
+    await bot.add_cog(TokenCog(bot))
     await bot.start(os.getenv("DISCORD_TOKEN"))
 
 
