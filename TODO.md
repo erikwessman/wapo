@@ -33,6 +33,8 @@
 - [X] Add tests
 - [X] Create gambling cog
 - [X] Save completed crosswords to JSON
+- [ ] Add !blackjack command
+    - [ ] Add it to GambleCog
 - [ ] Add !profile command
 - [ ] Add a store
     - [ ] Create a JSON file with store contents

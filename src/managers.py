@@ -51,7 +51,8 @@ class TokenManager:
         return list(data.keys())
 
     def has_player(self, player_id: int) -> bool:
-        return str(player_id) in self.get_players()
+        data = self._read_data()
+        return player_id in data
 
 
 class CrosswordManager:
@@ -87,4 +88,5 @@ class CrosswordManager:
         return list(data.keys())
 
     def has_crossword(self, crossword_date):
-        return crossword_date in self.get_crosswords()
+        data = self._read_data()
+        return crossword_date in data
