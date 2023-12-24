@@ -1,26 +1,26 @@
 import os
 import pytest
-from src.managers import TokenManager
+from src.managers import PlayerManager
 
 
 @pytest.fixture(scope="function")
-def token_manager():
+def player_manager():
     token_json_path = "test/data/tokens.json"
-    token_manager = TokenManager(token_json_path)
+    player_manager = PlayerManager(token_json_path)
 
-    yield token_manager
+    yield player_manager
 
     os.remove(token_json_path)
 
 
-def test_set_tokens(token_manager):
-    token_manager.set_tokens(123, 10)
-    tokens = token_manager.get_tokens(123)
+def test_set_tokens(player_manager):
+    player_manager.set_tokens(123, 10)
+    tokens = player_manager.get_tokens(123)
     assert tokens == 10
 
 
-def test_update_tokens(token_manager):
-    token_manager.update_tokens(123, 10)
-    token_manager.update_tokens(123, 10)
-    tokens = token_manager.get_tokens(123)
+def test_update_tokens(player_manager):
+    player_manager.update_tokens(123, 10)
+    player_manager.update_tokens(123, 10)
+    tokens = player_manager.get_tokens(123)
     assert tokens == 20

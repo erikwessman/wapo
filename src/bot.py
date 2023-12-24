@@ -4,16 +4,17 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 
-from managers import TokenManager, CrosswordManager
-from cogs.crossword import CrosswordCog
-from cogs.gamble import GambleCog
-from cogs.token import TokenCog
+from managers import PlayerManager, CrosswordManager
+from cogs.crossword_cog import CrosswordCog
+from cogs.gamble_cog import GambleCog
+from cogs.player_cog import PlayerCog
+from cogs.store_cog import StoreCog
 
 
 class WaPoBot(commands.Bot):
     def __init__(self, command_prefix, intents):
         super().__init__(command_prefix=command_prefix, intents=intents)
-        self.token_manager = TokenManager("data/tokens.json")
+        self.player_manager = PlayerManager("data/players.json")
         self.crossword_manager = CrosswordManager("data/crosswords.json")
 
     async def on_ready(self):
@@ -34,8 +35,10 @@ class WaPoHelp(commands.HelpCommand):
     """
 
     def get_command_signature(self, command):
-        return (f"{self.context.clean_prefix}{command.qualified_name} "
-                f"{command.signature}")
+        return (
+            f"{self.context.clean_prefix}{command.qualified_name} "
+            f"{command.signature}"
+        )
 
     async def send_bot_help(self, mapping):
         embed = discord.Embed(title="Help", color=discord.Color.blurple())
@@ -63,7 +66,8 @@ async def main():
     bot.help_command = WaPoHelp()
     await bot.add_cog(CrosswordCog(bot))
     await bot.add_cog(GambleCog(bot))
-    await bot.add_cog(TokenCog(bot))
+    await bot.add_cog(PlayerCog(bot))
+    await bot.add_cog(StoreCog(bot))
     await bot.start(os.getenv("DISCORD_TOKEN"))
 
 
