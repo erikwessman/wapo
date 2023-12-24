@@ -33,7 +33,27 @@
 - [X] Add tests
 - [X] Create gambling cog
 - [X] Save completed crosswords to JSON
-- [ ] Fix channel id check
+- [ ] Add !profile command
+- [ ] Add a store
+    - [ ] Create a JSON file with store contents
+        - [ ] Map an id to an object, that has a price, name, description etc
+        - [ ] List store items with !store
+        - [ ] Items
+            - [ ] Profile avatars
+            - [ ] Gamble powerups
+            - [ ] Wapo powerups
+    - [ ] Buy store items with !buy "id"
+    - [ ] Add player manager
+        - [ ] Map player id to their inventory
+        - [ ] Inventory has nr of tokens and items
+        - [ ] Re-do token manager to be this
+- [ ] Add events
+    - [ ] Raffle event
+        - [ ] Occurs randomly once every 24 hours
+        - [ ] Event lasts 5 minutes
+        - [ ] Buy an entry for X tokens
+        - [ ] Raffle a random winner
+- [ ] Fix channel id check for all commands, should only be in \#wapo channel
 - [ ] Add logging
 - [ ] Get a certain day of the week's puzzle (e.g. !wapo tuesday)
 - [ ] Update Google Sheets with time automatically
