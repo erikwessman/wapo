@@ -4,7 +4,9 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 
-from managers import PlayerManager, CrosswordManager
+from managers.crossword_manager import CrosswordManager
+from managers.item_manager import ItemManager
+from managers.player_manager import PlayerManager
 from cogs.crossword_cog import CrosswordCog
 from cogs.gamble_cog import GambleCog
 from cogs.player_cog import PlayerCog
@@ -15,6 +17,7 @@ class WaPoBot(commands.Bot):
     def __init__(self, command_prefix, intents):
         super().__init__(command_prefix=command_prefix, intents=intents)
         self.player_manager = PlayerManager("data/players.json")
+        self.item_manager = ItemManager("data/items.json")
         self.crossword_manager = CrosswordManager("data/crosswords.json")
 
     async def on_ready(self):

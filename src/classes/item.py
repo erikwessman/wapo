@@ -1,10 +1,9 @@
 class Item:
-    def __init__(self,
-                 item_id: int,
-                 title: str,
-                 description: str,
-                 one_time_use: bool,
-                 price: int):
+    """"""
+
+    def __init__(
+        self, item_id: int, title: str, description: str, one_time_use: bool, price: int
+    ):
         self._item_id = item_id
         self._title = title
         self._description = description
@@ -39,3 +38,7 @@ class Item:
             f"One Time Use: {self._one_time_use} "
             f"Price: {self._price}"
         )
+
+    @classmethod
+    def from_dict(cls, data: dict):
+        return cls(**data)

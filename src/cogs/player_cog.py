@@ -27,7 +27,8 @@ class PlayerCog(commands.Cog):
 
     @commands.command()
     async def profile(self, ctx: commands.Context):
-        pass
+        embed = get_embed("Profile", "damn", discord.Color.orange())
+        await ctx.send(embed=embed)
 
     @commands.command()
     @commands.cooldown(1, 10, commands.BucketType.user)

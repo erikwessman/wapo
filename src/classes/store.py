@@ -23,6 +23,7 @@ class Store:
                             title=item["title"],
                             description=item["description"],
                             one_time_use=item["one_time_use"],
+                            price=item["price"]
                         )
                     )
         except FileNotFoundError:
