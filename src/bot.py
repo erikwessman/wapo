@@ -16,12 +16,19 @@ from cogs.store_cog import StoreCog
 class WaPoBot(commands.Bot):
     def __init__(self, command_prefix, intents):
         super().__init__(command_prefix=command_prefix, intents=intents)
+        self.crossword_manager = CrosswordManager("data/crosswords.json")
         self.player_manager = PlayerManager("data/players.json")
         self.item_manager = ItemManager("data/items.json")
-        self.crossword_manager = CrosswordManager("data/crosswords.json")
 
     async def on_ready(self):
         print(f"{self.user} has connected!")
+
+    async def close(self):
+        print("Bot is shutting down. Saving data...")
+        self.crossword_manager.save_data()
+        self.player_manager.save_data()
+        self.item_manager.save_data()
+        await super().close()
 
     async def on_command_error(self, ctx, error):
         # TODO: Log stuff here

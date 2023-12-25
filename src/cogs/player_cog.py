@@ -10,25 +10,32 @@ class PlayerCog(commands.Cog):
 
     @commands.command()
     @commands.cooldown(1, 10, commands.BucketType.user)
-    async def register(self, ctx: commands.Context):
+    async def profile(self, ctx: commands.Context):
         author_id = ctx.author.id
         author_name = ctx.author.name
+        player = self.bot.player_manager.get_player(author_id)
 
-        if self.bot.player_manager.has_player(author_id):
-            raise commands.CommandError(f"{author_name} already registered")
+        embed = get_embed(
+            f"Profile: {author_name}",
+            f"Player ID: {player.player_id}",
+            discord.Color.orange(),
+        )
+        embed.set_thumbnail(url=ctx.author.avatar.url)
 
-        self.bot.player_manager.set_tokens(author_id, 0)
-        await ctx.send(content=f"Registered {author_name}")
+        item_text = "\n".join(
+            f"{item}: {quantity}" for item, quantity in player.items.items()
+        )
+        item_text = item_text if item_text else "No items."
 
-    @register.error
-    async def register_error(self, ctx: commands.Context, error):
-        if isinstance(error, commands.CommandError):
-            await ctx.send(content=f"`!register` error: {error}")
+        embed.add_field(name="Items", value=item_text, inline=False)
+        embed.add_field(name="Tokens", value=str(player.tokens), inline=True)
 
-    @commands.command()
-    async def profile(self, ctx: commands.Context):
-        embed = get_embed("Profile", "damn", discord.Color.orange())
         await ctx.send(embed=embed)
+
+    @profile.error
+    async def profile_error(self, ctx: commands.Context, error):
+        if isinstance(error, commands.CommandError):
+            await ctx.send(content=f"`!profile` error: {error}")
 
     @commands.command()
     @commands.cooldown(1, 10, commands.BucketType.user)
@@ -37,11 +44,28 @@ class PlayerCog(commands.Cog):
         author_tokens = self.bot.player_manager.get_tokens(author_id)
         await ctx.send(content=f"You have {author_tokens} tokens")
 
+    @tokens.error
+    async def tokens_error(self, ctx: commands.Context, error):
+        if isinstance(error, commands.CommandError):
+            await ctx.send(content=f"`!tokens` error: {error}")
+
     @commands.command()
+    @commands.cooldown(1, 10, commands.BucketType.user)
     async def items(self, ctx: commands.Context):
         author_id = ctx.author.id
-        player = self.bot.player_manager.get_player(author_id)
-        await ctx.send("\n".join(player.items))
+        player_items = self.bot.player_manager.get_player_items(author_id)
+
+        item_text = "\n".join(
+            f"{item}: {quantity}" for item, quantity in player_items.items()
+        )
+        item_text = item_text if item_text else "No items."
+
+        await ctx.send(content=item_text)
+
+    @items.error
+    async def items_error(self, ctx: commands.Context, error):
+        if isinstance(error, commands.CommandError):
+            await ctx.send(content=f"`!items` error: {error}")
 
     @commands.command()
     async def send(self, ctx, user: discord.User, amount: int):
@@ -52,7 +76,7 @@ class PlayerCog(commands.Cog):
             raise commands.BadArgument("Cannot send tokens to yourself")
 
         if amount < 1:
-            raise commands.BadArgument("Cannot send less than 1 token")
+            raise commands.BadArgument("Must send at least 1 token")
 
         if author_tokens < amount:
             raise commands.BadArgument("Insufficient tokens")
@@ -60,7 +84,7 @@ class PlayerCog(commands.Cog):
         self.bot.player_manager.update_tokens(author_id, -amount)
         self.bot.player_manager.update_tokens(user.id, amount)
 
-        await ctx.send(content=f"Gave {user.name} {amount} token(s)")
+        await ctx.send(content=f"Sent {user.name} {amount} token(s)")
 
     @send.error
     async def send_error(self, ctx: commands.Context, error):

@@ -1,6 +1,7 @@
 import json
+from typing import List
 
-from item import Item
+from classes.item import Item
 
 
 class Store:
@@ -9,21 +10,22 @@ class Store:
         self._load_items(file_path)
 
     @property
-    def items(self):
-        return self.items
+    def items(self) -> List[Item]:
+        return self._items
 
     def _load_items(self, file_path):
         try:
             with open(file_path, "r") as file:
                 items_data = json.load(file)
-                for item in items_data:
+                for key, item in items_data.items():
                     self._items.append(
                         Item(
                             item_id=item["item_id"],
                             title=item["title"],
                             description=item["description"],
                             one_time_use=item["one_time_use"],
-                            price=item["price"]
+                            price=item["price"],
+                            symbol=item["symbol"],
                         )
                     )
         except FileNotFoundError:

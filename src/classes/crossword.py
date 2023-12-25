@@ -13,9 +13,6 @@ class Crossword:
     def score(self) -> int:
         return self._score
 
-    def __str__(self):
-        return f"Date: {self._date}, " f"Score: {self._score}"
-
     @classmethod
     def from_dict(cls, data: dict):
         return cls(**data)

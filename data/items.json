@@ -4,13 +4,15 @@
         "title": "Item 1",
         "description": "Item 1 description",
         "one_time_use": true,
-        "price": 5
+        "price": 5,
+        "symbol": "🤪"
     },
     "2": {
         "item_id": 2,
         "title": "Item 2",
         "description": "Item 2 description",
         "one_time_use": false,
-        "price": 5
+        "price": 5,
+        "symbol": "🤫"
     }
 }
