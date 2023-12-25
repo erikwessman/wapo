@@ -4,7 +4,7 @@ from managers.base_manager import Manager
 from classes.item import Item
 
 
-class ItemManager(Manager):
+class StoreManager(Manager):
     """"""
 
     def __init__(self, file_path: str):

@@ -39,16 +39,16 @@ class PlayerManager(Manager):
     def has_player(self, player_id: int) -> bool:
         return player_id in self._players
 
-    def handle_buy_item(self, player_id: int, item: Item):
+    def handle_buy_item(self, player_id: int, item: Item, quantity: int = 1):
         player = self.get_player(player_id)
 
-        player.items[item.item_id] += 1
-        player.tokens -= item.price
+        player.items[item.item_id] += quantity
+        player.tokens -= item.price * quantity
 
-    def handle_remove_item(self, player_id: int, item: Item) -> bool:
+    def handle_remove_item(self, player_id: int, item: Item, quantity: int = 1) -> bool:
         player = self.get_player(player_id)
 
-        player.items[item.item_id] -= 1
+        player.items[item.item_id] -= quantity
 
         if player.items[item.item_id] <= 0:
             del player.items[item.item_id]

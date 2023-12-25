@@ -5,7 +5,7 @@ from discord.ext import commands
 from dotenv import load_dotenv
 
 from managers.crossword_manager import CrosswordManager
-from managers.item_manager import ItemManager
+from managers.store_manager import StoreManager
 from managers.player_manager import PlayerManager
 from cogs.crossword_cog import CrosswordCog
 from cogs.gamble_cog import GambleCog
@@ -18,7 +18,7 @@ class WaPoBot(commands.Bot):
         super().__init__(command_prefix=command_prefix, intents=intents)
         self.crossword_manager = CrosswordManager("data/crosswords.json")
         self.player_manager = PlayerManager("data/players.json")
-        self.item_manager = ItemManager("data/items.json")
+        self.store_manager = StoreManager("data/items.json")
 
     async def on_ready(self):
         print(f"{self.user} has connected!")
@@ -27,7 +27,7 @@ class WaPoBot(commands.Bot):
         print("Bot is shutting down. Saving data...")
         self.crossword_manager.save_data()
         self.player_manager.save_data()
-        self.item_manager.save_data()
+        self.store_manager.save_data()
         await super().close()
 
     async def on_command_error(self, ctx, error):

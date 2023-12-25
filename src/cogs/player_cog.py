@@ -13,22 +13,18 @@ class PlayerCog(commands.Cog):
     async def profile(self, ctx: commands.Context):
         author_id = ctx.author.id
         author_name = ctx.author.name
-        player = self.bot.player_manager.get_player(author_id)
+        player_items = self.bot.player_manager.get_player_items(author_id)
+        player_tokens = self.bot.player_manager.get_tokens(author_id)
 
         embed = get_embed(
             f"Profile: {author_name}",
-            f"Player ID: {player.player_id}",
+            f"Player ID: {author_id}",
             discord.Color.orange(),
         )
         embed.set_thumbnail(url=ctx.author.avatar.url)
 
-        item_text = "\n".join(
-            f"{item}: {quantity}" for item, quantity in player.items.items()
-        )
-        item_text = item_text if item_text else "No items."
-
-        embed.add_field(name="Items", value=item_text, inline=False)
-        embed.add_field(name="Tokens", value=str(player.tokens), inline=True)
+        embed.add_field(name="Items", value=str(len(player_items)), inline=False)
+        embed.add_field(name="Tokens", value=str(player_tokens), inline=True)
 
         await ctx.send(embed=embed)
 
@@ -55,12 +51,16 @@ class PlayerCog(commands.Cog):
         author_id = ctx.author.id
         player_items = self.bot.player_manager.get_player_items(author_id)
 
-        item_text = "\n".join(
-            f"{item}: {quantity}" for item, quantity in player_items.items()
-        )
-        item_text = item_text if item_text else "No items."
+        embed = discord.Embed(title=f"{ctx.author.name}'s Items", color=discord.Color.green())
+        embed.set_thumbnail(url=ctx.author.avatar.url)
 
-        await ctx.send(content=item_text)
+        if player_items:
+            for item, quantity in player_items.items():
+                embed.add_field(name=item, value=f"Quantity: {quantity}", inline=False)
+        else:
+            embed.add_field(name="No items", value="You have no items in your inventory.")
+
+        await ctx.send(embed=embed)
 
     @items.error
     async def items_error(self, ctx: commands.Context, error):
