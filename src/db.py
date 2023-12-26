@@ -1,0 +1,123 @@
+import os
+import sys
+from typing import List
+from urllib.parse import quote_plus
+import pymongo
+from dataclasses import asdict
+
+from classes.player import Player
+from classes.crossword import Crossword
+
+
+class DB:
+    """
+    PyMongo database instance and methods
+    """
+
+    def __init__(self, db_name: str = None):
+        self.client = self.connect()
+        self.database = self.client[db_name]
+
+        self.player_collection = self.database["players"]
+
+        self.crossword_collection = self.database["crosswords"]
+        self.files_collection.create_index("date", unique=True)
+
+    def __del__(self):
+        self.client.close()
+
+    # --- General methods ---
+
+    @staticmethod
+    def connect():
+        db_host = os.getenv("MONGO_HOST") or "localhost"
+        db_user = os.getenv("MONGO_USER") or None
+        db_pass = os.getenv("MONGO_PASS") or None
+
+        if db_user:
+            db_user_quote = quote_plus(db_user)
+            db_pass_quote = quote_plus(db_pass)
+            mongo_uri = f"mongodb+srv://{db_user_quote}:{db_pass_quote}@{db_host} \
+                        /?retryWrites=true&w=majority"
+        else:
+            mongo_uri = f"mongodb://{db_host}/?retryWrites=true&w=majority"
+
+        print(f"Attempting to connect to database at {mongo_uri}")
+        try:
+            client = pymongo.MongoClient(mongo_uri)
+            client.server_info()
+            print("Connected to database")
+        except Exception as error:
+            print(f"Unable to connect to database: {error}")
+            sys.exit(1)
+
+        return client
+
+    def clear_database(self) -> None:
+        self.delete_all_players()
+        self.delete_all_crosswords()
+
+    def get_size_mb(self) -> float:
+        stats = self.database.command("dbstats", scale=1024 * 1024)
+        return stats["dataSize"]
+
+    # --- Player helper methods ---
+
+    def get_player(self, player_id: int) -> Player:
+        player_data = self.player_collection.find_one({"_id": player_id})
+        if player_data:
+            return Player(**player_data)
+        return None
+
+    def get_players(self, skip: int = 0, limit: int = 0) -> List[Player]:
+        players = self.player_collection.find({}).skip(skip).limit(limit)
+        return [Player(**player_data) for player_data in players]
+
+    def add_player(self, player: Player) -> str:
+        player_dict = asdict(player)
+        return self.player_collection.insert_one(player_dict).inserted_id
+
+    def update_player(self, player: Player):
+        player_dict = asdict(player)
+        self.player_collection.update_one(
+            {"_id": player.player_id}, {"$set": player_dict}
+        )
+
+    def has_player(self, player_id: int):
+        return self.player_collection.count_documents({}) > 0
+
+    def delete_player(self, player_id: int) -> None:
+        self.player_collection.delete_one({"_id": player_id})
+
+    def delete_all_players(self):
+        self.player_collection.delete_many({})
+
+    # --- Crosswor helper methods ---
+
+    def get_crossword(self, crossword_date: str) -> Crossword:
+        crossword_data = self.crossword_collection.find_one({"date": crossword_date})
+        if crossword_data:
+            return Crossword(**crossword_data)
+        return None
+
+    def get_crosswords(self, skip: int = 0, limit: int = 0) -> List[Crossword]:
+        return list(self.crossword_collection.find({}).skip(skip).limit(limit))
+
+    def add_crossword(self, crossword: Crossword) -> str:
+        crossword_dict = asdict(crossword)
+        return self.crossword_collection.insert_one(crossword_dict).inserted_id
+
+    def update_crossword(self, crossword: Crossword) -> None:
+        crossword_dict = asdict(crossword)
+        self.crossword_collection.update_one(
+            {"date": crossword.date}, {"$set": crossword_dict}
+        )
+
+    def has_crossword(self, crossword_date: str) -> bool:
+        return self.crossword_collection.count_documents({}) > 0
+
+    def delete_crossword(self, crossword_date: str) -> None:
+        self.crossword_collection.delete_one({"date": crossword_date})
+
+    def delete_all_crosswords(self):
+        self.crossword_collection.delete_many({})

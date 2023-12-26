@@ -4,21 +4,22 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 
-from managers.crossword_manager import CrosswordManager
-from managers.store_manager import StoreManager
-from managers.player_manager import PlayerManager
+from db import DB
 from cogs.crossword_cog import CrosswordCog
 from cogs.gamble_cog import GambleCog
 from cogs.player_cog import PlayerCog
 from cogs.store_cog import StoreCog
+from services.player_service import PlayerService
+from services.crossword_service import CrosswordService
+from classes.store import Store
 
 
 class WaPoBot(commands.Bot):
-    def __init__(self, command_prefix, intents):
+    def __init__(self, db: DB, command_prefix, intents):
         super().__init__(command_prefix=command_prefix, intents=intents)
-        self.crossword_manager = CrosswordManager("data/crosswords.json")
-        self.player_manager = PlayerManager("data/players.json")
-        self.store_manager = StoreManager("data/items.json")
+        self.player_service = PlayerService(db)
+        self.crossword_service = CrosswordService(db)
+        self.store = Store("data/items.json")
 
     async def on_ready(self):
         print(f"{self.user} has connected!")
@@ -72,7 +73,8 @@ async def main():
     intents.message_content = True
     intents.reactions = True
 
-    bot = WaPoBot(command_prefix="!", intents=intents)
+    db = DB("wapo")
+    bot = WaPoBot(db, command_prefix="!", intents=intents)
     bot.help_command = WaPoHelp()
     await bot.add_cog(CrosswordCog(bot))
     await bot.add_cog(GambleCog(bot))

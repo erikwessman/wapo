@@ -13,8 +13,9 @@ class PlayerCog(commands.Cog):
     async def profile(self, ctx: commands.Context):
         author_id = ctx.author.id
         author_name = ctx.author.name
-        player_items = self.bot.player_manager.get_player_items(author_id)
-        player_tokens = self.bot.player_manager.get_tokens(author_id)
+        player = self.bot.player_service.get_player(author_id)
+        player_items = player.items
+        player_tokens = player.tokens
 
         embed = get_embed(
             f"Profile: {author_name}",
@@ -37,8 +38,8 @@ class PlayerCog(commands.Cog):
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def tokens(self, ctx: commands.Context):
         author_id = ctx.author.id
-        author_tokens = self.bot.player_manager.get_tokens(author_id)
-        await ctx.send(content=f"You have {author_tokens} tokens")
+        player = self.bot.player_service.get_player(author_id)
+        await ctx.send(content=f"You have {player.tokens} tokens")
 
     @tokens.error
     async def tokens_error(self, ctx: commands.Context, error):
@@ -49,16 +50,21 @@ class PlayerCog(commands.Cog):
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def items(self, ctx: commands.Context):
         author_id = ctx.author.id
-        player_items = self.bot.player_manager.get_player_items(author_id)
+        player = self.bot.player_service.get_player(author_id)
+        player_items = player.items
 
-        embed = discord.Embed(title=f"{ctx.author.name}'s Items", color=discord.Color.green())
+        embed = discord.Embed(
+            title=f"{ctx.author.name}'s Items", color=discord.Color.green()
+        )
         embed.set_thumbnail(url=ctx.author.avatar.url)
 
         if player_items:
             for item, quantity in player_items.items():
                 embed.add_field(name=item, value=f"Quantity: {quantity}", inline=False)
         else:
-            embed.add_field(name="No items", value="You have no items in your inventory.")
+            embed.add_field(
+                name="No items", value="You have no items in your inventory."
+            )
 
         await ctx.send(embed=embed)
 
@@ -70,7 +76,8 @@ class PlayerCog(commands.Cog):
     @commands.command()
     async def send(self, ctx, user: discord.User, amount: int):
         author_id = ctx.author.id
-        author_tokens = self.bot.player_manager.get_tokens(author_id)
+        player = self.bot.player_service.get_player(author_id)
+        player_tokens = player.tokens
 
         if author_id == user.id:
             raise commands.BadArgument("Cannot send tokens to yourself")
@@ -78,7 +85,7 @@ class PlayerCog(commands.Cog):
         if amount < 1:
             raise commands.BadArgument("Must send at least 1 token")
 
-        if author_tokens < amount:
+        if player_tokens < amount:
             raise commands.BadArgument("Insufficient tokens")
 
         self.bot.player_manager.update_tokens(author_id, -amount)
