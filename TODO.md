@@ -33,22 +33,18 @@
 - [X] Add tests
 - [X] Create gambling cog
 - [X] Save completed crosswords to JSON
+- [X] Add !profile command
+- [X] Add a store
+    - [X] Create a JSON file with store contents
+        - [X] Map an id to an object, that has a price, name, description etc
+        - [X] List store items with !store
+        - [X] Items
+            - [X] Profile avatars
+            - [X] Gamble powerups
+    - [X] Buy store items with !buy "id"
+    - [X] Add service layer
 - [ ] Add !blackjack command
     - [ ] Add it to GambleCog
-- [ ] Add !profile command
-- [ ] Add a store
-    - [ ] Create a JSON file with store contents
-        - [ ] Map an id to an object, that has a price, name, description etc
-        - [ ] List store items with !store
-        - [ ] Items
-            - [ ] Profile avatars
-            - [ ] Gamble powerups
-            - [ ] Wapo powerups
-    - [ ] Buy store items with !buy "id"
-    - [ ] Add player manager
-        - [ ] Map player id to their inventory
-        - [ ] Inventory has nr of tokens and items
-        - [ ] Re-do token manager to be this
 - [ ] Add events
     - [ ] Raffle event
         - [ ] Occurs randomly once every 24 hours
