@@ -1,15 +1,15 @@
 {
     "1": {
-        "item_id": 1,
-        "title": "Horsie Steroids",
+        "id": 1,
+        "name": "Horsie Steroids",
         "description": "In the next horse race you get 2x winnings",
         "one_time_use": true,
         "price": 5,
         "symbol": "🏇💉"
     },
     "2": {
-        "item_id": 2,
-        "title": "Cricket",
+        "id": 2,
+        "name": "Cricket",
         "description": "Does nothing",
         "one_time_use": false,
         "price": 5,

@@ -100,9 +100,7 @@ class CrosswordCog(commands.Cog):
         players = self.bot.player_service.get_players()
 
         for player in players:
-            self.bot.player_service.handle_player_update_tokens(
-                player.player_id, puzzle_reward
-            )
+            self.bot.player_service.update_tokens(player.id, puzzle_reward)
 
         embed_success = get_embed(
             "Crossword Checker",

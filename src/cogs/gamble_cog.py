@@ -35,12 +35,12 @@ class GambleCog(commands.Cog):
         if author_tokens < amount:
             raise commands.CommandError("Insufficient tokens")
 
-        self.bot.player_service.handle_player_update_tokens(author_id, -amount)
+        self.bot.player_service.update_tokens(author_id, -amount)
 
         results = await handle_race_message(ctx)
 
         nr_tokens_won = get_gamble_result(results, row - 1, amount)
-        self.bot.player_service.handle_player_update_tokens(author_id, nr_tokens_won)
+        self.bot.player_service.update_tokens(author_id, nr_tokens_won)
 
         result_embed = get_embed(
             "Horse Race Results",

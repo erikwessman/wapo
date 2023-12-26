@@ -19,9 +19,7 @@ class DB:
         self.database = self.client[db_name]
 
         self.player_collection = self.database["players"]
-
         self.crossword_collection = self.database["crosswords"]
-        self.files_collection.create_index("date", unique=True)
 
     def __del__(self):
         self.client.close()
@@ -64,14 +62,18 @@ class DB:
     # --- Player helper methods ---
 
     def get_player(self, player_id: int) -> Player:
-        player_data = self.player_collection.find_one({"_id": player_id})
+        player_data = self.player_collection.find_one({"id": player_id})
         if player_data:
+            player_data.pop("_id", None)
             return Player(**player_data)
         return None
 
     def get_players(self, skip: int = 0, limit: int = 0) -> List[Player]:
         players = self.player_collection.find({}).skip(skip).limit(limit)
-        return [Player(**player_data) for player_data in players]
+        return [
+            Player(**{k: v for k, v in player_data.items() if k != "_id"})
+            for player_data in players
+        ]
 
     def add_player(self, player: Player) -> str:
         player_dict = asdict(player)
@@ -79,15 +81,13 @@ class DB:
 
     def update_player(self, player: Player):
         player_dict = asdict(player)
-        self.player_collection.update_one(
-            {"_id": player._id}, {"$set": player_dict}
-        )
+        self.player_collection.update_one({"id": player.id}, {"$set": player_dict})
 
-    def has_player(self):
-        return self.player_collection.count_documents({}) > 0
+    def has_player(self, player_id: int):
+        return self.player_collection.count_documents({"id": player_id}) > 0
 
     def delete_player(self, player_id: int) -> None:
-        self.player_collection.delete_one({"_id": player_id})
+        self.player_collection.delete_one({"id": player_id})
 
     def delete_all_players(self):
         self.player_collection.delete_many({})
@@ -97,11 +97,16 @@ class DB:
     def get_crossword(self, crossword_date: str) -> Crossword:
         crossword_data = self.crossword_collection.find_one({"date": crossword_date})
         if crossword_data:
+            crossword_data.pop("_id", None)
             return Crossword(**crossword_data)
         return None
 
     def get_crosswords(self, skip: int = 0, limit: int = 0) -> List[Crossword]:
-        return list(self.crossword_collection.find({}).skip(skip).limit(limit))
+        crosswords = self.crossword_collection.find({}).skip(skip).limit(limit)
+        return [
+            Crossword(**{k: v for k, v in crossword_data.items() if k != "_id"})
+            for crossword_data in crosswords
+        ]
 
     def add_crossword(self, crossword: Crossword) -> str:
         crossword_dict = asdict(crossword)
@@ -113,8 +118,8 @@ class DB:
             {"date": crossword.date}, {"$set": crossword_dict}
         )
 
-    def has_crossword(self) -> bool:
-        return self.crossword_collection.count_documents({}) > 0
+    def has_crossword(self, crossword_date: str) -> bool:
+        return self.crossword_collection.count_documents({"date": crossword_date}) > 0
 
     def delete_crossword(self, crossword_date: str) -> None:
         self.crossword_collection.delete_one({"date": crossword_date})

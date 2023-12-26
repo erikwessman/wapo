@@ -18,8 +18,8 @@ class PlayerCog(commands.Cog):
 
         embed = get_embed(
             f"Profile: {player_name}",
-            f"Player ID: {player.player_id}",
-            discord.Color.orange(),
+            f"Player ID: {player.id}",
+            discord.Color.green(),
         )
         embed.set_thumbnail(url=ctx.author.avatar.url)
 
@@ -46,12 +46,12 @@ class PlayerCog(commands.Cog):
 
     @commands.command()
     @commands.cooldown(1, 10, commands.BucketType.user)
-    async def items(self, ctx: commands.Context):
+    async def inventory(self, ctx: commands.Context):
         player = self.bot.player_service.get_player(ctx.author.id)
         player_inventory = player.inventory
 
         embed = discord.Embed(
-            title=f"{ctx.author.name}'s Items", color=discord.Color.green()
+            title=f"{ctx.author.name}'s Items", color=discord.Color.orange()
         )
         embed.set_thumbnail(url=ctx.author.avatar.url)
 
@@ -65,17 +65,17 @@ class PlayerCog(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @items.error
-    async def items_error(self, ctx: commands.Context, error):
+    @inventory.error
+    async def inventory_error(self, ctx: commands.Context, error):
         if isinstance(error, commands.CommandError):
-            await ctx.send(content=f"`!items` error: {error}")
+            await ctx.send(content=f"`!inventory` error: {error}")
 
     @commands.command()
     async def send(self, ctx, user: discord.User, amount: int):
         player = self.bot.player_service.get_player(ctx.author.id)
         player_tokens = player.tokens
 
-        if player.player_id == user.id:
+        if player.id == user.id:
             raise commands.BadArgument("Cannot send tokens to yourself")
 
         if amount < 1:
@@ -84,8 +84,8 @@ class PlayerCog(commands.Cog):
         if player_tokens < amount:
             raise commands.BadArgument("Insufficient tokens")
 
-        self.bot.player_manager.update_tokens(player.player_id, -amount)
-        self.bot.player_manager.update_tokens(user.id, amount)
+        self.bot.player_service.update_tokens(player.id, -amount)
+        self.bot.player_service.update_tokens(user.id, amount)
 
         await ctx.send(content=f"Sent {user.name} {amount} token(s)")
 

@@ -13,7 +13,7 @@ class PlayerService:
         if self.db.has_player(player_id):
             raise ValueError("Player already exists")
 
-        player = Player(player_id)
+        player = Player(id=player_id)
         self.db.add_player(player)
         return player
 
@@ -26,17 +26,22 @@ class PlayerService:
     def get_players(self) -> List[Player]:
         return self.db.get_players()
 
-    def handle_player_update_tokens(self, player_id: int, amount: int):
+    def update_tokens(self, player_id: int, amount: int):
         player = self.get_player(player_id)
         player.tokens += amount
         self.db.update_player(player)
 
-    def handle_player_buy_item(self, player_id: int, item: Item, quantity: int = 1):
+    def buy_item(self, player_id: int, item: Item, quantity: int = 1):
         player = self.get_player(player_id)
-        player.inventory[item._id] += quantity
+        item_id_str = str(item.id)
+        if item_id_str in player.inventory:
+            player.inventory[item_id_str] += quantity
+        else:
+            player.inventory[item_id_str] = quantity
+        player.tokens -= item.price * quantity
         self.db.update_player(player)
 
-    def handle_player_remove_item(self, player_id: int, item: Item, quantity: int = 1):
+    def remove_item(self, player_id: int, item: Item, quantity: int = 1):
         player = self.get_player(player_id)
         player.inventory[item._id] -= quantity
 
