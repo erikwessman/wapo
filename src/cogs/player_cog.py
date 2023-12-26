@@ -11,20 +11,19 @@ class PlayerCog(commands.Cog):
     @commands.command()
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def profile(self, ctx: commands.Context):
-        author_id = ctx.author.id
-        author_name = ctx.author.name
-        player = self.bot.player_service.get_player(author_id)
-        player_items = player.items
+        player_name = ctx.author.name
+        player = self.bot.player_service.get_player(ctx.author.id)
+        player_inventory = player.inventory
         player_tokens = player.tokens
 
         embed = get_embed(
-            f"Profile: {author_name}",
-            f"Player ID: {author_id}",
+            f"Profile: {player_name}",
+            f"Player ID: {player.player_id}",
             discord.Color.orange(),
         )
         embed.set_thumbnail(url=ctx.author.avatar.url)
 
-        embed.add_field(name="Items", value=str(len(player_items)), inline=False)
+        embed.add_field(name="Items", value=str(len(player_inventory)), inline=False)
         embed.add_field(name="Tokens", value=str(player_tokens), inline=True)
 
         await ctx.send(embed=embed)
@@ -37,8 +36,7 @@ class PlayerCog(commands.Cog):
     @commands.command()
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def tokens(self, ctx: commands.Context):
-        author_id = ctx.author.id
-        player = self.bot.player_service.get_player(author_id)
+        player = self.bot.player_service.get_player(ctx.author.id)
         await ctx.send(content=f"You have {player.tokens} tokens")
 
     @tokens.error
@@ -49,17 +47,16 @@ class PlayerCog(commands.Cog):
     @commands.command()
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def items(self, ctx: commands.Context):
-        author_id = ctx.author.id
-        player = self.bot.player_service.get_player(author_id)
-        player_items = player.items
+        player = self.bot.player_service.get_player(ctx.author.id)
+        player_inventory = player.inventory
 
         embed = discord.Embed(
             title=f"{ctx.author.name}'s Items", color=discord.Color.green()
         )
         embed.set_thumbnail(url=ctx.author.avatar.url)
 
-        if player_items:
-            for item, quantity in player_items.items():
+        if player_inventory:
+            for item, quantity in player_inventory.items():
                 embed.add_field(name=item, value=f"Quantity: {quantity}", inline=False)
         else:
             embed.add_field(
@@ -75,11 +72,10 @@ class PlayerCog(commands.Cog):
 
     @commands.command()
     async def send(self, ctx, user: discord.User, amount: int):
-        author_id = ctx.author.id
-        player = self.bot.player_service.get_player(author_id)
+        player = self.bot.player_service.get_player(ctx.author.id)
         player_tokens = player.tokens
 
-        if author_id == user.id:
+        if player.player_id == user.id:
             raise commands.BadArgument("Cannot send tokens to yourself")
 
         if amount < 1:
@@ -88,7 +84,7 @@ class PlayerCog(commands.Cog):
         if player_tokens < amount:
             raise commands.BadArgument("Insufficient tokens")
 
-        self.bot.player_manager.update_tokens(author_id, -amount)
+        self.bot.player_manager.update_tokens(player.player_id, -amount)
         self.bot.player_manager.update_tokens(user.id, amount)
 
         await ctx.send(content=f"Sent {user.name} {amount} token(s)")

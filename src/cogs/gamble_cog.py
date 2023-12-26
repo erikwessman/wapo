@@ -106,10 +106,10 @@ def get_race_string(
     race_length: int,
 ) -> str:
     if len(cur_values) != len(symbols):
-        raise Exception("Values and symbols must have the same length")
+        raise ValueError("Values and symbols must have the same length")
 
     if max(cur_values) > race_length:
-        raise Exception("Values must be less than or equal to goal")
+        raise ValueError("Values must be less than or equal to goal")
 
     lines = []
     lines.append("```")

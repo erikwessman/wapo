@@ -3,26 +3,26 @@ class Item:
 
     def __init__(
         self,
-        item_id: int,
-        title: str,
+        id: int,
+        name: str,
         description: str,
         one_time_use: bool,
         price: int,
         symbol: str,
     ):
-        self._item_id = item_id
-        self._title = title
+        self._id = id
+        self._title = name
         self._description = description
         self._one_time_use = one_time_use
         self._price = price
         self._symbol = symbol
 
     @property
-    def item_id(self) -> int:
-        return self._item_id
+    def id(self) -> int:
+        return self._id
 
     @property
-    def title(self) -> str:
+    def name(self) -> str:
         return self._title
 
     @property

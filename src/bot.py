@@ -24,13 +24,6 @@ class WaPoBot(commands.Bot):
     async def on_ready(self):
         print(f"{self.user} has connected!")
 
-    async def close(self):
-        print("Bot is shutting down. Saving data...")
-        self.crossword_manager.save_data()
-        self.player_manager.save_data()
-        self.store_manager.save_data()
-        await super().close()
-
     async def on_command_error(self, ctx, error):
         # TODO: Log stuff here
 

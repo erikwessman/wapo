@@ -33,14 +33,14 @@ class PlayerService:
 
     def handle_player_buy_item(self, player_id: int, item: Item, quantity: int = 1):
         player = self.get_player(player_id)
-        player.items[item.item_id] += quantity
+        player.inventory[item._id] += quantity
         self.db.update_player(player)
 
     def handle_player_remove_item(self, player_id: int, item: Item, quantity: int = 1):
         player = self.get_player(player_id)
-        player.items[item.item_id] -= quantity
+        player.inventory[item._id] -= quantity
 
-        if player.items[item.item_id] <= 0:
-            del player.items[item.item_id]
+        if player.inventory[item._id] <= 0:
+            del player.inventory[item._id]
 
         self.db.update_player(player)

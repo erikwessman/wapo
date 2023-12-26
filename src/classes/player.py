@@ -5,18 +5,18 @@ from typing import Dict
 class Player:
     """"""
 
-    def __init__(self, player_id: int, items: dict = {}, tokens: int = 0):
-        self._player_id = player_id
-        self._items = defaultdict(int, items)
-        self._tokens = tokens
+    def __init__(self, id: int, initial_inventory: dict = {}, initial_tokens: int = 0):
+        self._id = id
+        self.inventory = defaultdict(int, initial_inventory)
+        self._tokens = initial_tokens
 
     @property
-    def player_id(self) -> int:
-        return self._player_id
+    def id(self) -> int:
+        return self._id
 
     @property
-    def items(self) -> Dict[str, int]:
-        return self._items
+    def inventory(self) -> Dict[str, int]:
+        return self.inventory
 
     @property
     def tokens(self) -> int:

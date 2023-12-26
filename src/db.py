@@ -80,10 +80,10 @@ class DB:
     def update_player(self, player: Player):
         player_dict = asdict(player)
         self.player_collection.update_one(
-            {"_id": player.player_id}, {"$set": player_dict}
+            {"_id": player._id}, {"$set": player_dict}
         )
 
-    def has_player(self, player_id: int):
+    def has_player(self):
         return self.player_collection.count_documents({}) > 0
 
     def delete_player(self, player_id: int) -> None:
@@ -113,7 +113,7 @@ class DB:
             {"date": crossword.date}, {"$set": crossword_dict}
         )
 
-    def has_crossword(self, crossword_date: str) -> bool:
+    def has_crossword(self) -> bool:
         return self.crossword_collection.count_documents({}) > 0
 
     def delete_crossword(self, crossword_date: str) -> None:
