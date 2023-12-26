@@ -2,7 +2,7 @@
     "1": {
         "id": 1,
         "name": "Horsie Steroids",
-        "description": "In the next horse race you get 2x winnings",
+        "description": "Does nothing",
         "one_time_use": true,
         "price": 5,
         "symbol": "🏇💉"

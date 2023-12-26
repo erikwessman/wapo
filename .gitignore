@@ -2,9 +2,3 @@
 env/
 .env
 __pycache__
-
-# Data
-data/players.json
-data/crosswords.json
-test/data/players.json
-test/data/crosswords.json
