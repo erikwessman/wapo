@@ -56,8 +56,13 @@ class PlayerCog(commands.Cog):
         embed.set_thumbnail(url=ctx.author.avatar.url)
 
         if player_inventory:
-            for item, quantity in player_inventory.items():
-                embed.add_field(name=item, value=f"Quantity: {quantity}", inline=False)
+            for item_id, quantity in player_inventory.items():
+                item = self.bot.store.get_item(int(item_id))
+                embed.add_field(
+                    name=f"{item.name} {item.symbol}",
+                    value=f"Quantity: {quantity}",
+                    inline=False,
+                )
         else:
             embed.add_field(
                 name="No items", value="You have no items in your inventory."

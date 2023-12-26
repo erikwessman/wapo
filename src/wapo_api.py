@@ -1,3 +1,4 @@
+import re
 import time
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
@@ -154,10 +155,13 @@ def get_puzzle_time(url: str) -> int:
             EC.visibility_of_element_located((By.ID, "clock_str"))
         )  # returns "X minutes and Y seconds"
 
-        parts = time_str.text.split(" ")
-        numbers = [p for p in parts if p.isdigit()]
+        minutes = re.search(r"(\d+)\s+minutes?", time_str.text)
+        seconds = re.search(r"(\d+)\s+seconds?", time_str.text)
 
-        return int(numbers[0]) * 60 + int(numbers[1])
+        minutes = int(minutes.group(1)) if minutes else 0
+        seconds = int(seconds.group(1)) if seconds else 0
+
+        return int(minutes) * 60 + int(seconds)
 
     finally:
         driver.quit()

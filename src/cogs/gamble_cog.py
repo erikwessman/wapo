@@ -27,24 +27,22 @@ class GambleCog(commands.Cog):
         if amount < 1:
             raise commands.BadArgument("You must gamble at least 1 token")
 
-        author_id = ctx.author.id
-        author_name = ctx.author.name
-        player = self.bot.player_service.get_player(author_id)
-        author_tokens = player.tokens
+        player = self.bot.player_service.get_player(ctx.author.id)
+        player_name = ctx.author.name
 
-        if author_tokens < amount:
+        if player.tokens < amount:
             raise commands.CommandError("Insufficient tokens")
 
-        self.bot.player_service.update_tokens(author_id, -amount)
+        self.bot.player_service.update_tokens(player.id, -amount)
 
         results = await handle_race_message(ctx)
 
         nr_tokens_won = get_gamble_result(results, row - 1, amount)
-        self.bot.player_service.update_tokens(author_id, nr_tokens_won)
+        self.bot.player_service.update_tokens(player.id, nr_tokens_won)
 
         result_embed = get_embed(
             "Horse Race Results",
-            f"{author_name} won {nr_tokens_won} token(s)!",
+            f"{player_name} won {nr_tokens_won} token(s)!",
             discord.Color.gold(),
         )
         await ctx.send(embed=result_embed)
