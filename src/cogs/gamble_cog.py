@@ -15,6 +15,10 @@ from const import (
 
 
 class GambleCog(commands.Cog):
+    """
+    Gathers commands relevant for gambling
+    """
+
     def __init__(self, bot):
         self.bot = bot
 

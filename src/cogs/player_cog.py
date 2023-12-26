@@ -5,6 +5,10 @@ from helper import get_embed
 
 
 class PlayerCog(commands.Cog):
+    """
+    Gathers commands relevant for players
+    """
+
     def __init__(self, bot):
         self.bot = bot
 

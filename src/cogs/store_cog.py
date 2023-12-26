@@ -5,6 +5,10 @@ from helper import get_embed
 
 
 class StoreCog(commands.Cog):
+    """
+    Gathers commands relevant for interacting with the store
+    """
+
     def __init__(self, bot):
         self.bot = bot
 

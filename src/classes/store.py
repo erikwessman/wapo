@@ -5,6 +5,10 @@ from classes.item import Item
 
 
 class Store:
+    """
+    Represents a store that provides information on available items
+    """
+
     def __init__(self, file_path: str):
         self._items = self._load_items(file_path)
 

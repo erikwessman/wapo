@@ -5,7 +5,9 @@ from classes.crossword import Crossword
 
 
 class CrosswordService:
-    """"""
+    """
+    Service layer for interacting with and getting crosswords from the database
+    """
 
     def __init__(self, db: DB):
         self.db = db

@@ -6,6 +6,10 @@ from classes.item import Item
 
 
 class PlayerService:
+    """
+    Service layer for interacting with and getting players from the database
+    """
+
     def __init__(self, db: DB):
         self.db = db
 

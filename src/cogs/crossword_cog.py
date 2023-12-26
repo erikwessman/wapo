@@ -8,6 +8,10 @@ from const import CHANNEL_ID
 
 
 class CrosswordCog(commands.Cog):
+    """
+    Gathers commands relevant for crosswords
+    """
+
     def __init__(self, bot):
         self.bot = bot
 

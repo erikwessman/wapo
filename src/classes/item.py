@@ -3,7 +3,9 @@ from dataclasses import dataclass
 
 @dataclass
 class Item:
-    """"""
+    """
+    Represents an inventory item
+    """
 
     id: int
     name: str
