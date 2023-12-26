@@ -1,0 +1,18 @@
+{
+    "1": {
+        "id": 1,
+        "name": "Horsie Steroids",
+        "description": "Does nothing",
+        "one_time_use": true,
+        "price": 5,
+        "symbol": "🏇💉"
+    },
+    "2": {
+        "id": 2,
+        "name": "Cricket",
+        "description": "Does nothing",
+        "one_time_use": false,
+        "price": 5,
+        "symbol": "🦗"
+    }
+}

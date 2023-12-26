@@ -61,9 +61,9 @@ class CrosswordCog(commands.Cog):
         if len(reaction.message.embeds) == 0:
             return
 
-        puzzle_link = reaction.message.embeds[0].url
+        crossword_link = reaction.message.embeds[0].url
 
-        if not helper.is_message_url(puzzle_link):
+        if not helper.is_message_url(crossword_link):
             return
 
         embed_loading = get_embed(
@@ -73,9 +73,9 @@ class CrosswordCog(commands.Cog):
         )
         message = await reaction.message.channel.send(embed=embed_loading)
 
-        puzzle_date = helper.get_puzzle_date(puzzle_link)
+        crossword_date = helper.get_puzzle_date(crossword_link)
 
-        if self.bot.crossword_manager.has_crossword(puzzle_date):
+        if self.bot.crossword_service.has_crossword(crossword_date):
             embed_warning = get_embed(
                 "Crossword Checker",
                 "Crossword is already solved",
@@ -84,25 +84,23 @@ class CrosswordCog(commands.Cog):
             await message.edit(embed=embed_warning)
             return
 
-        if not wapo_api.is_complete(puzzle_link):
+        if not wapo_api.is_complete(crossword_link):
             embed_error = get_embed(
-                "Crossword Checker",
-                "Crossword is not complete",
-                discord.Color.red()
+                "Crossword Checker", "Crossword is not complete", discord.Color.red()
             )
             await message.edit(embed=embed_error)
             return
 
-        self.bot.crossword_manager.save_crossword(puzzle_date)
+        self.bot.crossword_service.save_crossword(crossword_date)
 
-        puzzle_weekday = helper.get_puzzle_weekday(puzzle_date)
-        puzzle_time = wapo_api.get_puzzle_time(puzzle_link)
+        puzzle_weekday = helper.get_puzzle_weekday(crossword_date)
+        puzzle_time = wapo_api.get_puzzle_time(crossword_link)
         puzzle_reward = helper.get_puzzle_reward(puzzle_weekday, puzzle_time)
 
-        players = self.bot.token_manager.get_players()
+        players = self.bot.player_service.get_players()
 
         for player in players:
-            self.bot.token_manager.update_tokens(player, puzzle_reward)
+            self.bot.player_service.update_tokens(player.id, puzzle_reward)
 
         embed_success = get_embed(
             "Crossword Checker",
