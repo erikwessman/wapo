@@ -2,8 +2,8 @@ import os
 import sys
 from typing import List
 from urllib.parse import quote_plus
-import pymongo
 from dataclasses import asdict
+import pymongo
 
 from classes.player import Player
 from classes.crossword import Crossword

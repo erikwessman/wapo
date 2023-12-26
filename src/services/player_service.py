@@ -47,9 +47,9 @@ class PlayerService:
 
     def remove_item(self, player_id: int, item: Item, quantity: int = 1):
         player = self.get_player(player_id)
-        player.inventory[item._id] -= quantity
+        player.inventory[item.id] -= quantity
 
-        if player.inventory[item._id] <= 0:
-            del player.inventory[item._id]
+        if player.inventory[item.id] <= 0:
+            del player.inventory[item.id]
 
         self.db.update_player(player)
