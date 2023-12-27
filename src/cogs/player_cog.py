@@ -54,9 +54,7 @@ class PlayerCog(commands.Cog):
         player = self.bot.player_service.get_player(ctx.author.id)
         player_inventory = player.inventory
 
-        embed = discord.Embed(
-            title=f"{ctx.author.name}'s Items", color=discord.Color.orange()
-        )
+        embed = get_embed(f"{ctx.author.name}'s Items", "", discord.Color.orange())
         embed.set_thumbnail(url=ctx.author.avatar.url)
 
         if player_inventory:
