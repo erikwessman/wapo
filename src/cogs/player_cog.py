@@ -1,7 +1,10 @@
 import discord
 from discord.ext import commands
 
+from classes.item import Item
+from classes.player import Player
 from helper import get_embed
+from const import HORSIE_STEROIDS_MODIFIER_NAME
 
 
 class PlayerCog(commands.Cog):
@@ -27,7 +30,9 @@ class PlayerCog(commands.Cog):
         )
         embed.set_thumbnail(url=ctx.author.avatar.url)
 
-        embed.add_field(name="Items", value=str(len(player_inventory)), inline=False)
+        embed.add_field(
+            name="Inventory", value=f"{str(len(player_inventory))} item(s)", inline=False
+        )
         embed.add_field(name="Tokens", value=str(player_tokens), inline=True)
 
         await ctx.send(embed=embed)
@@ -54,15 +59,15 @@ class PlayerCog(commands.Cog):
         player = self.bot.player_service.get_player(ctx.author.id)
         player_inventory = player.inventory
 
-        embed = get_embed(f"{ctx.author.name}'s Items", "", discord.Color.orange())
+        embed = get_embed(f"{ctx.author.name}'s Inventory", "", discord.Color.orange())
         embed.set_thumbnail(url=ctx.author.avatar.url)
 
         if player_inventory:
             for item_id, quantity in player_inventory.items():
-                item = self.bot.store.get_item(int(item_id))
+                item = self.bot.store.get_item(item_id)
                 embed.add_field(
-                    name=f"{item.name} {item.symbol}",
-                    value=f"Quantity: {quantity}",
+                    name=f"{item.name} {item.symbol} (x{quantity})",
+                    value=f"ID: {item.id}",
                     inline=False,
                 )
         else:
@@ -76,6 +81,25 @@ class PlayerCog(commands.Cog):
     async def inventory_error(self, ctx: commands.Context, error):
         if isinstance(error, commands.CommandError):
             await ctx.send(content=f"`!inventory` error: {error}")
+
+    @commands.command()
+    async def use(self, ctx: commands.Context, item_id: str):
+        player = self.bot.player_service.get_player(ctx.author.id)
+
+        if item_id not in player.inventory:
+            raise commands.CommandError("You don't have this item in your inventory")
+
+        item = self.bot.store.get_item(item_id)
+
+        if self.use_item(player, item):
+            await ctx.send(content=f"Used {item.name}")
+        else:
+            raise commands.CommandError("Failed to use item")
+
+    @use.error
+    async def use_error(self, ctx: commands.Context, error):
+        if isinstance(error, commands.CommandError):
+            await ctx.send(content=f"`!use` error: {error}")
 
     @commands.command()
     async def send(self, ctx, user: discord.User, amount: int):
@@ -100,3 +124,17 @@ class PlayerCog(commands.Cog):
     async def send_error(self, ctx: commands.Context, error):
         if isinstance(error, commands.CommandError):
             await ctx.send(content=f"`!send` error: {error}")
+
+    # --- Helpers ---
+
+    def use_item(self, player: Player, item: Item) -> bool:
+        if item.id == "1":  # Horsie steroids
+            self.apply_gamble_bonus(player)
+        else:
+            return False
+
+        self.bot.player_service.remove_item(player.id, item)
+        return True
+
+    def apply_gamble_bonus(self, player: Player):
+        self.bot.player_service.add_modifier(player.id, HORSIE_STEROIDS_MODIFIER_NAME)

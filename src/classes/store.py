@@ -12,12 +12,12 @@ class Store:
     def __init__(self, file_path: str):
         self._items = self._load_items(file_path)
 
-    def _load_items(self, file_path: str) -> Dict[int, Item]:
+    def _load_items(self, file_path: str) -> Dict[str, Item]:
         try:
             with open(file_path, "r") as file:
                 raw_data = json.load(file)
                 return {
-                    int(key): Item(**item_data) for key, item_data in raw_data.items()
+                    key: Item(**item_data) for key, item_data in raw_data.items()
                 }
         except FileNotFoundError:
             print(f"Error: The file '{file_path}' was not found.")
@@ -26,11 +26,11 @@ class Store:
             print(f"Error: Could not decode the contents of '{file_path}'.")
             return {}
 
-    def get_item(self, item_id: int) -> Item:
+    def get_item(self, item_id: str) -> Item:
         return self._items.get(item_id)
 
     def get_items(self) -> List[Item]:
         return list(self._items.values())
 
-    def has_item(self, item_id: int) -> bool:
+    def has_item(self, item_id: str) -> bool:
         return item_id in self._items

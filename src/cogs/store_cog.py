@@ -40,7 +40,7 @@ class StoreCog(commands.Cog):
 
     @commands.command()
     @commands.cooldown(1, 10, commands.BucketType.user)
-    async def buy(self, ctx: commands.Context, item_id: int, quantity: int = 1):
+    async def buy(self, ctx: commands.Context, item_id: str, quantity: int = 1):
         player = self.bot.player_service.get_player(ctx.author.id)
 
         if not self.bot.store.has_item(item_id):

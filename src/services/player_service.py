@@ -37,11 +37,10 @@ class PlayerService:
 
     def buy_item(self, player_id: int, item: Item, quantity: int = 1):
         player = self.get_player(player_id)
-        item_id_str = str(item.id)
-        if item_id_str in player.inventory:
-            player.inventory[item_id_str] += quantity
+        if item.id in player.inventory:
+            player.inventory[item.id] += quantity
         else:
-            player.inventory[item_id_str] = quantity
+            player.inventory[item.id] = quantity
         player.tokens -= item.price * quantity
         self.db.update_player(player)
 
@@ -52,4 +51,14 @@ class PlayerService:
         if player.inventory[item.id] <= 0:
             del player.inventory[item.id]
 
+        self.db.update_player(player)
+
+    def add_modifier(self, player_id: int, modifier_name: str):
+        player = self.get_player(player_id)
+        player.modifiers.append(modifier_name)
+        self.db.update_player(player)
+
+    def use_modifier(self, player_id: int, modifier_name: str):
+        player = self.get_player(player_id)
+        player.modifiers.remove(modifier_name)
         self.db.update_player(player)

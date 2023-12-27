@@ -11,6 +11,7 @@ from const import (
     EMOJI_PENGUIN,
     EMOJI_OCTOPUS,
     EMOJI_SANTA,
+    HORSIE_STEROIDS_MODIFIER_NAME,
 )
 
 
@@ -40,8 +41,14 @@ class GambleCog(commands.Cog):
         self.bot.player_service.update_tokens(player.id, -amount)
 
         results = await handle_race_message(ctx)
-
         nr_tokens_won = get_gamble_result(results, row - 1, amount)
+
+        if player.has_modifier(HORSIE_STEROIDS_MODIFIER_NAME):
+            self.bot.player_service.use_modifier(
+                player.id, HORSIE_STEROIDS_MODIFIER_NAME
+            )
+            nr_tokens_won *= 2
+
         self.bot.player_service.update_tokens(player.id, nr_tokens_won)
 
         result_embed = get_embed(

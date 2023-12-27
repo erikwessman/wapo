@@ -7,7 +7,7 @@ class Item:
     Represents an inventory item
     """
 
-    id: int
+    id: str
     name: str
     description: str
     one_time_use: bool
