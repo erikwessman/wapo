@@ -43,14 +43,10 @@
             - [X] Gamble powerups
     - [X] Buy store items with !buy "id"
     - [X] Add service layer
+- [ ] Add roulette
+    - [ ]
 - [ ] Add !blackjack command
     - [ ] Add it to GambleCog
-- [ ] Add events
-    - [ ] Raffle event
-        - [ ] Occurs randomly once every 24 hours
-        - [ ] Event lasts 5 minutes
-        - [ ] Buy an entry for X tokens
-        - [ ] Raffle a random winner
 - [ ] Fix channel id check for all commands, should only be in \#wapo channel
 - [ ] Add logging
 - [ ] Get a certain day of the week's puzzle (e.g. !wapo tuesday)

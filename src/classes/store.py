@@ -16,9 +16,7 @@ class Store:
         try:
             with open(file_path, "r") as file:
                 raw_data = json.load(file)
-                return {
-                    key: Item(**item_data) for key, item_data in raw_data.items()
-                }
+                return {key: Item(**item_data) for key, item_data in raw_data.items()}
         except FileNotFoundError:
             print(f"Error: The file '{file_path}' was not found.")
             return {}

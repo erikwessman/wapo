@@ -11,6 +11,7 @@ from cogs.player_cog import PlayerCog
 from cogs.store_cog import StoreCog
 from services.player_service import PlayerService
 from services.crossword_service import CrosswordService
+from services.roulette_service import RouletteService
 from classes.store import Store
 
 
@@ -19,6 +20,7 @@ class WaPoBot(commands.Bot):
         super().__init__(command_prefix=command_prefix, intents=intents)
         self.player_service = PlayerService(db)
         self.crossword_service = CrosswordService(db)
+        self.roulette_service = RouletteService(db)
         self.store = Store("data/items.json")
 
     async def on_ready(self):

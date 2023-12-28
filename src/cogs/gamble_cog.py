@@ -1,6 +1,7 @@
 import math
 import random
 import asyncio
+import datetime
 from typing import List
 import discord
 from discord.ext import commands
@@ -15,6 +16,16 @@ from const import (
 )
 
 
+class Event:
+    """
+    Helper class for keeping track of events
+    """
+
+    def __init__(self):
+        self.participants = {}
+        self.event_started = False
+
+
 class GambleCog(commands.Cog):
     """
     Gathers commands relevant for gambling
@@ -22,6 +33,7 @@ class GambleCog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.roulette_event = Event()
 
     @commands.command()
     @commands.cooldown(1, 30, commands.BucketType.user)
@@ -64,6 +76,93 @@ class GambleCog(commands.Cog):
             await ctx.send(content="`!gamble` error: Incorrect arguments")
         elif isinstance(error, commands.CommandError):
             await ctx.send(content=f"`!gamble` error: {error}")
+
+    @commands.command()
+    async def roulette(self, ctx: commands.Context, amount: int):
+        player = self.bot.player_service.get_player(ctx.author.id)
+
+        if player.tokens < amount:
+            raise commands.CommandError("Insufficient tokens")
+
+        self.bot.player_service.update_tokens(player.id, -amount)
+
+        if player.id in self.roulette_event.participants:
+            self.roulette_event.participants[player.id]["tokens"] += amount
+        else:
+            self.roulette_event.participants[player.id] = {}
+            self.roulette_event.participants[player.id]["user"] = ctx.author
+            self.roulette_event.participants[player.id]["tokens"] = amount
+
+        if not self.roulette_event.event_started:
+            self.roulette_event.event_started = True
+            event_time = 5 * 60
+
+            embed = get_embed(
+                "🌟 Roulette Event Alert! 🌟",
+                f"Started by {ctx.author.name}",
+                discord.Color.blue(),
+            )
+            embed.add_field(
+                name="Information",
+                value=f"Ending in {event_time // 60} minutes",
+                inline=False,
+            )
+            embed.set_thumbnail(
+                url="https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Roulette-finlandsfarja.jpg/1280px-Roulette-finlandsfarja.jpg"
+            )
+            await ctx.send(embed=embed)
+
+            await asyncio.sleep(event_time)
+            await self.handle_roulette_event_end(ctx)
+
+            self.roulette_event.participants = {}
+            self.roulette_event.event_started = False
+            return
+
+        total_players = len(self.roulette_event.participants)
+        total_tokens = sum(
+            player["tokens"] for player in self.roulette_event.participants.values()
+        )
+
+        await ctx.send(
+            (
+                f"{ctx.author.name} has joined the roulette with {amount}\n"
+                f"{total_players} player(s) total\n"
+                f"{total_tokens} token(s) total\n"
+            )
+        )
+
+    @roulette.error
+    async def roulette_error(self, ctx: commands.Context, error):
+        if isinstance(error, commands.CommandError):
+            await ctx.send(content=f"`!roulette error`: {error}")
+
+    async def handle_roulette_event_end(self, ctx: commands.Context):
+        participants = self.roulette_event.participants
+
+        if len(participants) < 2:
+            await ctx.send(content="Not enough participants for roulette")
+            return
+
+        users = [user_info["user"] for user_info in participants.values()]
+        user_tokens = [user_info["tokens"] for user_info in participants.values()]
+
+        winner = random.choices(users, weights=user_tokens, k=1)[0]
+        win_amount = sum(user_tokens)
+
+        self.bot.player_service.update_tokens(winner.id, win_amount)
+
+        embed = get_embed(
+            "🎉 Roulette Winner Announcement 🎉",
+            f"Congratulations {winner.mention}!",
+            discord.Color.gold(),
+        )
+        embed.add_field(
+            name=f"{winner.name} won!",
+            value=f"You win {win_amount} token(s).",
+            inline=False,
+        )
+        await ctx.send(embed=embed)
 
 
 async def handle_race_message(ctx: commands.Context):

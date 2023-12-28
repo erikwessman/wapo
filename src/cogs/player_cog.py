@@ -14,6 +14,7 @@ class PlayerCog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
+        self.ps = bot.player_service
 
     @commands.command()
     @commands.cooldown(1, 10, commands.BucketType.user)
@@ -31,7 +32,9 @@ class PlayerCog(commands.Cog):
         embed.set_thumbnail(url=ctx.author.avatar.url)
 
         embed.add_field(
-            name="Inventory", value=f"{str(len(player_inventory))} item(s)", inline=False
+            name="Inventory",
+            value=f"{str(len(player_inventory))} item(s)",
+            inline=False,
         )
         embed.add_field(name="Tokens", value=str(player_tokens), inline=True)
 

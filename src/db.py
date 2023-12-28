@@ -7,6 +7,7 @@ import pymongo
 
 from classes.player import Player
 from classes.crossword import Crossword
+from classes.roulette import Roulette
 
 
 class DB:
@@ -20,6 +21,7 @@ class DB:
 
         self.player_collection = self.database["players"]
         self.crossword_collection = self.database["crosswords"]
+        self.roulette_collection = self.database["roulette"]
 
     def __del__(self):
         self.client.close()
@@ -54,6 +56,7 @@ class DB:
     def clear_database(self) -> None:
         self.delete_all_players()
         self.delete_all_crosswords()
+        self.delete_all_roulettes()
 
     def get_size_mb(self) -> float:
         stats = self.database.command("dbstats", scale=1024 * 1024)
@@ -126,3 +129,38 @@ class DB:
 
     def delete_all_crosswords(self):
         self.crossword_collection.delete_many({})
+
+    # --- Roulette helper methods ---
+
+    def get_roulette(self, id: str) -> Roulette:
+        roulette_data = self.roulette_collection.find_one({"id": id})
+        if roulette_data:
+            roulette_data.pop("_id", None)
+            return Roulette(**roulette_data)
+        return None
+
+    def get_roulettes(self, skip: int = 0, limit: int = 0) -> List[Roulette]:
+        roulettes = self.roulette_collection.find({}).skip(skip).limit(limit)
+        return [
+            Roulette(**{k: v for k, v in roulette_data.items() if k != "_id"})
+            for roulette_data in roulettes
+        ]
+
+    def add_roulette(self, roulette: Roulette) -> str:
+        roulette_dict = asdict(Roulette)
+        return self.roulette_collection.insert_one(roulette_dict).inserted_id
+
+    def update_roulette(self, roulette: Roulette) -> None:
+        roulette_dict = asdict(roulette)
+        self.roulette_collection.update_one(
+            {"id": roulette.id}, {"$set": roulette_dict}
+        )
+
+    def has_roulette(self, id: str) -> bool:
+        return self.roulette_collection.count_documents({"id": id}) > 0
+
+    def delete_roulette(self, id: str) -> None:
+        self.roulette_collection.delete_one({"id": id})
+
+    def delete_all_roulettes(self):
+        self.roulette_collection.delete_many({})
