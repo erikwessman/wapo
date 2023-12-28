@@ -43,8 +43,9 @@
             - [X] Gamble powerups
     - [X] Buy store items with !buy "id"
     - [X] Add service layer
-- [ ] Add roulette
-    - [ ]
+- [X] Add roulette
+    - [X] Print table of odds
+    - [ ] Save completed roulettes to database
 - [ ] Add !blackjack command
     - [ ] Add it to GambleCog
 - [ ] Fix channel id check for all commands, should only be in \#wapo channel

@@ -1,6 +1,5 @@
 import uuid
 import time
-from typing import List
 
 from db import DB
 from classes.roulette import Roulette
@@ -21,9 +20,3 @@ class RouletteService:
         roulette = Roulette(id=uuid.uuid4(), timestamp=time.time())
         self.db.add_roulette(roulette)
         return roulette
-
-    def get_roulette(self, roulette_id: int) -> Roulette:
-        return self.db.get_roulette(roulette_id)
-
-    def get_roulettes(self) -> List[Roulette]:
-        return self.db.get_roulettes()

@@ -14,7 +14,6 @@ class PlayerCog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.ps = bot.player_service
 
     @commands.command()
     @commands.cooldown(1, 10, commands.BucketType.user)

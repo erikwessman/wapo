@@ -1,8 +1,7 @@
 import math
 import random
 import asyncio
-import datetime
-from typing import List
+from typing import List, Dict, Any
 import discord
 from discord.ext import commands
 
@@ -95,7 +94,7 @@ class GambleCog(commands.Cog):
 
         if not self.roulette_event.event_started:
             self.roulette_event.event_started = True
-            event_time = 5 * 60
+            event_time = 5
 
             embed = get_embed(
                 "🌟 Roulette Event Alert! 🌟",
@@ -150,6 +149,8 @@ class GambleCog(commands.Cog):
         winner = random.choices(users, weights=user_tokens, k=1)[0]
         win_amount = sum(user_tokens)
 
+        odds_table = get_odds_table(winner, win_amount, participants)
+
         self.bot.player_service.update_tokens(winner.id, win_amount)
 
         embed = get_embed(
@@ -162,7 +163,26 @@ class GambleCog(commands.Cog):
             value=f"You win {win_amount} token(s).",
             inline=False,
         )
+        embed.add_field(
+            name="Odds table",
+            value=odds_table,
+            inline=False,
+        )
         await ctx.send(embed=embed)
+
+
+def get_odds_table(winner: discord.Member,
+                   total_tokens: int,
+                   participants: Dict[int, Any]) -> str:
+    table_lines = ["Player | Tokens | Odds"]
+    for user_id, user_info in participants.items():
+        odds = (user_info["tokens"] / total_tokens) * 100
+        line = f"{user_info['user'].name} | {user_info['tokens']} | {odds:.2f}%"
+        if user_info['user'].id == winner.id:
+            line = f"**{line}**"
+        table_lines.append(line)
+
+    return "\n".join(table_lines)
 
 
 async def handle_race_message(ctx: commands.Context):
