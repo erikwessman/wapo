@@ -4,6 +4,7 @@ import asyncio
 from typing import List, Dict, Any
 import discord
 from discord.ext import commands
+from tabulate import tabulate
 
 from helper import get_embed
 from const import (
@@ -94,7 +95,7 @@ class GambleCog(commands.Cog):
 
         if not self.roulette_event.event_started:
             self.roulette_event.event_started = True
-            event_time = 5
+            event_time = 5 * 60
 
             embed = get_embed(
                 "🌟 Roulette Event Alert! 🌟",
@@ -111,7 +112,11 @@ class GambleCog(commands.Cog):
             )
             await ctx.send(embed=embed)
 
-            await asyncio.sleep(event_time)
+            # Wait half the time, send a reminder then resume wait
+            await asyncio.sleep(event_time // 2)
+            await ctx.send(content="Half the time for the roulette event has elapsed")
+
+            await asyncio.sleep(event_time // 2)
             await self.handle_roulette_event_end(ctx)
 
             self.roulette_event.participants = {}
@@ -123,11 +128,14 @@ class GambleCog(commands.Cog):
             player["tokens"] for player in self.roulette_event.participants.values()
         )
 
+        odds_table = get_odds_table(self.roulette_event.participants)
         await ctx.send(
             (
                 f"{ctx.author.name} has joined the roulette with {amount}\n"
                 f"{total_players} player(s) total\n"
                 f"{total_tokens} token(s) total\n"
+                "--- Odds ---"
+                f"{odds_table}"
             )
         )
 
@@ -149,7 +157,7 @@ class GambleCog(commands.Cog):
         winner = random.choices(users, weights=user_tokens, k=1)[0]
         win_amount = sum(user_tokens)
 
-        odds_table = get_odds_table(winner, win_amount, participants)
+        odds_table = get_odds_table(participants)
 
         self.bot.player_service.update_tokens(winner.id, win_amount)
 
@@ -171,18 +179,19 @@ class GambleCog(commands.Cog):
         await ctx.send(embed=embed)
 
 
-def get_odds_table(winner: discord.Member,
-                   total_tokens: int,
-                   participants: Dict[int, Any]) -> str:
-    table_lines = ["Player | Tokens | Odds"]
+def get_odds_table(participants: Dict[int, Any]) -> str:
+    table_data = []
+    total_tokens = sum(player["tokens"] for player in participants.values())
+
     for user_id, user_info in participants.items():
         odds = (user_info["tokens"] / total_tokens) * 100
-        line = f"{user_info['user'].name} | {user_info['tokens']} | {odds:.2f}%"
-        if user_info['user'].id == winner.id:
-            line = f"**{line}**"
-        table_lines.append(line)
+        line = [user_info["user"].name, user_info["tokens"], f"{odds:.2f}%"]
+        table_data.append(line)
 
-    return "\n".join(table_lines)
+    table_str = tabulate(
+        table_data, headers=["Player", "Tokens", "Odds"], tablefmt="plain"
+    )
+    return f"```{table_str}```"
 
 
 async def handle_race_message(ctx: commands.Context):
