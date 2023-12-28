@@ -13,6 +13,7 @@ from const import (
     EMOJI_OCTOPUS,
     EMOJI_SANTA,
     HORSIE_STEROIDS_MODIFIER_NAME,
+    ROULETTE_ICON,
 )
 
 
@@ -107,9 +108,7 @@ class GambleCog(commands.Cog):
                 value=f"Ending in {event_time // 60} minutes",
                 inline=False,
             )
-            embed.set_thumbnail(
-                url="https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Roulette-finlandsfarja.jpg/1280px-Roulette-finlandsfarja.jpg"
-            )
+            embed.set_thumbnail(url=ROULETTE_ICON)
             await ctx.send(embed=embed)
 
             # Wait half the time, send a reminder then resume wait
@@ -129,15 +128,18 @@ class GambleCog(commands.Cog):
         )
 
         odds_table = get_odds_table(self.roulette_event.participants)
-        await ctx.send(
+
+        embed = get_embed(
+            f"Roulette Event Joined by {ctx.author.name}",
             (
-                f"{ctx.author.name} has joined the roulette with {amount}\n"
-                f"{total_players} player(s) total\n"
-                f"{total_tokens} token(s) total\n"
-                "--- Odds ---"
-                f"{odds_table}"
-            )
+                f"🎲 {ctx.author.name} has joined the roulette with {amount} token(s)!\n\n"
+                f"👥 Total Players: {total_players}\n"
+                f"💰 Total Tokens: {total_tokens}\n\n"
+            ),
+            discord.Color.blue(),
         )
+        embed.add_field(name="📊 Odds", value=f"```{odds_table}````", inline=False)
+        await ctx.send(embed=embed)
 
     @roulette.error
     async def roulette_error(self, ctx: commands.Context, error):
@@ -172,8 +174,8 @@ class GambleCog(commands.Cog):
             inline=False,
         )
         embed.add_field(
-            name="Odds table",
-            value=odds_table,
+            name="📊 Odds",
+            value=f"```{odds_table}```",
             inline=False,
         )
         await ctx.send(embed=embed)
@@ -191,7 +193,7 @@ def get_odds_table(participants: Dict[int, Any]) -> str:
     table_str = tabulate(
         table_data, headers=["Player", "Tokens", "Odds"], tablefmt="plain"
     )
-    return f"```{table_str}```"
+    return table_str
 
 
 async def handle_race_message(ctx: commands.Context):

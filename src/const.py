@@ -3,6 +3,8 @@ CHANNEL_ID = 1184096292905943120
 GITHUB_REPOSITORY = "erikwessman/wapo"
 GITHUB_ICON = "https://github.githubassets.com/assets/GitHub-Mark-ea2971cee799.png"
 
+ROULETTE_ICON = "https://upload.wikimedia.org/wikipedia/commons/thumb/9/96/Roulette-finlandsfarja.jpg/1280px-Roulette-finlandsfarja.jpg"
+
 EMOJI_ROCKET = "\U0001F680"
 EMOJI_PENGUIN = "\U0001F427"
 EMOJI_OCTOPUS = "\U0001F419"
