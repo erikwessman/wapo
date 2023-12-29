@@ -6,6 +6,7 @@ import discord
 from discord.ext import commands
 from tabulate import tabulate
 
+from classes.player import Player
 from helper import get_embed
 from const import (
     EMOJI_ROCKET,
@@ -45,6 +46,7 @@ class GambleCog(commands.Cog):
         if amount < 1:
             raise commands.BadArgument("You must gamble at least 1 coin")
 
+        row -= 1  # Correct the index
         player = self.bot.player_service.get_player(ctx.author.id)
         player_name = ctx.author.name
 
@@ -53,8 +55,8 @@ class GambleCog(commands.Cog):
 
         self.bot.player_service.update_coins(player.id, -amount)
 
-        results = await handle_race_message(ctx)
-        nr_coins_won = get_gamble_result(results, row - 1, amount)
+        results = await handle_race_message(player, row, ctx)
+        nr_coins_won = get_gamble_result(results, row, amount)
 
         if player.has_modifier(HORSIE_STEROIDS_MODIFIER_NAME):
             self.bot.player_service.use_modifier(
@@ -148,23 +150,15 @@ class GambleCog(commands.Cog):
         participants = self.roulette_event.participants
 
         if len(participants) < 2:
-            # TODO:
-
-            # buy custom emoji for horse race
-            # save roulettes
-            # save horse races
-            # take snapshots
-            # nerf horsie
-            # simulate stocks
-            # implement buying/selling stock
-            # maybe more betting game
-            # maybe sabotage items
-
             # Refund player coins
             for player_id in participants:
-                self.bot.player_service.update_coins(player_id, participants[player_id]["coins"])
+                self.bot.player_service.update_coins(
+                    player_id, participants[player_id]["coins"]
+                )
 
-            await ctx.send(content="Not enough participants for roulette to start. Refunding coins.")
+            await ctx.send(
+                content="Not enough participants for roulette to start. Refunding coins."
+            )
             return
 
         users = [user_info["user"] for user_info in participants.values()]
@@ -219,11 +213,15 @@ def get_odds_table(participants: Dict[int, Any]) -> str:
     return table_str
 
 
-async def handle_race_message(ctx: commands.Context):
+async def handle_race_message(player: Player, row: int, ctx: commands.Context):
     # Race variables
     values = [0, 0, 0, 0]
     length = 20
     symbols = [EMOJI_ROCKET, EMOJI_PENGUIN, EMOJI_OCTOPUS, EMOJI_SANTA]
+
+    # Use the players custom horse icon (if they have one)
+    if player.horse_icon:
+        symbols[row] = player.horse_icon
 
     embed = get_embed(
         "Horse Race",

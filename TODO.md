@@ -45,10 +45,18 @@
     - [X] Add service layer
 - [X] Add roulette
     - [X] Print table of odds
-    - [ ] Save completed roulettes to database
-- [ ] Add !blackjack command
-    - [ ] Add it to GambleCog
 - [ ] Fix channel id check for all commands, should only be in \#wapo channel
+- [ ] Host WaPo bot remotely
+    - [ ] Create wapo-devel bot in test server
+    - [ ] Keep OG WaPo bot in Software Chads
+    - [ ] Move data from local db to remote db
+    - [ ] Create env variables for remote
+    - [ ] Check that geckodriver and selenium work remotely
+- [ ] Save completed roulettes in database
+- [ ] Save completed horse races in database
+- [ ] Nerf Horsie Steroids
+- [ ] Simulate stocks
+- [ ] Add !blackjack command
 - [ ] Add logging
 - [ ] Get a certain day of the week's puzzle (e.g. !wapo tuesday)
 - [ ] Update Google Sheets with time automatically
