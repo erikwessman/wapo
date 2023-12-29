@@ -150,22 +150,15 @@ class GambleCog(commands.Cog):
         participants = self.roulette_event.participants
 
         if len(participants) < 2:
-            # TODO:
-
-            # buy custom emoji for horse race
-            # save roulettes
-            # save horse races (add horse race dataclass)
-            # take snapshots
-            # nerf horsie steroids
-            # simulate stocks
-            # implement buying/selling stock
-            # maybe sabotage items
-
             # Refund player coins
             for player_id in participants:
-                self.bot.player_service.update_coins(player_id, participants[player_id]["coins"])
+                self.bot.player_service.update_coins(
+                    player_id, participants[player_id]["coins"]
+                )
 
-            await ctx.send(content="Not enough participants for roulette to start. Refunding coins.")
+            await ctx.send(
+                content="Not enough participants for roulette to start. Refunding coins."
+            )
             return
 
         users = [user_info["user"] for user_info in participants.values()]
