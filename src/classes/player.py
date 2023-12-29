@@ -12,6 +12,7 @@ class Player:
     inventory: Dict[str, int] = field(default_factory=dict)
     coins: int = 0
     modifiers: List[str] = field(default_factory=list)
+    horse_icon: str = None
 
     def has_modifier(self, modifier_name) -> bool:
         return modifier_name in self.modifiers

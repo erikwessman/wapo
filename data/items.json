@@ -14,5 +14,21 @@
         "one_time_use": false,
         "price": 5,
         "symbol": "🦗"
+    },
+    "3": {
+        "id": "3",
+        "name": "UFO Horse",
+        "description": "Replaces your Horse Race icon",
+        "one_time_use": false,
+        "price": 50,
+        "symbol": "🛸"
+    },
+    "4": {
+        "id": "4",
+        "name": "Lips Horse",
+        "description": "Replaces your Horse Race icon",
+        "one_time_use": false,
+        "price": 35,
+        "symbol": "🫦"
     }
 }

@@ -132,11 +132,19 @@ class PlayerCog(commands.Cog):
     def use_item(self, player: Player, item: Item) -> bool:
         if item.id == "1":  # Horsie steroids
             self.apply_gamble_bonus(player)
+        elif item.id == "3":  # UFO horse icon
+            self.apply_horse_icon(player, item.symbol)
+        elif item.id == "4":  # Lips horse icon
+            self.apply_horse_icon(player, item.symbol)
         else:
             return False
 
-        self.bot.player_service.remove_item(player.id, item)
+        if item.one_time_use:
+            self.bot.player_service.remove_item(player.id, item)
         return True
 
     def apply_gamble_bonus(self, player: Player):
         self.bot.player_service.add_modifier(player.id, HORSIE_STEROIDS_MODIFIER_NAME)
+
+    def apply_horse_icon(self, player: Player, new_icon: str):
+        self.bot.player_service.update_horse_icon(player.id, new_icon)

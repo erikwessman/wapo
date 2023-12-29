@@ -62,3 +62,8 @@ class PlayerService:
         player = self.get_player(player_id)
         player.modifiers.remove(modifier_name)
         self.db.update_player(player)
+
+    def update_horse_icon(self, player_id: int, new_icon: str):
+        player = self.get_player(player_id)
+        player.horse_icon = new_icon
+        self.db.update_player(player)
