@@ -62,3 +62,8 @@ class PlayerService:
         player = self.get_player(player_id)
         player.modifiers.remove(modifier_name)
         self.db.update_player(player)
+
+    def update_flex_level(self, player_id: int, flex_level: int):
+        player = self.get_player(player_id)
+        player.flex_level = flex_level
+        self.db.update_player(player)

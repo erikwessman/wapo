@@ -127,11 +127,26 @@ class PlayerCog(commands.Cog):
         if isinstance(error, commands.CommandError):
             await ctx.send(content=f"`!give` error: {error}")
 
+
+    @commands.command()
+    async def flex(self, ctx):
+        player = self.bot.player_service.get_player(ctx.author.id)
+        flex_level = player.flex_level
+        message = ""
+
+        if flex_level == 1:
+            message = f"{ctx.author.name} is the coolest mofo in the world!! 😎😎😎"
+        else:
+            message = f"Wow... {ctx.author.name} truly is pathetic."
+
+        await ctx.send(content=message)
     # --- Helpers ---
 
     def use_item(self, player: Player, item: Item) -> bool:
         if item.id == "1":  # Horsie steroids
             self.apply_gamble_bonus(player)
+        if item.id == "3":
+            self.apply_flex(player, 1)
         else:
             return False
 
@@ -140,3 +155,8 @@ class PlayerCog(commands.Cog):
 
     def apply_gamble_bonus(self, player: Player):
         self.bot.player_service.add_modifier(player.id, HORSIE_STEROIDS_MODIFIER_NAME)
+
+    def apply_flex(self, player: Player, flex_level: int):
+        self.bot.player_service.update_flex_level(player.id, flex_level)
+        print(f"Flex level is {player.flex_level}")
+

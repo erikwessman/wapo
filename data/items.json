@@ -14,5 +14,13 @@
         "one_time_use": false,
         "price": 5,
         "symbol": "🦗"
+    },
+    "3": {
+        "id": "3",
+        "name": "Flex",
+        "description": "Flaunt that wealth, baby 😎",
+        "one_time_use": true,
+        "price": 100,
+        "symbol": "💰"
     }
 }
