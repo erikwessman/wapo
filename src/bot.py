@@ -64,24 +64,23 @@ class WaPoHelp(commands.HelpCommand):
 
 
 async def main():
-    print("hello")
     intents = discord.Intents.default()
     intents.message_content = True
     intents.reactions = True
 
     db = DB("wapo")
-    print("hello")
     bot = WaPoBot(db, command_prefix="!", intents=intents)
     bot.help_command = WaPoHelp()
     await bot.add_cog(CrosswordCog(bot))
     await bot.add_cog(GambleCog(bot))
     await bot.add_cog(PlayerCog(bot))
     await bot.add_cog(StoreCog(bot))
-    print("hello")
     await bot.start(os.getenv("DISCORD_TOKEN"))
-    print("hello")
 
 
 if __name__ == "__main__":
-    load_dotenv()
-    asyncio.run(main())
+    try:
+        load_dotenv()
+        asyncio.run(main())
+    except Exception as e:
+        print(e)
