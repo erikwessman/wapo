@@ -37,8 +37,10 @@ class DB:
         if db_user:
             db_user_quote = quote_plus(db_user)
             db_pass_quote = quote_plus(db_pass)
-            mongo_uri = f"mongodb+srv://{db_user_quote}:{db_pass_quote}@{db_host} \
-                        /?retryWrites=true&w=majority"
+            mongo_uri = (
+                f"mongodb+srv://{db_user_quote}:{db_pass_quote}@{db_host}"
+                "/?retryWrites=true&w=majority"
+            )
         else:
             mongo_uri = f"mongodb://{db_host}/?retryWrites=true&w=majority"
 

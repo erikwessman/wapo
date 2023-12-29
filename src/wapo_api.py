@@ -17,16 +17,16 @@ def _get_driver():
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-gpu")
 
-    environment = os.getenv('WAPO_ENVIRONMENT')
+    environment = os.getenv("WAPO_ENVIRONMENT")
 
-    if environment == 'devel':
-        geckodriver_path = os.getenv('GECKODRIVER_PATH')
+    if environment == "devel":
+        geckodriver_path = os.getenv("GECKODRIVER_PATH")
         service = Service(executable_path=geckodriver_path)
         return webdriver.Firefox(options=options, service=service)
 
-    elif environment == 'prod':
-        options.binary_location = os.getenv('FIREFOX_BIN')
-        geckodriver_path = os.getenv('GECKODRIVER_PATH')
+    elif environment == "prod":
+        options.binary_location = os.getenv("FIREFOX_BIN")
+        geckodriver_path = os.getenv("GECKODRIVER_PATH")
         service = Service(geckodriver_path)
         return webdriver.Firefox(options=options, service=service)
 
