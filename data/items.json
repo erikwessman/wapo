@@ -30,5 +30,21 @@
         "one_time_use": false,
         "price": 35,
         "symbol": "🫦"
+    },
+    "5": {
+        "id": "5",
+        "name": "Flex",
+        "description": "Flaunt that wealth, baby 😎",
+        "one_time_use": true,
+        "price": 100,
+        "symbol": "💰"
+    },
+    "6": {
+        "id": "6",
+        "name": "MegaFlex",
+        "description": "You... you can afford this? 😳",
+        "one_time_use": true,
+        "price": 500,
+        "symbol": "🤑"
     }
 }

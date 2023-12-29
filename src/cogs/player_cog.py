@@ -127,6 +127,45 @@ class PlayerCog(commands.Cog):
         if isinstance(error, commands.CommandError):
             await ctx.send(content=f"`!give` error: {error}")
 
+
+    @commands.command()
+    async def flex(self, ctx):
+        player = self.bot.player_service.get_player(ctx.author.id)
+        flex_level = player.flex_level
+        message = ""
+
+        if flex_level == 1:
+            message = f"<@{ctx.author.id}> is the coolest mofo in the world!! 😎😎😎"
+        if flex_level == 2:
+            ascii_art = """```
+                 ________________________
+                |.----------------------.|
+                ||                      ||
+                ||       ______         ||
+                ||     .;;;;;;;;.       ||
+                ||    /;;;;;;;;;;;\     ||
+                ||   /;/`    `-;;;;; . .||
+                ||   |;|__  __  \;;;|   ||
+                ||.-.|;| e`/e`  |;;;|   ||
+                ||   |;|  |     |;;;|'--||
+                ||   |;|  '-    |;;;|   ||
+                ||   |;;\ --'  /|;;;|   ||
+                ||   |;;;;;---'\|;;;|   ||
+                ||   |;;;;|     |;;;|   ||
+                ||   |;;.-'     |;;;|   ||
+                ||'--|/`        |;;;|--.||
+                ||;;;;    .     ;;;;.\;;||
+                ||;;;;;-.;_    /.-;;;;;;||
+                ||;;;;;;;;;;;;;;;;;;;;;;||
+                ||jgs;;;;;;;;;;;;;;;;;;;||
+                '------------------------'
+            ```"""
+            message = f"<@{ctx.author.id}> is so rich they can afford the Mona Lisa!\n{ascii_art}"
+        else:
+            message = f"Wow... {ctx.author.name} truly is pathetic."
+
+        await ctx.send(content=message)
+
     # --- Helpers ---
 
     def use_item(self, player: Player, item: Item) -> bool:
@@ -136,6 +175,10 @@ class PlayerCog(commands.Cog):
             self.apply_horse_icon(player, item.symbol)
         elif item.id == "4":  # Lips horse icon
             self.apply_horse_icon(player, item.symbol)
+        if item.id == "5":
+            self.apply_flex(player, 1)
+        if item.id == "6":
+            self.apply_flex(player, 2)
         else:
             return False
 
@@ -145,6 +188,9 @@ class PlayerCog(commands.Cog):
 
     def apply_gamble_bonus(self, player: Player):
         self.bot.player_service.add_modifier(player.id, HORSIE_STEROIDS_MODIFIER_NAME)
+
+    def apply_flex(self, player: Player, flex_level: int):
+        self.bot.player_service.update_flex_level(player.id, flex_level)
 
     def apply_horse_icon(self, player: Player, new_icon: str):
         self.bot.player_service.update_horse_icon(player.id, new_icon)
