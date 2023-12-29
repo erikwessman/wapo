@@ -10,7 +10,7 @@ class Player:
 
     id: int
     inventory: Dict[str, int] = field(default_factory=dict)
-    tokens: int = 0
+    coins: int = 0
     modifiers: List[str] = field(default_factory=list)
 
     def has_modifier(self, modifier_name) -> bool:

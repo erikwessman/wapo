@@ -30,9 +30,9 @@ class PlayerService:
     def get_players(self) -> List[Player]:
         return self.db.get_players()
 
-    def update_tokens(self, player_id: int, amount: int):
+    def update_coins(self, player_id: int, amount: int):
         player = self.get_player(player_id)
-        player.tokens += amount
+        player.coins += amount
         self.db.update_player(player)
 
     def buy_item(self, player_id: int, item: Item, quantity: int = 1):
@@ -41,7 +41,7 @@ class PlayerService:
             player.inventory[item.id] += quantity
         else:
             player.inventory[item.id] = quantity
-        player.tokens -= item.price * quantity
+        player.coins -= item.price * quantity
         self.db.update_player(player)
 
     def remove_item(self, player_id: int, item: Item, quantity: int = 1):

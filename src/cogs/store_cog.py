@@ -22,7 +22,7 @@ class StoreCog(commands.Cog):
             item_details = (
                 f"**Item ID:** {item.id}\n"
                 f"**Description:** {item.description}\n"
-                f"**Price:** {item.price} tokens\n"
+                f"**Price:** {item.price} coins\n"
                 f"**One Time Use:** {'Yes' if item.one_time_use else 'No'}"
             )
             embed.add_field(
@@ -51,8 +51,8 @@ class StoreCog(commands.Cog):
 
         item = self.bot.store.get_item(item_id)
 
-        if player.tokens < item.price * quantity:
-            raise commands.CommandError("Insufficient tokens")
+        if player.coins < item.price * quantity:
+            raise commands.CommandError("Insufficient coins")
 
         self.bot.player_service.buy_item(player.id, item, quantity)
 

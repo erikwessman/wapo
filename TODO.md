@@ -9,23 +9,23 @@
 - [X] Write the day (e.g. 18/12 - 2023) in the puzzle message
 - [X] Encapsulate bot in a class
 - [X] Gambling!
-    - [X] Map each user id to a wapo token count
-    - [X] When completing one crossword, reward all users with tokens
-    - [X] Based on the day of the week and the time to complete, reward more tokens
+    - [X] Map each user id to a wapo coin count
+    - [X] When completing one crossword, reward all users with coins
+    - [X] Based on the day of the week and the time to complete, reward more coins
     - [X] Have a set of completed days (dont reward the same day)
     - [X] Implement horse racing
     - [X] Make sure you cant gamble more than you have
     - [X] Reward the ID that !gamble'd
     - [X] Print the gamblers name
     - [X] Make sure winnings are correct (shared 2nd place should give 1.5x)
-- [X] Create token api for managing tokens
-- [X] Reward all players with tokens when crossword complete
+- [X] Create coin api for managing coins
+- [X] Reward all players with coins when crossword complete
 - [X] Cooldown on commands
 - [X] Better error handling & better error messages
 - [X] Better !help command
-- [X] Remove tokens first when gambling, then reward (15, not 20)
+- [X] Remove coins first when gambling, then reward (15, not 20)
 - [X] !send command
-- [X] Dont allow negative tokens in give and send
+- [X] Dont allow negative coins in give and send
 - [X] Command not found message
 - [X] Print winner number in gambling message
 - [X] Move cogs to separate files

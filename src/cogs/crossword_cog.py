@@ -104,12 +104,12 @@ class CrosswordCog(commands.Cog):
         players = self.bot.player_service.get_players()
 
         for player in players:
-            self.bot.player_service.update_tokens(player.id, puzzle_reward)
+            self.bot.player_service.update_coins(player.id, puzzle_reward)
 
         embed_success = get_embed(
             "Crossword Checker",
             (
-                f"Crossword complete! {puzzle_reward} token(s)"
+                f"Crossword complete! {puzzle_reward} coin(s)"
                 f" rewarded to {len(players)} players"
             ),
             discord.Color.green(),

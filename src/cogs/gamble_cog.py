@@ -43,30 +43,30 @@ class GambleCog(commands.Cog):
             raise commands.BadArgument("You must gamble on rows 1-4")
 
         if amount < 1:
-            raise commands.BadArgument("You must gamble at least 1 token")
+            raise commands.BadArgument("You must gamble at least 1 coin")
 
         player = self.bot.player_service.get_player(ctx.author.id)
         player_name = ctx.author.name
 
-        if player.tokens < amount:
-            raise commands.CommandError("Insufficient tokens")
+        if player.coins < amount:
+            raise commands.CommandError("Insufficient coins")
 
-        self.bot.player_service.update_tokens(player.id, -amount)
+        self.bot.player_service.update_coins(player.id, -amount)
 
         results = await handle_race_message(ctx)
-        nr_tokens_won = get_gamble_result(results, row - 1, amount)
+        nr_coins_won = get_gamble_result(results, row - 1, amount)
 
         if player.has_modifier(HORSIE_STEROIDS_MODIFIER_NAME):
             self.bot.player_service.use_modifier(
                 player.id, HORSIE_STEROIDS_MODIFIER_NAME
             )
-            nr_tokens_won *= 2
+            nr_coins_won *= 2
 
-        self.bot.player_service.update_tokens(player.id, nr_tokens_won)
+        self.bot.player_service.update_coins(player.id, nr_coins_won)
 
         result_embed = get_embed(
             "Horse Race Results",
-            f"{player_name} won {nr_tokens_won} token(s)!",
+            f"{player_name} won {nr_coins_won} coin(s)!",
             discord.Color.gold(),
         )
         await ctx.send(embed=result_embed)
@@ -82,17 +82,17 @@ class GambleCog(commands.Cog):
     async def roulette(self, ctx: commands.Context, amount: int):
         player = self.bot.player_service.get_player(ctx.author.id)
 
-        if player.tokens < amount:
-            raise commands.CommandError("Insufficient tokens")
+        if player.coins < amount:
+            raise commands.CommandError("Insufficient coins")
 
-        self.bot.player_service.update_tokens(player.id, -amount)
+        self.bot.player_service.update_coins(player.id, -amount)
 
         if player.id in self.roulette_event.participants:
-            self.roulette_event.participants[player.id]["tokens"] += amount
+            self.roulette_event.participants[player.id]["coins"] += amount
         else:
             self.roulette_event.participants[player.id] = {}
             self.roulette_event.participants[player.id]["user"] = ctx.author
-            self.roulette_event.participants[player.id]["tokens"] = amount
+            self.roulette_event.participants[player.id]["coins"] = amount
 
         if not self.roulette_event.event_started:
             self.roulette_event.event_started = True
@@ -121,8 +121,8 @@ class GambleCog(commands.Cog):
             return
 
         total_players = len(self.roulette_event.participants)
-        total_tokens = sum(
-            player["tokens"] for player in self.roulette_event.participants.values()
+        total_coins = sum(
+            player["coins"] for player in self.roulette_event.participants.values()
         )
 
         odds_table = get_odds_table(self.roulette_event.participants)
@@ -130,9 +130,9 @@ class GambleCog(commands.Cog):
         embed = get_embed(
             f"Roulette Event Joined by {ctx.author.name}",
             (
-                f"🎲 {ctx.author.name} has joined the roulette with {amount} token(s)!\n\n"
+                f"🎲 {ctx.author.name} has joined the roulette with {amount} coin(s)!\n\n"
                 f"👥 **Total Players:** {total_players}\n"
-                f"💰 **Total Tokens:** {total_tokens}\n\n"
+                f"💰 **Total coins:** {total_coins}\n\n"
             ),
             discord.Color.blue(),
         )
@@ -150,7 +150,6 @@ class GambleCog(commands.Cog):
         if len(participants) < 2:
             # TODO:
 
-            # rename to wapo coin
             # buy custom emoji for horse race
             # save roulettes
             # save horse races
@@ -161,22 +160,22 @@ class GambleCog(commands.Cog):
             # maybe more betting game
             # maybe sabotage items
 
-            # Refund player tokens
+            # Refund player coins
             for player_id in participants:
-                self.bot.player_service.update_tokens(player_id, participants[player_id]["tokens"])
+                self.bot.player_service.update_coins(player_id, participants[player_id]["coins"])
 
-            await ctx.send(content="Not enough participants for roulette to start. Refunding tokens.")
+            await ctx.send(content="Not enough participants for roulette to start. Refunding coins.")
             return
 
         users = [user_info["user"] for user_info in participants.values()]
-        user_tokens = [user_info["tokens"] for user_info in participants.values()]
+        user_coins = [user_info["coins"] for user_info in participants.values()]
 
-        winner = random.choices(users, weights=user_tokens, k=1)[0]
-        win_amount = sum(user_tokens)
+        winner = random.choices(users, weights=user_coins, k=1)[0]
+        win_amount = sum(user_coins)
 
         odds_table = get_odds_table(participants)
 
-        self.bot.player_service.update_tokens(winner.id, win_amount)
+        self.bot.player_service.update_coins(winner.id, win_amount)
 
         embed = get_embed(
             "🎉 Roulette Winner Announcement 🎉",
@@ -185,7 +184,7 @@ class GambleCog(commands.Cog):
         )
         embed.add_field(
             name=f"{winner.name} won!",
-            value=f"You win {win_amount} token(s).",
+            value=f"You win {win_amount} coin(s).",
             inline=False,
         )
         embed.add_field(
@@ -207,15 +206,15 @@ async def handle_roulette_countdown(seconds: int, ctx: commands.Context):
 
 def get_odds_table(participants: Dict[int, Any]) -> str:
     table_data = []
-    total_tokens = sum(player["tokens"] for player in participants.values())
+    total_coins = sum(player["coins"] for player in participants.values())
 
     for user_id, user_info in participants.items():
-        odds = (user_info["tokens"] / total_tokens) * 100
-        line = [user_info["user"].name, user_info["tokens"], f"{odds:.2f}%"]
+        odds = (user_info["coins"] / total_coins) * 100
+        line = [user_info["user"].name, user_info["coins"], f"{odds:.2f}%"]
         table_data.append(line)
 
     table_str = tabulate(
-        table_data, headers=["Player", "Tokens", "Odds"], tablefmt="plain"
+        table_data, headers=["Player", "coins", "Odds"], tablefmt="plain"
     )
     return table_str
 

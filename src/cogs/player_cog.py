@@ -21,7 +21,7 @@ class PlayerCog(commands.Cog):
         player_name = ctx.author.name
         player = self.bot.player_service.get_player(ctx.author.id)
         player_inventory = player.inventory
-        player_tokens = player.tokens
+        player_coins = player.coins
 
         embed = get_embed(
             f"Profile: {player_name}",
@@ -35,7 +35,7 @@ class PlayerCog(commands.Cog):
             value=f"{str(len(player_inventory))} item(s)",
             inline=False,
         )
-        embed.add_field(name="Tokens", value=str(player_tokens), inline=True)
+        embed.add_field(name="Coins", value=str(player_coins), inline=True)
 
         await ctx.send(embed=embed)
 
@@ -46,14 +46,14 @@ class PlayerCog(commands.Cog):
 
     @commands.command()
     @commands.cooldown(1, 10, commands.BucketType.user)
-    async def tokens(self, ctx: commands.Context):
+    async def coins(self, ctx: commands.Context):
         player = self.bot.player_service.get_player(ctx.author.id)
-        await ctx.send(content=f"You have {player.tokens} tokens")
+        await ctx.send(content=f"You have {player.coins} coins")
 
-    @tokens.error
-    async def tokens_error(self, ctx: commands.Context, error):
+    @coins.error
+    async def coins_error(self, ctx: commands.Context, error):
         if isinstance(error, commands.CommandError):
-            await ctx.send(content=f"`!tokens` error: {error}")
+            await ctx.send(content=f"`!coins` error: {error}")
 
     @commands.command()
     @commands.cooldown(1, 10, commands.BucketType.user)
@@ -106,21 +106,21 @@ class PlayerCog(commands.Cog):
     @commands.command()
     async def give(self, ctx, user: discord.User, amount: int):
         player = self.bot.player_service.get_player(ctx.author.id)
-        player_tokens = player.tokens
+        player_coins = player.coins
 
         if player.id == user.id:
-            raise commands.BadArgument("Cannot give tokens to yourself")
+            raise commands.BadArgument("Cannot give coins to yourself")
 
         if amount < 1:
-            raise commands.BadArgument("Must give at least 1 token")
+            raise commands.BadArgument("Must give at least 1 coin")
 
-        if player_tokens < amount:
-            raise commands.BadArgument("Insufficient tokens")
+        if player_coins < amount:
+            raise commands.BadArgument("Insufficient coins")
 
-        self.bot.player_service.update_tokens(player.id, -amount)
-        self.bot.player_service.update_tokens(user.id, amount)
+        self.bot.player_service.update_coins(player.id, -amount)
+        self.bot.player_service.update_coins(user.id, amount)
 
-        await ctx.send(content=f"Gave {user.name} {amount} token(s)")
+        await ctx.send(content=f"Gave {user.name} {amount} coin(s)")
 
     @give.error
     async def give_error(self, ctx: commands.Context, error):
