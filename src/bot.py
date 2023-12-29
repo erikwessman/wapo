@@ -79,8 +79,5 @@ async def main():
 
 
 if __name__ == "__main__":
-    try:
-        load_dotenv()
-        asyncio.run(main())
-    except Exception as e:
-        print(e)
+    load_dotenv()
+    asyncio.run(main())
