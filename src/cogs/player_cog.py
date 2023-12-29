@@ -127,7 +127,6 @@ class PlayerCog(commands.Cog):
         if isinstance(error, commands.CommandError):
             await ctx.send(content=f"`!give` error: {error}")
 
-
     @commands.command()
     async def flex(self, ctx):
         player = self.bot.player_service.get_player(ctx.author.id)
@@ -175,9 +174,9 @@ class PlayerCog(commands.Cog):
             self.apply_horse_icon(player, item.symbol)
         elif item.id == "4":  # Lips horse icon
             self.apply_horse_icon(player, item.symbol)
-        if item.id == "5":
+        elif item.id == "5":
             self.apply_flex(player, 1)
-        if item.id == "6":
+        elif item.id == "6":
             self.apply_flex(player, 2)
         else:
             return False
