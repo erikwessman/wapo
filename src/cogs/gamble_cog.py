@@ -111,11 +111,9 @@ class GambleCog(commands.Cog):
             embed.set_thumbnail(url=ROULETTE_ICON)
             await ctx.send(embed=embed)
 
-            # Wait half the time, send a reminder then resume wait
-            await asyncio.sleep(event_time // 2)
-            await ctx.send(content="Half the time for the roulette event has elapsed")
-
-            await asyncio.sleep(event_time // 2)
+            countdown_length = min(event_time, 10)
+            await asyncio.sleep(event_time - countdown_length)
+            await handle_roulette_countdown(countdown_length, ctx)
             await self.handle_roulette_event_end(ctx)
 
             self.roulette_event.participants = {}
@@ -133,12 +131,12 @@ class GambleCog(commands.Cog):
             f"Roulette Event Joined by {ctx.author.name}",
             (
                 f"🎲 {ctx.author.name} has joined the roulette with {amount} token(s)!\n\n"
-                f"👥 Total Players: {total_players}\n"
-                f"💰 Total Tokens: {total_tokens}\n\n"
+                f"👥 **Total Players:** {total_players}\n"
+                f"💰 **Total Tokens:** {total_tokens}\n\n"
             ),
             discord.Color.blue(),
         )
-        embed.add_field(name="📊 Odds", value=f"```{odds_table}````", inline=False)
+        embed.add_field(name="📊 Odds", value=f"```{odds_table}```", inline=False)
         await ctx.send(embed=embed)
 
     @roulette.error
@@ -150,7 +148,24 @@ class GambleCog(commands.Cog):
         participants = self.roulette_event.participants
 
         if len(participants) < 2:
-            await ctx.send(content="Not enough participants for roulette")
+            # TODO:
+
+            # rename to wapo coin
+            # buy custom emoji for horse race
+            # save roulettes
+            # save horse races
+            # take snapshots
+            # nerf horsie
+            # simulate stocks
+            # implement buying/selling stock
+            # maybe more betting game
+            # maybe sabotage items
+
+            # Refund player tokens
+            for player_id in participants:
+                self.bot.player_service.update_tokens(player_id, participants[player_id]["tokens"])
+
+            await ctx.send(content="Not enough participants for roulette to start. Refunding tokens.")
             return
 
         users = [user_info["user"] for user_info in participants.values()]
@@ -179,6 +194,15 @@ class GambleCog(commands.Cog):
             inline=False,
         )
         await ctx.send(embed=embed)
+
+
+async def handle_roulette_countdown(seconds: int, ctx: commands.Context):
+    message = await ctx.send(f"Roulette ending in {seconds} seconds")
+
+    while seconds > 0:
+        await asyncio.sleep(1)
+        seconds -= 1
+        await message.edit(content=f"Roulette ending in {seconds} seconds")
 
 
 def get_odds_table(participants: Dict[int, Any]) -> str:

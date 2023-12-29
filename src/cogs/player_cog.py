@@ -104,15 +104,15 @@ class PlayerCog(commands.Cog):
             await ctx.send(content=f"`!use` error: {error}")
 
     @commands.command()
-    async def send(self, ctx, user: discord.User, amount: int):
+    async def give(self, ctx, user: discord.User, amount: int):
         player = self.bot.player_service.get_player(ctx.author.id)
         player_tokens = player.tokens
 
         if player.id == user.id:
-            raise commands.BadArgument("Cannot send tokens to yourself")
+            raise commands.BadArgument("Cannot give tokens to yourself")
 
         if amount < 1:
-            raise commands.BadArgument("Must send at least 1 token")
+            raise commands.BadArgument("Must give at least 1 token")
 
         if player_tokens < amount:
             raise commands.BadArgument("Insufficient tokens")
@@ -120,12 +120,12 @@ class PlayerCog(commands.Cog):
         self.bot.player_service.update_tokens(player.id, -amount)
         self.bot.player_service.update_tokens(user.id, amount)
 
-        await ctx.send(content=f"Sent {user.name} {amount} token(s)")
+        await ctx.send(content=f"Gave {user.name} {amount} token(s)")
 
-    @send.error
-    async def send_error(self, ctx: commands.Context, error):
+    @give.error
+    async def give_error(self, ctx: commands.Context, error):
         if isinstance(error, commands.CommandError):
-            await ctx.send(content=f"`!send` error: {error}")
+            await ctx.send(content=f"`!give` error: {error}")
 
     # --- Helpers ---
 
