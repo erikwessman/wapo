@@ -49,9 +49,12 @@
 - [ ] Host WaPo bot remotely
     - [ ] Create wapo-devel bot in test server
     - [ ] Keep OG WaPo bot in Software Chads
-    - [ ] Move data from local db to remote db
-    - [ ] Create env variables for remote
     - [ ] Check that geckodriver and selenium work remotely
+    - [ ] Move data from local db to remote db
+    - [ ] Create pipeline to automatically update remote bot on main change
+    - [ ] Create env variables for remote
+        - [ ] Database
+        - [ ] Discord bot token
 - [ ] Save completed roulettes in database
 - [ ] Save completed horse races in database
 - [ ] Nerf Horsie Steroids

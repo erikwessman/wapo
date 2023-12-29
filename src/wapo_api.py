@@ -1,3 +1,4 @@
+import os
 import re
 import time
 from selenium import webdriver
@@ -10,14 +11,27 @@ from selenium.webdriver.support import expected_conditions as EC
 
 def _get_driver():
     options = Options()
+    options.log.level = "trace"
     options.add_argument("--headless")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--disable-gpu")
 
-    geckodriver_path = "/snap/bin/geckodriver"
-    service = Service(executable_path=geckodriver_path)
+    environment = os.getenv('WAPO_ENVIRONMENT')
 
-    return webdriver.Firefox(options=options, service=service)
+    if environment == 'devel':
+        geckodriver_path = os.getenv('GECKODRIVER_PATH')
+        service = Service(executable_path=geckodriver_path)
+        return webdriver.Firefox(options=options, service=service)
+
+    elif environment == 'prod':
+        options.binary_location = os.getenv('FIREFOX_BIN')
+        geckodriver_path = os.getenv('GECKODRIVER_PATH')
+        service = Service(geckodriver_path)
+        return webdriver.Firefox(options=options, service=service)
+
+    else:
+        raise ValueError("Can't get webdriver, no environment set")
 
 
 def get_wapo_url(day: str = None) -> str:
