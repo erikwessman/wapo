@@ -135,7 +135,7 @@ class PlayerCog(commands.Cog):
 
         if flex_level == 1:
             message = f"<@{ctx.author.id}> is the coolest mofo in the world!! 😎😎😎"
-        if flex_level == 2:
+        elif flex_level == 2:
             ascii_art = """```
                  ________________________
                 |.----------------------.|
