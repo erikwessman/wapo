@@ -1,10 +1,16 @@
+import os
 from urllib.parse import urlparse, parse_qs
 from datetime import datetime
 import calendar
 import validators
 import discord
+from discord.ext import commands
 
 from const import GITHUB_REPOSITORY, GITHUB_ICON
+
+
+def check_in_correct_channel(ctx: commands.Context):
+    return str(ctx.channel.id) == os.getenv("CHANNEL_ID")
 
 
 def get_embed(

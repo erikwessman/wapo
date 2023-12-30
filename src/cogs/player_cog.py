@@ -3,8 +3,8 @@ from discord.ext import commands
 
 from classes.item import Item
 from classes.player import Player
-from helper import get_embed
-from const import HORSIE_STEROIDS_MODIFIER_NAME
+from helper import get_embed, check_in_correct_channel
+from const import HORSE_INSURANCE_MODIFIER
 
 
 class PlayerCog(commands.Cog):
@@ -16,6 +16,7 @@ class PlayerCog(commands.Cog):
         self.bot = bot
 
     @commands.command()
+    @commands.check(check_in_correct_channel)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def profile(self, ctx: commands.Context):
         player_name = ctx.author.name
@@ -45,6 +46,7 @@ class PlayerCog(commands.Cog):
             await ctx.send(content=f"`!profile` error: {error}")
 
     @commands.command()
+    @commands.check(check_in_correct_channel)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def coins(self, ctx: commands.Context):
         player = self.bot.player_service.get_player(ctx.author.id)
@@ -56,6 +58,7 @@ class PlayerCog(commands.Cog):
             await ctx.send(content=f"`!coins` error: {error}")
 
     @commands.command()
+    @commands.check(check_in_correct_channel)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def inventory(self, ctx: commands.Context):
         player = self.bot.player_service.get_player(ctx.author.id)
@@ -85,6 +88,8 @@ class PlayerCog(commands.Cog):
             await ctx.send(content=f"`!inventory` error: {error}")
 
     @commands.command()
+    @commands.check(check_in_correct_channel)
+    @commands.cooldown(1, 10, commands.BucketType.user)
     async def use(self, ctx: commands.Context, item_id: str):
         player = self.bot.player_service.get_player(ctx.author.id)
 
@@ -104,6 +109,8 @@ class PlayerCog(commands.Cog):
             await ctx.send(content=f"`!use` error: {error}")
 
     @commands.command()
+    @commands.check(check_in_correct_channel)
+    @commands.cooldown(1, 10, commands.BucketType.user)
     async def give(self, ctx, user: discord.User, amount: int):
         player = self.bot.player_service.get_player(ctx.author.id)
         player_coins = player.coins
@@ -128,6 +135,8 @@ class PlayerCog(commands.Cog):
             await ctx.send(content=f"`!give` error: {error}")
 
     @commands.command()
+    @commands.check(check_in_correct_channel)
+    @commands.cooldown(1, 10, commands.BucketType.user)
     async def flex(self, ctx):
         player = self.bot.player_service.get_player(ctx.author.id)
         flex_level = player.flex_level
@@ -168,7 +177,7 @@ class PlayerCog(commands.Cog):
     # --- Helpers ---
 
     def use_item(self, player: Player, item: Item) -> bool:
-        if item.id == "1":  # Horsie steroids
+        if item.id == "1":  # Horse insurance
             self.apply_gamble_bonus(player)
         elif item.id == "3":  # UFO horse icon
             self.apply_horse_icon(player, item.symbol)
@@ -186,7 +195,7 @@ class PlayerCog(commands.Cog):
         return True
 
     def apply_gamble_bonus(self, player: Player):
-        self.bot.player_service.add_modifier(player.id, HORSIE_STEROIDS_MODIFIER_NAME)
+        self.bot.player_service.add_modifier(player.id, HORSE_INSURANCE_MODIFIER)
 
     def apply_flex(self, player: Player, flex_level: int):
         self.bot.player_service.update_flex_level(player.id, flex_level)

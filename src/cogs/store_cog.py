@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from helper import get_embed
+from helper import get_embed, check_in_correct_channel
 
 
 class StoreCog(commands.Cog):
@@ -13,6 +13,7 @@ class StoreCog(commands.Cog):
         self.bot = bot
 
     @commands.command()
+    @commands.check(check_in_correct_channel)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def store(self, ctx: commands.Context):
         items = self.bot.store.get_items()
@@ -39,6 +40,7 @@ class StoreCog(commands.Cog):
             await ctx.send(content=f"`!store` error: {error}")
 
     @commands.command()
+    @commands.check(check_in_correct_channel)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def buy(self, ctx: commands.Context, item_id: str, quantity: int = 1):
         player = self.bot.player_service.get_player(ctx.author.id)

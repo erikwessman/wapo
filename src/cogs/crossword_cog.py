@@ -3,8 +3,7 @@ from discord.ext import commands
 
 import wapo_api
 import helper
-from helper import get_embed
-from const import CHANNEL_ID
+from helper import get_embed, check_in_correct_channel
 
 
 class CrosswordCog(commands.Cog):
@@ -16,32 +15,32 @@ class CrosswordCog(commands.Cog):
         self.bot = bot
 
     @commands.command()
+    @commands.check(check_in_correct_channel)
     @commands.cooldown(1, 60, commands.BucketType.default)
     async def wapo(self, ctx: commands.Context):
-        if CHANNEL_ID == ctx.channel.id:
-            embed_loading = get_embed(
+        embed_loading = get_embed(
+            "Washington Post Daily Crossword",
+            "Fetching URL...",
+            discord.Color.teal(),
+        )
+        ctx.sent_message = await ctx.send(embed=embed_loading)
+
+        try:
+            url = wapo_api.get_wapo_url()
+            date_str = helper.get_puzzle_date(url)
+            weekday_str = helper.get_puzzle_weekday(date_str)
+
+            embed_success = get_embed(
                 "Washington Post Daily Crossword",
-                "Fetching URL...",
-                discord.Color.teal(),
+                f"URL for {weekday_str} generated! ({date_str})",
+                discord.Color.green(),
+                url,
             )
-            ctx.sent_message = await ctx.send(embed=embed_loading)
+            await ctx.sent_message.edit(embed=embed_success)
 
-            try:
-                url = wapo_api.get_wapo_url()
-                date_str = helper.get_puzzle_date(url)
-                weekday_str = helper.get_puzzle_weekday(date_str)
-
-                embed_success = get_embed(
-                    "Washington Post Daily Crossword",
-                    f"URL for {weekday_str} generated! ({date_str})",
-                    discord.Color.green(),
-                    url,
-                )
-                await ctx.sent_message.edit(embed=embed_success)
-
-            except Exception as error:
-                print(error)
-                raise commands.CommandError("An error occurred.") from error
+        except Exception as error:
+            print(error)
+            raise commands.CommandError("An error occurred.") from error
 
     @wapo.error
     async def wapo_error(self, ctx: commands.Context, error):
@@ -55,9 +54,10 @@ class CrosswordCog(commands.Cog):
         else:
             await ctx.send(f"An error occurred: {error}")
 
+    @commands.check(check_in_correct_channel)
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User):
-        if user == self.bot.user or reaction.message.channel.id != CHANNEL_ID:
+        if user == self.bot.user:
             return
 
         if reaction.emoji not in ("👍", "✅"):
