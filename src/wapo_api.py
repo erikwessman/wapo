@@ -9,7 +9,7 @@ from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 
-def _get_driver():
+def _get_firefox_driver(geckodriver_path: str):
     options = Options()
     options.log.level = "trace"
     options.add_argument("--headless")
@@ -17,22 +17,30 @@ def _get_driver():
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-gpu")
 
+    service = Service(executable_path=geckodriver_path)
+    return webdriver.Firefox(options=options, service=service)
+
+
+def _get_chrome_driver(chrome_bin_path: str, chromedriver_path: str):
+    # Use Chrome on Heroku instead of FF
+    chrome_options = webdriver.ChromeOptions()
+    chrome_options.binary_location = chrome_bin_path
+    chrome_options.add_argument("--headless")
+    chrome_options.add_argument("--disable-dev-shm-usage")
+    chrome_options.add_argument("--no-sandbox")
+    return webdriver.Chrome(chromedriver_path, options=chrome_options)
+
+
+def _get_driver():
     environment = os.getenv("WAPO_ENVIRONMENT")
 
     if environment == "devel":
         geckodriver_path = os.getenv("GECKODRIVER_PATH")
-        service = Service(executable_path=geckodriver_path)
-        return webdriver.Firefox(options=options, service=service)
+        return _get_firefox_driver(geckodriver_path)
     elif environment == "prod":
-        print("in prod")
-        options.binary_location = os.getenv("FIREFOX_BIN")
-        print(f"firefox path = {os.getenv('FIREFOX_BIN')}")
-        geckodriver_path = os.getenv("GECKODRIVER_PATH")
-        print(f"gecko path = {os.getenv('GECKODRIVER_PATH')}")
-        service = Service(geckodriver_path)
-        w = webdriver.Firefox(options=options, service=service)
-        print(w)
-        return w
+        chrome_bin_path = os.environ.get("GOOGLE_CHROME_BIN")
+        chromedriver_path = os.environ.get("CHROMEDRIVER_PATH")
+        return _get_chrome_driver(chrome_bin_path, chromedriver_path)
     else:
         raise ValueError("Can't get webdriver, no environment set")
 
