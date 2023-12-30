@@ -40,6 +40,7 @@ class CrosswordCog(commands.Cog):
                 await ctx.sent_message.edit(embed=embed_success)
 
             except Exception as error:
+                print(error)
                 raise commands.CommandError("An error occurred.") from error
 
     @wapo.error
