@@ -2,33 +2,37 @@ import os
 import re
 import time
 from selenium import webdriver
-from selenium.webdriver.firefox.options import Options
-from selenium.webdriver.firefox.service import Service
+from selenium.webdriver.firefox.options import Options as FFOptions
+from selenium.webdriver.firefox.service import Service as FFService
+from selenium.webdriver.chrome.options import Options as ChromeOptions
+from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
 
 def _get_firefox_driver(geckodriver_path: str):
-    options = Options()
+    options = FFOptions()
     options.log.level = "trace"
     options.add_argument("--headless")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-gpu")
 
-    service = Service(executable_path=geckodriver_path)
+    service = FFService(executable_path=geckodriver_path)
     return webdriver.Firefox(options=options, service=service)
 
 
 def _get_chrome_driver(chrome_bin_path: str, chromedriver_path: str):
     # Use Chrome on Heroku instead of FF
-    chrome_options = webdriver.ChromeOptions()
+    chrome_options = ChromeOptions()
     chrome_options.binary_location = chrome_bin_path
     chrome_options.add_argument("--headless")
     chrome_options.add_argument("--disable-dev-shm-usage")
     chrome_options.add_argument("--no-sandbox")
-    return webdriver.Chrome(chromedriver_path, options=chrome_options)
+
+    chrome_service = ChromeService(executable_path=chromedriver_path)
+    return webdriver.Chrome(service=chrome_service, options=chrome_options)
 
 
 def _get_driver():
