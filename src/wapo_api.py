@@ -24,7 +24,6 @@ def _get_firefox_driver(geckodriver_path: str):
 
 
 def _get_chrome_driver(chrome_bin_path: str, chromedriver_path: str):
-    # Use Chrome on Heroku instead of FF
     chrome_options = ChromeOptions()
     chrome_options.binary_location = chrome_bin_path
     chrome_options.add_argument("--headless")
