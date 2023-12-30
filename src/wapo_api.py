@@ -23,13 +23,16 @@ def _get_driver():
         geckodriver_path = os.getenv("GECKODRIVER_PATH")
         service = Service(executable_path=geckodriver_path)
         return webdriver.Firefox(options=options, service=service)
-
     elif environment == "prod":
+        print("in prod")
         options.binary_location = os.getenv("FIREFOX_BIN")
+        print(f"firefox path = {os.getenv('FIREFOX_BIN')}")
         geckodriver_path = os.getenv("GECKODRIVER_PATH")
+        print(f"gecko path = {os.getenv('GECKODRIVER_PATH')}")
         service = Service(geckodriver_path)
-        return webdriver.Firefox(options=options, service=service)
-
+        w = webdriver.Firefox(options=options, service=service)
+        print(w)
+        return w
     else:
         raise ValueError("Can't get webdriver, no environment set")
 
