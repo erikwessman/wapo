@@ -32,7 +32,7 @@ class StoreCog(commands.Cog):
                 inline=False,
             )
 
-        await ctx.send(embed=embed)
+        await ctx.send(embed=embed, ephemeral=True)
 
     @store.error
     async def store_error(self, ctx: commands.Context, error):
