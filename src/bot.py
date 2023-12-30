@@ -1,6 +1,7 @@
 import os
 import asyncio
 import discord
+from discord import app_commands
 from discord.ext import commands
 from dotenv import load_dotenv
 
@@ -25,6 +26,11 @@ class WaPoBot(commands.Bot):
 
     async def on_ready(self):
         print(f"{self.user} has connected!")
+        try:
+            synced = await self.tree.sync()
+            print(f"Synced {len(synced)} command(s)")
+        except Exception as e:
+            print(e)
 
     async def on_command_error(self, ctx, error):
         # TODO: Log stuff here

@@ -12,7 +12,7 @@ class StoreCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
+    @commands.hybrid_command(name="store", description="View the item store")
     @commands.check(check_in_correct_channel)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def store(self, ctx: commands.Context):
@@ -39,7 +39,7 @@ class StoreCog(commands.Cog):
         if isinstance(error, commands.CommandError):
             await ctx.send(content=f"`!store` error: {error}")
 
-    @commands.command()
+    @commands.hybrid_command(name="buy", description="Buy an item from the store")
     @commands.check(check_in_correct_channel)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def buy(self, ctx: commands.Context, item_id: str, quantity: int = 1):
