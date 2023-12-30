@@ -45,19 +45,21 @@
     - [X] Add service layer
 - [X] Add roulette
     - [X] Print table of odds
-- [ ] Fix channel id check for all commands, should only be in \#wapo channel
 - [ ] Host WaPo bot remotely
     - [X] Create wapo-devel bot in test server
     - [X] Keep OG WaPo bot in Software Chads
-    - [ ] Check that geckodriver and selenium work remotely
     - [X] Move data from local db to remote db
     - [X] Create pipeline to automatically update remote bot on main change
     - [X] Create env variables for remote
         - [X] Database
         - [X] Discord bot token
+    - [ ] Check that geckodriver and selenium work remotely
+- [ ] Fix channel id check for all commands, should only be in \#wapo channel
+- [ ] Nerf Horsie Steroids
 - [ ] Save completed roulettes in database
 - [ ] Save completed horse races in database
-- [ ] Nerf Horsie Steroids
+- [ ] Take snapshots of db
+- [ ] Add better readme with instructions
 - [ ] Simulate stocks
 - [ ] Add !blackjack command
 - [ ] Add logging
