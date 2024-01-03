@@ -15,7 +15,7 @@ class PlayerCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
+    @commands.hybrid_command(name="profile", description="View your profile")
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def profile(self, ctx: commands.Context):
         player_name = ctx.author.name
@@ -37,25 +37,25 @@ class PlayerCog(commands.Cog):
         )
         embed.add_field(name="Coins", value=str(player_coins), inline=True)
 
-        await ctx.send(embed=embed)
+        await ctx.send(embed=embed, ephemeral=True)
 
     @profile.error
     async def profile_error(self, ctx: commands.Context, error):
         if isinstance(error, commands.CommandError):
             await ctx.send(content=f"`!profile` error: {error}")
 
-    @commands.command()
+    @commands.hybrid_command(name="coins", description="Check your coin balance")
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def coins(self, ctx: commands.Context):
         player = self.bot.player_service.get_player(ctx.author.id)
-        await ctx.send(content=f"You have {player.coins} coins")
+        await ctx.send(content=f"You have {player.coins} coins", ephemeral=True)
 
     @coins.error
     async def coins_error(self, ctx: commands.Context, error):
         if isinstance(error, commands.CommandError):
             await ctx.send(content=f"`!coins` error: {error}")
 
-    @commands.command()
+    @commands.hybrid_command(name="holdings", description="Check your holdings")
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def holdings(self, ctx: commands.Context):
         player = self.bot.player_service.get_player(ctx.author.id)
@@ -77,7 +77,7 @@ class PlayerCog(commands.Cog):
         if isinstance(error, commands.CommandError):
             await ctx.send(content=f"`!holdings` error: {error}")
 
-    @commands.command()
+    @commands.hybrid_command(name="inventory", description="See all the items in your inventory")
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def inventory(self, ctx: commands.Context):
         player = self.bot.player_service.get_player(ctx.author.id)
@@ -99,14 +99,14 @@ class PlayerCog(commands.Cog):
                 name="No items", value="You have no items in your inventory."
             )
 
-        await ctx.send(embed=embed)
+        await ctx.send(embed=embed, ephemeral=True)
 
     @inventory.error
     async def inventory_error(self, ctx: commands.Context, error):
         if isinstance(error, commands.CommandError):
             await ctx.send(content=f"`!inventory` error: {error}")
 
-    @commands.command()
+    @commands.hybrid_command(name="use", description="Use an item")
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def use(self, ctx: commands.Context, item_id: str):
         player = self.bot.player_service.get_player(ctx.author.id)
@@ -126,7 +126,7 @@ class PlayerCog(commands.Cog):
         if isinstance(error, commands.CommandError):
             await ctx.send(content=f"`!use` error: {error}")
 
-    @commands.command()
+    @commands.hybrid_command(name="give", description="Send some coin to a fellow in need")
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def give(self, ctx, user: discord.User, amount: int):
         player = self.bot.player_service.get_player(ctx.author.id)
@@ -151,7 +151,7 @@ class PlayerCog(commands.Cog):
         if isinstance(error, commands.CommandError):
             await ctx.send(content=f"`!give` error: {error}")
 
-    @commands.command()
+    @commands.hybrid_command(name="flex", description="Show off your wealth, baby!")
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def flex(self, ctx):
         player = self.bot.player_service.get_player(ctx.author.id)
@@ -181,7 +181,7 @@ class PlayerCog(commands.Cog):
                 ||;;;;    .     ;;;;.\;;||
                 ||;;;;;-.;_    /.-;;;;;;||
                 ||;;;;;;;;;;;;;;;;;;;;;;||
-                ||jgs;;;;;;;;;;;;;;;;;;;||
+                ||;;;;;;;;;;;;;;;;;;;;;;||
                 '------------------------'
             ```"""
             message = f"<@{ctx.author.id}> is so rich they can afford the Mona Lisa!\n{ascii_art}"

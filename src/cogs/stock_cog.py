@@ -14,7 +14,7 @@ class StockCog(commands.Cog):
         self.bot = bot
         self.update_stock_price.start()
 
-    @commands.group()
+    @commands.hybrid_group(name="stock", description="Group of stock commands")
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def stock(self, ctx):
         if ctx.invoked_subcommand is None:
@@ -26,7 +26,6 @@ class StockCog(commands.Cog):
             await ctx.send(f"`stock error:` {error}")
 
     @stock.command(name="list")
-    @commands.cooldown(1, 10, commands.BucketType.user)
     async def stock_list(self, ctx):
         stocks = self.bot.stock_service.get_all_stocks()
 
@@ -79,7 +78,6 @@ class StockCog(commands.Cog):
             await ctx.send(f"`stock_list error:` {error}")
 
     @stock.command(name="price")
-    @commands.cooldown(1, 10, commands.BucketType.user)
     async def stock_price(self, ctx, ticker: str):
         if not self.bot.stock_service.has_stock(ticker):
             raise commands.CommandError(f"Stock with ticker '{ticker}' does not exist")
@@ -93,7 +91,6 @@ class StockCog(commands.Cog):
             await ctx.send(f"`stock_price error:` {error}")
 
     @stock.command(name="history")
-    @commands.cooldown(1, 10, commands.BucketType.user)
     async def stock_history(self, ctx, ticker: str, date_range: str = None):
         if not self.bot.stock_service.has_stock(ticker):
             raise commands.CommandError(f"Stock with ticker '{ticker}' does not exist")
@@ -134,7 +131,6 @@ class StockCog(commands.Cog):
             await ctx.send(f"`stock_history error:` {error}")
 
     @stock.command(name="buy")
-    @commands.cooldown(1, 10, commands.BucketType.user)
     async def stock_buy(self, ctx: commands.Context, ticker: str, quantity: int):
         if not self.bot.stock_service.has_stock(ticker):
             raise commands.CommandError(f"Stock with ticker '{ticker}' does not exist")
@@ -159,7 +155,6 @@ class StockCog(commands.Cog):
             await ctx.send(f"`stock_buy error:` {error}")
 
     @stock.command(name="sell")
-    @commands.cooldown(1, 10, commands.BucketType.user)
     async def stock_sell(self, ctx: commands.Context, ticker: str, quantity: int):
         if not self.bot.stock_service.has_stock(ticker):
             raise commands.CommandError(f"Stock with ticker '{ticker}' does not exist")

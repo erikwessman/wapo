@@ -3,6 +3,7 @@ import random
 import asyncio
 from typing import List, Dict, Any
 import discord
+from discord import app_commands
 from discord.ext import commands
 from tabulate import tabulate
 
@@ -37,7 +38,7 @@ class GambleCog(commands.Cog):
         self.bot = bot
         self.roulette_event = Event()
 
-    @commands.command()
+    @commands.hybrid_command(name="gamble", description="Invest your well earned coins in a horse race, kiddo")
     @commands.cooldown(1, 30, commands.BucketType.user)
     async def gamble(self, ctx: commands.Context, row: int, amount: int):
         if not 1 <= row <= 4:
@@ -78,7 +79,7 @@ class GambleCog(commands.Cog):
         elif isinstance(error, commands.CommandError):
             await ctx.send(content=f"`!gamble` error: {error}")
 
-    @commands.command()
+    @commands.hybrid_command(name="roulette", description="Welcome to Vegas!")
     async def roulette(self, ctx: commands.Context, amount: int):
         player = self.bot.player_service.get_player(ctx.author.id)
 

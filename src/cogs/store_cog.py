@@ -12,7 +12,7 @@ class StoreCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.command()
+    @commands.hybrid_command(name="store", description="View the item store")
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def store(self, ctx: commands.Context):
         items = self.bot.store.get_items()
@@ -31,14 +31,14 @@ class StoreCog(commands.Cog):
                 inline=False,
             )
 
-        await ctx.send(embed=embed)
+        await ctx.send(embed=embed, ephemeral=True)
 
     @store.error
     async def store_error(self, ctx: commands.Context, error):
         if isinstance(error, commands.CommandError):
             await ctx.send(content=f"`!store` error: {error}")
 
-    @commands.command()
+    @commands.hybrid_command(name="buy", description="Buy an item from the store")
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def buy(self, ctx: commands.Context, item_id: str, quantity: int = 1):
         player = self.bot.player_service.get_player(ctx.author.id)
