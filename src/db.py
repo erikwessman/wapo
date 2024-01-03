@@ -1,13 +1,17 @@
 import os
 import sys
+import datetime
 from typing import List
 from urllib.parse import quote_plus
 from dataclasses import asdict
 import pymongo
 
 from classes.player import Player
+from classes.holding import Holding
 from classes.crossword import Crossword
 from classes.roulette import Roulette
+from classes.stock import Stock
+from classes.stock_price import StockPrice
 
 
 class DB:
@@ -21,7 +25,9 @@ class DB:
 
         self.player_collection = self.database["players"]
         self.crossword_collection = self.database["crosswords"]
-        self.roulette_collection = self.database["roulette"]
+        self.roulette_collection = self.database["roulettes"]
+        self.stock_collection = self.database["stocks"]
+        self.stock_price_collection = self.database["stock_prices"]
 
     def __del__(self):
         self.client.close()
@@ -66,17 +72,30 @@ class DB:
 
     # --- Player helper methods ---
 
+    def _convert_holdings(self, holdings_data):
+        return {k: Holding(**v) for k, v in holdings_data.items()}
+
     def get_player(self, player_id: int) -> Player:
         player_data = self.player_collection.find_one({"id": player_id})
         if player_data:
             player_data.pop("_id", None)
+            if "holdings" in player_data:
+                player_data["holdings"] = self._convert_holdings(
+                    player_data["holdings"]
+                )
             return Player(**player_data)
         return None
 
     def get_players(self, skip: int = 0, limit: int = 0) -> List[Player]:
         players = self.player_collection.find({}).skip(skip).limit(limit)
         return [
-            Player(**{k: v for k, v in player_data.items() if k != "_id"})
+            Player(
+                **{
+                    k: (self._convert_holdings(v) if k == "holdings" else v)
+                    for k, v in player_data.items()
+                    if k != "_id"
+                }
+            )
             for player_data in players
         ]
 
@@ -166,3 +185,94 @@ class DB:
 
     def delete_all_roulettes(self):
         self.roulette_collection.delete_many({})
+
+    # --- Stock helper methods ---
+
+    def get_stock(self, ticker: str) -> Stock:
+        stock_data = self.stock_collection.find_one({"ticker": ticker})
+        if stock_data:
+            stock_data.pop("_id", None)
+            return Stock(**stock_data)
+        return None
+
+    def get_stocks(self, skip: int = 0, limit: int = 0) -> List[Stock]:
+        stocks = self.stock_collection.find({}).skip(skip).limit(limit)
+        return [
+            Stock(**{k: v for k, v in stock_data.items() if k != "_id"})
+            for stock_data in stocks
+        ]
+
+    def add_stock(self, stock: Stock) -> str:
+        stock_dict = asdict(stock)
+        return self.stock_collection.insert_one(stock_dict).inserted_id
+
+    def update_stock(self, stock: Stock) -> None:
+        stock_dict = asdict(stock)
+        self.stock_collection.update_one({"ticker": stock.ticker}, {"$set": stock_dict})
+
+    def has_stock(self, ticker: str) -> bool:
+        return self.stock_collection.count_documents({"ticker": ticker}) > 0
+
+    def delete_stock(self, ticker: str) -> None:
+        self.stock_collection.delete_one({"ticker": ticker})
+
+    def delete_all_stocks(self):
+        self.stock_collection.delete_many({})
+
+    # --- StockPrice helper methods ---
+
+    def get_current_stock_price(self, ticker: str) -> StockPrice:
+        stock_price_data = (
+            self.stock_price_collection.find({"ticker": ticker})
+            .sort("timestamp", -1)
+            .limit(1)
+        )
+        if stock_price_data:
+            latest_price = stock_price_data[0]
+            latest_price.pop("_id", None)
+            return StockPrice(**latest_price)
+        return None
+
+    def get_stock_price_by_date(self, ticker: str, date: datetime):
+        start_date = date.replace(hour=0, minute=0, second=0, microsecond=0)
+        end_date = date.replace(hour=23, minute=59, second=59, microsecond=999999)
+
+        stock_price_data = self.stock_price_collection.find_one(
+            {"ticker": ticker, "timestamp": {"$gte": start_date, "$lte": end_date}}
+        )
+
+        if stock_price_data:
+            stock_price_data.pop("_id", None)
+            return StockPrice(**stock_price_data)
+        return None
+
+    def get_stock_price_in_date_range(
+        self, ticker: str, start_date: datetime, end_date: datetime
+    ):
+        stock_price_data = self.stock_price_collection.find(
+            {"ticker": ticker, "timestamp": {"$gte": start_date, "$lte": end_date}}
+        )
+
+        return [
+            StockPrice(**{k: v for k, v in stock_price.items() if k != "_id"})
+            for stock_price in stock_price_data
+        ]
+
+    def get_stock_price_history(self, ticker: str) -> List[StockPrice]:
+        stock_price_data = self.stock_price_collection.find({"ticker": ticker}).sort(
+            "timestamp", 1
+        )
+        return [
+            StockPrice(**{k: v for k, v in stock_price.items() if k != "_id"})
+            for stock_price in stock_price_data
+        ]
+
+    def has_stock_price(self, ticker: str) -> bool:
+        return self.stock_price_collection.count_documents({"ticker": ticker}) > 0
+
+    def add_stock_price(self, stock_price: StockPrice) -> str:
+        stock_price_dict = asdict(stock_price)
+        return self.stock_price_collection.insert_one(stock_price_dict).inserted_id
+
+    def delete_all_stock_prices(self):
+        self.stock_price_collection.delete_many({})

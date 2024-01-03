@@ -3,7 +3,7 @@ from discord.ext import commands
 
 from classes.item import Item
 from classes.player import Player
-from helper import get_embed, check_in_correct_channel
+from helper import get_embed
 from const import HORSE_INSURANCE_MODIFIER
 
 
@@ -16,7 +16,6 @@ class PlayerCog(commands.Cog):
         self.bot = bot
 
     @commands.command()
-    @commands.check(check_in_correct_channel)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def profile(self, ctx: commands.Context):
         player_name = ctx.author.name
@@ -46,7 +45,6 @@ class PlayerCog(commands.Cog):
             await ctx.send(content=f"`!profile` error: {error}")
 
     @commands.command()
-    @commands.check(check_in_correct_channel)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def coins(self, ctx: commands.Context):
         player = self.bot.player_service.get_player(ctx.author.id)
@@ -58,7 +56,28 @@ class PlayerCog(commands.Cog):
             await ctx.send(content=f"`!coins` error: {error}")
 
     @commands.command()
-    @commands.check(check_in_correct_channel)
+    @commands.cooldown(1, 10, commands.BucketType.user)
+    async def holdings(self, ctx: commands.Context):
+        player = self.bot.player_service.get_player(ctx.author.id)
+
+        embed = get_embed("Player Holdings", "", discord.Color.blue())
+
+        for ticker, holding in player.holdings.items():
+            embed.add_field(
+                name=f"${holding.ticker}",
+                value=f"Shares: {holding.shares}\n"
+                      f"Average Price: ${holding.average_price:.2f}",
+                inline=False
+            )
+
+        await ctx.send(embed=embed)
+
+    @coins.error
+    async def holdings_error(self, ctx: commands.Context, error):
+        if isinstance(error, commands.CommandError):
+            await ctx.send(content=f"`!holdings` error: {error}")
+
+    @commands.command()
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def inventory(self, ctx: commands.Context):
         player = self.bot.player_service.get_player(ctx.author.id)
@@ -88,7 +107,6 @@ class PlayerCog(commands.Cog):
             await ctx.send(content=f"`!inventory` error: {error}")
 
     @commands.command()
-    @commands.check(check_in_correct_channel)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def use(self, ctx: commands.Context, item_id: str):
         player = self.bot.player_service.get_player(ctx.author.id)
@@ -109,7 +127,6 @@ class PlayerCog(commands.Cog):
             await ctx.send(content=f"`!use` error: {error}")
 
     @commands.command()
-    @commands.check(check_in_correct_channel)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def give(self, ctx, user: discord.User, amount: int):
         player = self.bot.player_service.get_player(ctx.author.id)
@@ -135,7 +152,6 @@ class PlayerCog(commands.Cog):
             await ctx.send(content=f"`!give` error: {error}")
 
     @commands.command()
-    @commands.check(check_in_correct_channel)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def flex(self, ctx):
         player = self.bot.player_service.get_player(ctx.author.id)

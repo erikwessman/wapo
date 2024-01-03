@@ -54,15 +54,47 @@
         - [X] Database
         - [X] Discord bot token
     - [X] Check that geckodriver and selenium work remotely
-- [ ] Fix channel id check for all commands, should only be in \#wapo channel
+- [X] Fix channel id check for all commands, should only be in \#wapo channel
 - [X] Nerf Horsie Steroids
+- [ ] Show roulette start amount
 - [ ] Save completed roulettes in database
 - [ ] Save completed horse races in database
-- [ ] Take snapshots of db
-- [ ] Add better readme with instructions
+- [ ] Configure database backups
 - [ ] Simulate stocks
-- [ ] Add !blackjack command
+    - [X] Stock list
+        - [X] Add a field for each stock
+        - [X] Add current price
+        - [X] Add the price change for 24h, week and month
+        - [X] Include emojis and % change
+        - [X] Check if the price changes are available, if not then add fix
+        - [X] Add $ for the ticker
+    - [X] Event update prices
+        - [X] Fix duplcating prices when updating
+    - [ ] Buy
+        - [ ] Make sure it works as expected (Holdings)
+    - [ ] Sell
+        - [ ] Make sure it works as expected (Holdings)
+    - [ ] History
+        - [X] Give option to get for 24hrs, week, month
+        - [X] Update the graph to have stock company name and ticker
+    - [ ] Use better, cheaper stocks (1 - 100 dollars)
+    - [ ] How to handle floats with buy and sell
+- [ ] Merge the latest
+- [ ] Mongoengine
+- [ ] Move error handling to service layer (or any layer that is not a cog)
+- [ ] BETTER ERROR HANDLING FFS
+    - [ ] Raise CommandError for errors in the cog layer
+    - [ ] Create a custom error that inherits from commanderror when we want to signal to user
+    - [ ] Raise ValueError for errors that are internal
+    - [ ] Depending on the error raised, throw a different message
+        - [ ] CommandError: '!stock error: {error}'
+        - [ ] ValueError: 'internal error' and print
+- [ ] Slash commands and ephemeral
+- [ ] Add better README with instructions
+- [ ] Move store
+- [ ] Rename classes to types/schemas
+- [ ] Docstrings
+- [ ] Unit testing
+- [ ] Pylint
 - [ ] Add logging
-- [ ] Get a certain day of the week's puzzle (e.g. !wapo tuesday)
 - [ ] Update Google Sheets with time automatically
-- [ ] Remote hosting

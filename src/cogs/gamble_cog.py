@@ -7,7 +7,7 @@ from discord.ext import commands
 from tabulate import tabulate
 
 from classes.player import Player
-from helper import get_embed, check_in_correct_channel
+from helper import get_embed
 from const import (
     EMOJI_ROCKET,
     EMOJI_PENGUIN,
@@ -38,7 +38,6 @@ class GambleCog(commands.Cog):
         self.roulette_event = Event()
 
     @commands.command()
-    @commands.check(check_in_correct_channel)
     @commands.cooldown(1, 30, commands.BucketType.user)
     async def gamble(self, ctx: commands.Context, row: int, amount: int):
         if not 1 <= row <= 4:
@@ -59,10 +58,8 @@ class GambleCog(commands.Cog):
         results = await handle_race_message(player, row, ctx)
         nr_coins_won = get_gamble_result(results, row, amount)
 
-        if player.has_modifier(HORSE_INSURANCE_MODIFIER) and nr_coins_won == 0:
-            self.bot.player_service.use_modifier(
-                player.id, HORSE_INSURANCE_MODIFIER
-            )
+        if HORSE_INSURANCE_MODIFIER in player.modifiers and nr_coins_won == 0:
+            self.bot.player_service.use_modifier(player.id, HORSE_INSURANCE_MODIFIER)
             nr_coins_won = amount // 2
 
         self.bot.player_service.update_coins(player.id, nr_coins_won)
@@ -82,7 +79,6 @@ class GambleCog(commands.Cog):
             await ctx.send(content=f"`!gamble` error: {error}")
 
     @commands.command()
-    @commands.check(check_in_correct_channel)
     async def roulette(self, ctx: commands.Context, amount: int):
         player = self.bot.player_service.get_player(ctx.author.id)
 

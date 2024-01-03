@@ -3,6 +3,8 @@ from typing import List
 from db import DB
 from classes.player import Player
 from classes.item import Item
+from classes.holding import Holding
+from helper import calculate_new_average_price
 
 
 class PlayerService:
@@ -71,4 +73,37 @@ class PlayerService:
     def update_horse_icon(self, player_id: int, new_icon: str):
         player = self.get_player(player_id)
         player.horse_icon = new_icon
+        self.db.update_player(player)
+
+    def buy_stock(self, player_id: int, ticker: str, price: int, quantity: int = 1):
+        player = self.get_player(player_id)
+
+        if ticker in player.holdings:
+            # Calculate the new average price before updating the shares
+            initial_shares = player.holdings[ticker].shares
+            initial_price = player.holdings[ticker].average_price
+
+            new_avg = calculate_new_average_price(
+                initial_shares, initial_price, quantity, price
+            )
+
+            player.holdings[ticker].shares += quantity
+            player.holdings[ticker].average_price = new_avg
+        else:
+            player.holdings[ticker] = Holding(
+                ticker=ticker, shares=quantity, average_price=price
+            )
+
+        player.coins -= price * quantity
+        self.db.update_player(player)
+
+    def sell_stock(self, player_id: int, ticker: str, price: int, quantity: int = 1):
+        player = self.get_player(player_id)
+
+        player.holdings[ticker].shares -= quantity
+
+        if player.holdings[ticker].shares <= 0:
+            del player.holdings[ticker]
+
+        player.coins += price * quantity
         self.db.update_player(player)

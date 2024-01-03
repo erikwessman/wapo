@@ -3,7 +3,7 @@ from discord.ext import commands
 
 import wapo_api
 import helper
-from helper import get_embed, check_in_correct_channel
+from helper import get_embed
 
 
 class CrosswordCog(commands.Cog):
@@ -15,7 +15,6 @@ class CrosswordCog(commands.Cog):
         self.bot = bot
 
     @commands.command()
-    @commands.check(check_in_correct_channel)
     @commands.cooldown(1, 60, commands.BucketType.default)
     async def wapo(self, ctx: commands.Context):
         embed_loading = get_embed(
@@ -54,7 +53,6 @@ class CrosswordCog(commands.Cog):
         else:
             await ctx.send(f"An error occurred: {error}")
 
-    @commands.check(check_in_correct_channel)
     @commands.Cog.listener()
     async def on_reaction_add(self, reaction: discord.Reaction, user: discord.User):
         if user == self.bot.user:
