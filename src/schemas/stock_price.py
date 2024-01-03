@@ -1,4 +1,4 @@
-from mongoengine import Document, StringField, IntField
+from mongoengine import Document, StringField, IntField, DateTimeField
 
 
 class StockPrice(Document):
@@ -7,7 +7,7 @@ class StockPrice(Document):
     """
 
     ticker = StringField(required=True)
-    timestamp = StringField(required=True)
+    timestamp = DateTimeField(required=True)
     price = IntField(required=True)
 
     meta = {"collection": "stock_prices"}

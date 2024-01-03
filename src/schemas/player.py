@@ -1,4 +1,4 @@
-from mongoengine import Document, IntField, FloatField, StringField, MapField, ListField
+from mongoengine import Document, EmbeddedDocumentField, IntField, StringField, MapField, ListField
 from schemas.holding import Holding
 
 
@@ -9,10 +9,10 @@ class Player(Document):
 
     id = IntField(primary_key=True)
     inventory = MapField(field=IntField(), default=lambda: {})
-    coins = FloatField(default=0)
+    coins = IntField(default=0)
     modifiers = ListField(StringField(), default=list)
     flex_level = IntField(default=0)
     horse_icon = StringField()
-    holdings = MapField(field=Holding, default=lambda: {})
+    holdings = MapField(EmbeddedDocumentField(Holding))
 
     meta = {"collection": "players"}

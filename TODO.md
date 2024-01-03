@@ -80,7 +80,7 @@
     - [X] Use better, cheaper stocks (1 - 100 dollars)
     - [ ] How to handle floats with buy and sell
 - [X] Merge the latest
-- [ ] Mongoengine
+- [X] Mongoengine
 - [ ] Move error handling to service layer (or any layer that is not a cog)
 - [ ] BETTER ERROR HANDLING FFS
     - [ ] Raise CommandError for errors in the cog layer

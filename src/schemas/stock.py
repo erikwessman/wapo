@@ -6,7 +6,7 @@ class Stock(Document):
     Represents a single company stock
     """
 
-    ticker = StringField(primary_key=True)
+    ticker = StringField(required=True)
     company = StringField(required=True)
 
     meta = {"collection": "stocks"}
