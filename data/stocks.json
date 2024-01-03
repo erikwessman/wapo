@@ -2,17 +2,17 @@
     {
         "company": "Weave Incorporated",
         "ticker": "WEEV",
-        "real_ticker": "TSLA"
+        "real_ticker": "AMD"
     },
     {
         "company": "Photon Phighters World-wide",
         "ticker": "PP",
-        "real_ticker": "AAPL"
+        "real_ticker": "TSEM"
     },
     {
         "company": "Godot Colors Incorporated",
         "ticker": "GDCOL",
-        "real_ticker": "MSFT"
+        "real_ticker": "INTC"
     },
     {
         "company": "Enron",
@@ -22,7 +22,7 @@
     {
         "company": "Washington Post",
         "ticker": "WAPO",
-        "real_ticker": "GOOGL"
+        "real_ticker": "NVDA"
     },
     {
         "company": "Software Chads Solutions",
@@ -32,6 +32,6 @@
     {
         "company": "Gamba Enterprises",
         "ticker": "GAMBA",
-        "real_ticker": "IBM"
+        "real_ticker": "QCOM"
     }
 ]

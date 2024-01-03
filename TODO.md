@@ -70,16 +70,16 @@
         - [X] Add $ for the ticker
     - [X] Event update prices
         - [X] Fix duplcating prices when updating
-    - [ ] Buy
-        - [ ] Make sure it works as expected (Holdings)
-    - [ ] Sell
-        - [ ] Make sure it works as expected (Holdings)
-    - [ ] History
+    - [X] Buy
+        - [X] Make sure it works as expected (Holdings)
+    - [X] Sell
+        - [X] Make sure it works as expected (Holdings)
+    - [X] History
         - [X] Give option to get for 24hrs, week, month
         - [X] Update the graph to have stock company name and ticker
     - [ ] Use better, cheaper stocks (1 - 100 dollars)
     - [ ] How to handle floats with buy and sell
-- [ ] Merge the latest
+- [X] Merge the latest
 - [ ] Mongoengine
 - [ ] Move error handling to service layer (or any layer that is not a cog)
 - [ ] BETTER ERROR HANDLING FFS

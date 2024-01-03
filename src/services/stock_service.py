@@ -40,7 +40,7 @@ class StockService:
                     self.add_stock(ticker, company)
 
                 if not self.has_stock_price(ticker):
-                    print(f"Adding initial batch of stock prices for {company}")
+                    print(f"Adding initial batch of stock prices for {company} using real ticker {real_ticker}")
                     stock_prices_df = self.stock_sim.simulate_initial_stock_prices(
                         real_ticker
                     )
