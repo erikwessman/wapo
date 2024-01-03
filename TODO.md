@@ -77,7 +77,7 @@
     - [X] History
         - [X] Give option to get for 24hrs, week, month
         - [X] Update the graph to have stock company name and ticker
-    - [ ] Use better, cheaper stocks (1 - 100 dollars)
+    - [X] Use better, cheaper stocks (1 - 100 dollars)
     - [ ] How to handle floats with buy and sell
 - [X] Merge the latest
 - [ ] Mongoengine

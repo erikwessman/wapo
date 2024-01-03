@@ -14,7 +14,7 @@ from services.player_service import PlayerService
 from services.crossword_service import CrosswordService
 from services.roulette_service import RouletteService
 from services.stock_service import StockService
-from classes.store import Store
+from store import Store
 
 
 class WaPoBot(commands.Bot):

@@ -3,11 +3,10 @@ import random
 import asyncio
 from typing import List, Dict, Any
 import discord
-from discord import app_commands
 from discord.ext import commands
 from tabulate import tabulate
 
-from classes.player import Player
+from schemas.player import Player
 from helper import get_embed
 from const import (
     EMOJI_ROCKET,
@@ -38,7 +37,10 @@ class GambleCog(commands.Cog):
         self.bot = bot
         self.roulette_event = Event()
 
-    @commands.hybrid_command(name="gamble", description="Invest your well earned coins in a horse race, kiddo")
+    @commands.hybrid_command(
+        name="gamble",
+        description="Invest your well earned coins in a horse race, kiddo",
+    )
     @commands.cooldown(1, 30, commands.BucketType.user)
     async def gamble(self, ctx: commands.Context, row: int, amount: int):
         if not 1 <= row <= 4:

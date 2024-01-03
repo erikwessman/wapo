@@ -1,7 +1,7 @@
 from typing import List
 
 from db import DB
-from classes.crossword import Crossword
+from schemas.crossword import Crossword
 
 
 class CrosswordService:

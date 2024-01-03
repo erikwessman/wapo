@@ -1,9 +1,9 @@
 from typing import List
 
 from db import DB
-from classes.player import Player
-from classes.item import Item
-from classes.holding import Holding
+from schemas.player import Player
+from schemas.item import Item
+from schemas.holding import Holding
 from helper import calculate_new_average_price
 
 

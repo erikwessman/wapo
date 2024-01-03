@@ -1,7 +1,7 @@
 import json
 from typing import List, Dict
 
-from classes.item import Item
+from schemas.item import Item
 
 
 class Store:

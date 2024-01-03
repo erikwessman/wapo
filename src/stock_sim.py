@@ -6,8 +6,8 @@ import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 from typing import List
 
-from classes.stock import Stock
-from classes.stock_price import StockPrice
+from schemas.stock import Stock
+from schemas.stock_price import StockPrice
 
 
 class StockSim:

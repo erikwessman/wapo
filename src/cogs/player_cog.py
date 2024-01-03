@@ -1,8 +1,8 @@
 import discord
 from discord.ext import commands
 
-from classes.item import Item
-from classes.player import Player
+from schemas.item import Item
+from schemas.player import Player
 from helper import get_embed
 from const import HORSE_INSURANCE_MODIFIER
 
@@ -66,8 +66,8 @@ class PlayerCog(commands.Cog):
             embed.add_field(
                 name=f"${holding.ticker}",
                 value=f"Shares: {holding.shares}\n"
-                      f"Average Price: ${holding.average_price:.2f}",
-                inline=False
+                f"Average Price: ${holding.average_price:.2f}",
+                inline=False,
             )
 
         await ctx.send(embed=embed)
@@ -77,7 +77,9 @@ class PlayerCog(commands.Cog):
         if isinstance(error, commands.CommandError):
             await ctx.send(content=f"`!holdings` error: {error}")
 
-    @commands.hybrid_command(name="inventory", description="See all the items in your inventory")
+    @commands.hybrid_command(
+        name="inventory", description="See all the items in your inventory"
+    )
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def inventory(self, ctx: commands.Context):
         player = self.bot.player_service.get_player(ctx.author.id)
@@ -126,7 +128,9 @@ class PlayerCog(commands.Cog):
         if isinstance(error, commands.CommandError):
             await ctx.send(content=f"`!use` error: {error}")
 
-    @commands.hybrid_command(name="give", description="Send some coin to a fellow in need")
+    @commands.hybrid_command(
+        name="give", description="Send some coin to a fellow in need"
+    )
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def give(self, ctx, user: discord.User, amount: int):
         player = self.bot.player_service.get_player(ctx.author.id)
