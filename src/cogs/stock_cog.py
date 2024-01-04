@@ -60,7 +60,7 @@ class StockCog(commands.Cog):
             emoji_1_week = "\U0001F4C8" if change_1_week >= 0 else "\U0001F4C9"
 
             field_value = (
-                f"Current: {curr_price:.2f} "
+                f"Current: {curr_price} "
                 f"- 24h: {change_24_hrs:.2f}% {emoji_24_hrs} "
                 f"- Week: {change_1_week:.2f}% {emoji_1_week}"
             )
