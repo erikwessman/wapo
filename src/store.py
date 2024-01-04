@@ -39,5 +39,3 @@ class StoreError(CommandError):
     """
     Exception raised when interacting with a stock
     """
-
-    pass

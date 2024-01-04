@@ -38,5 +38,3 @@ class CrosswordError(CommandError):
     """
     Exception raised when interacting with a crossword
     """
-
-    pass

@@ -62,7 +62,7 @@ class PlayerCog(commands.Cog):
 
         embed = get_embed("Player Holdings", "", discord.Color.blue())
 
-        for ticker, holding in player.holdings.items():
+        for holding in player.holdings.values():
             embed.add_field(
                 name=f"${holding.ticker}",
                 value=f"Shares: {holding.shares}\n"

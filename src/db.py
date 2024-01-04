@@ -46,7 +46,7 @@ class DB:
 
     def update_player(self, player: Player):
         update_data = player.to_mongo().to_dict()
-        update_data.pop('_id', None)
+        update_data.pop("_id", None)
         Player.objects(id=player.id).update_one(**update_data)
 
     def has_player(self, player_id: int):

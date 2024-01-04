@@ -116,5 +116,3 @@ class StockError(CommandError):
     """
     Exception raised when interacting with a stock
     """
-
-    pass

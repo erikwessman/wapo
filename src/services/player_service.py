@@ -132,5 +132,3 @@ class PlayerError(CommandError):
     """
     Exception raised when interacting with a player
     """
-
-    pass

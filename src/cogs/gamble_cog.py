@@ -198,7 +198,7 @@ def get_odds_table(participants: Dict[int, Any]) -> str:
     table_data = []
     total_coins = sum(player["coins"] for player in participants.values())
 
-    for user_id, user_info in participants.items():
+    for user_info in participants.values():
         odds = (user_info["coins"] / total_coins) * 100
         line = [user_info["user"].name, user_info["coins"], f"{odds:.2f}%"]
         table_data.append(line)
