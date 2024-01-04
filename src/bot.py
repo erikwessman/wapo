@@ -35,12 +35,12 @@ class WaPoBot(commands.Bot):
             print(e)
 
     async def on_command_error(self, ctx, error):
-        # TODO: Log stuff here
-
-        print(error)
+        print(f"Error: {error}")
 
         if isinstance(error, commands.CommandNotFound):
             await ctx.send(content=error)
+        elif isinstance(error, ValueError):
+            await ctx.send(content="Internal error")
 
 
 class WaPoHelp(commands.HelpCommand):

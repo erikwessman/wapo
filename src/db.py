@@ -2,10 +2,9 @@ import os
 import datetime
 from urllib.parse import quote_plus
 from typing import List
-from mongoengine import connect, Document
+from mongoengine import connect
 
 from schemas.player import Player
-from schemas.holding import Holding
 from schemas.crossword import Crossword
 from schemas.roulette import Roulette
 from schemas.stock import Stock
@@ -33,20 +32,22 @@ class DB:
         else:
             mongo_uri = f"mongodb://{db_host}"
 
+        print(f"Connecting to database host {db_host}...")
         connect(db_name, host=mongo_uri)
-        print("Connected to database")
 
     # --- Player helper methods ---
 
     def get_player(self, player_id: int) -> Player:
         return Player.objects(id=player_id).first()
 
-    def add_player(self, player: Player) -> str:
+    def add_player(self, player: Player) -> int:
         player.save()
-        return str(player.id)
+        return player.id
 
     def update_player(self, player: Player):
-        Player.objects(id=player.id).update_one(**player.to_mongo())
+        update_data = player.to_mongo().to_dict()
+        update_data.pop('_id', None)
+        Player.objects(id=player.id).update_one(**update_data)
 
     def has_player(self, player_id: int):
         return Player.objects(id=player_id).count() > 0

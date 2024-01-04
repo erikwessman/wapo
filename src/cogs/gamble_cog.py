@@ -50,22 +50,20 @@ class GambleCog(commands.Cog):
             raise commands.BadArgument("You must gamble at least 1 coin")
 
         row -= 1  # Correct the index
+
         player = self.bot.player_service.get_player(ctx.author.id)
         player_name = ctx.author.name
 
-        if player.coins < amount:
-            raise commands.CommandError("Insufficient coins")
-
-        self.bot.player_service.update_coins(player.id, -amount)
+        self.bot.player_service.remove_coins(player, amount)
 
         results = await handle_race_message(player, row, ctx)
         nr_coins_won = get_gamble_result(results, row, amount)
 
         if HORSE_INSURANCE_MODIFIER in player.modifiers and nr_coins_won == 0:
-            self.bot.player_service.use_modifier(player.id, HORSE_INSURANCE_MODIFIER)
+            self.bot.player_service.use_modifier(player, HORSE_INSURANCE_MODIFIER)
             nr_coins_won = amount // 2
 
-        self.bot.player_service.update_coins(player.id, nr_coins_won)
+        self.bot.player_service.add_coins(player, nr_coins_won)
 
         result_embed = get_embed(
             "Horse Race Results",
@@ -76,19 +74,14 @@ class GambleCog(commands.Cog):
 
     @gamble.error
     async def gamble_error(self, ctx: commands.Context, error):
-        if isinstance(error, commands.BadArgument):
-            await ctx.send(content="`!gamble` error: Incorrect arguments")
-        elif isinstance(error, commands.CommandError):
-            await ctx.send(content=f"`!gamble` error: {error}")
+        if isinstance(error, commands.CommandError):
+            await ctx.send(content=f"`gamble` error: {error}")
 
     @commands.hybrid_command(name="roulette", description="Welcome to Vegas!")
     async def roulette(self, ctx: commands.Context, amount: int):
         player = self.bot.player_service.get_player(ctx.author.id)
 
-        if player.coins < amount:
-            raise commands.CommandError("Insufficient coins")
-
-        self.bot.player_service.update_coins(player.id, -amount)
+        self.bot.player_service.remove_coins(player, amount)
 
         if player.id in self.roulette_event.participants:
             self.roulette_event.participants[player.id]["coins"] += amount
@@ -145,7 +138,7 @@ class GambleCog(commands.Cog):
     @roulette.error
     async def roulette_error(self, ctx: commands.Context, error):
         if isinstance(error, commands.CommandError):
-            await ctx.send(content=f"`!roulette error`: {error}")
+            await ctx.send(content=f"`roulette error`: {error}")
 
     async def handle_roulette_event_end(self, ctx: commands.Context):
         participants = self.roulette_event.participants
@@ -153,8 +146,9 @@ class GambleCog(commands.Cog):
         if len(participants) < 2:
             # Refund player coins
             for player_id in participants:
-                self.bot.player_service.update_coins(
-                    player_id, participants[player_id]["coins"]
+                player = self.bot.player_service.get_player(player_id)
+                self.bot.player_service.add_coins(
+                    player, participants[player_id]["coins"]
                 )
 
             await ctx.send(
@@ -166,11 +160,12 @@ class GambleCog(commands.Cog):
         user_coins = [user_info["coins"] for user_info in participants.values()]
 
         winner = random.choices(users, weights=user_coins, k=1)[0]
+        winner_player = self.bot.player_service.get_player(winner)
         win_amount = sum(user_coins)
 
         odds_table = get_odds_table(participants)
 
-        self.bot.player_service.update_coins(winner.id, win_amount)
+        self.bot.player_service.add_coins(winner_player, win_amount)
 
         embed = get_embed(
             "🎉 Roulette Winner Announcement 🎉",

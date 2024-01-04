@@ -81,20 +81,19 @@
     - [ ] How to handle floats with buy and sell
 - [X] Merge the latest
 - [X] Mongoengine
-- [ ] Move error handling to service layer (or any layer that is not a cog)
-- [ ] BETTER ERROR HANDLING FFS
-    - [ ] Raise CommandError for errors in the cog layer
-    - [ ] Create a custom error that inherits from commanderror when we want to signal to user
-    - [ ] Raise ValueError for errors that are internal
-    - [ ] Depending on the error raised, throw a different message
-        - [ ] CommandError: '!stock error: {error}'
-        - [ ] ValueError: 'internal error' and print
-- [ ] Slash commands and ephemeral
+- [X] BETTER ERROR HANDLING FFS
+    - [X] Raise CommandError for errors in the cog layer
+    - [X] Create a custom error that inherits from commanderror when we want to signal to user
+    - [X] Raise ValueError for errors that are internal
+    - [X] Depending on the error raised, throw a different message
+        - [X] CommandError: '!stock error: {error}'
+        - [X] ValueError: 'internal error' and print
+- [X] Slash commands and ephemeral
+- [X] Move store
+- [X] Rename classes to types/schemas
 - [ ] Add better README with instructions
-- [ ] Move store
-- [ ] Rename classes to types/schemas
+- [ ] Pylint
 - [ ] Docstrings
 - [ ] Unit testing
-- [ ] Pylint
 - [ ] Add logging
 - [ ] Update Google Sheets with time automatically
