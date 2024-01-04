@@ -91,8 +91,11 @@
 - [X] Slash commands and ephemeral
 - [X] Move store
 - [X] Rename classes to types/schemas
+- [X] Pylint
+- [ ] Should not be able to buy when stock is 0 (maybe switch to float..)
+- [ ] Fix not being able to complete crossword
 - [ ] Add better README with instructions
-- [ ] Pylint
+- [ ] Get day of the week crossword (e.g. !wapo tuesday)
 - [ ] Docstrings
 - [ ] Unit testing
 - [ ] Add logging

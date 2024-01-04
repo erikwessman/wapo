@@ -93,6 +93,9 @@ class PlayerService:
         if player.coins < price * quantity:
             raise PlayerError("Insufficient coins")
 
+        if price <= 0:
+            raise PlayerError("Can't buy a stock for 0")
+
         if ticker in player.holdings:
             # Calculate the new average price before updating the shares
             initial_shares = player.holdings[ticker].shares
@@ -115,6 +118,9 @@ class PlayerService:
     def sell_stock(self, player: Player, ticker: str, price: int, quantity: int = 1):
         if ticker not in player.holdings:
             raise PlayerError(f"You do not own any shares of ${ticker}")
+
+        if price <= 0:
+            raise PlayerError("Can't sell a stock for 0")
 
         if player.holdings[ticker].shares < quantity:
             raise PlayerError("Not enough shares")
