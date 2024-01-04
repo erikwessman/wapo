@@ -160,7 +160,7 @@ class GambleCog(commands.Cog):
         user_coins = [user_info["coins"] for user_info in participants.values()]
 
         winner = random.choices(users, weights=user_coins, k=1)[0]
-        winner_player = self.bot.player_service.get_player(winner)
+        winner_player = self.bot.player_service.get_player(winner.id)
         win_amount = sum(user_coins)
 
         odds_table = get_odds_table(participants)
