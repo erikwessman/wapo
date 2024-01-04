@@ -9,10 +9,12 @@ from cogs.crossword_cog import CrosswordCog
 from cogs.gamble_cog import GambleCog
 from cogs.player_cog import PlayerCog
 from cogs.store_cog import StoreCog
+from cogs.stock_cog import StockCog
 from services.player_service import PlayerService
 from services.crossword_service import CrosswordService
 from services.roulette_service import RouletteService
-from classes.store import Store
+from services.stock_service import StockService
+from store import Store
 
 
 class WaPoBot(commands.Bot):
@@ -21,6 +23,7 @@ class WaPoBot(commands.Bot):
         self.player_service = PlayerService(db)
         self.crossword_service = CrosswordService(db)
         self.roulette_service = RouletteService(db)
+        self.stock_service = StockService(db)
         self.store = Store("data/items.json")
 
     async def on_ready(self):
@@ -32,12 +35,12 @@ class WaPoBot(commands.Bot):
             print(e)
 
     async def on_command_error(self, ctx, error):
-        # TODO: Log stuff here
-
-        print(error)
+        print(f"Error: {error}")
 
         if isinstance(error, commands.CommandNotFound):
             await ctx.send(content=error)
+        elif isinstance(error, ValueError):
+            await ctx.send(content="Internal error")
 
 
 class WaPoHelp(commands.HelpCommand):
@@ -80,6 +83,7 @@ async def main():
     await bot.add_cog(GambleCog(bot))
     await bot.add_cog(PlayerCog(bot))
     await bot.add_cog(StoreCog(bot))
+    await bot.add_cog(StockCog(bot))
     await bot.start(os.getenv("DISCORD_TOKEN"))
 
 

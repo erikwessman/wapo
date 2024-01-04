@@ -2,7 +2,7 @@ import uuid
 import time
 
 from db import DB
-from classes.roulette import Roulette
+from schemas.roulette import Roulette
 
 
 class RouletteService:

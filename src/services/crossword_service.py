@@ -1,7 +1,8 @@
 from typing import List
+from discord.ext.commands import CommandError
 
 from db import DB
-from classes.crossword import Crossword
+from schemas.crossword import Crossword
 
 
 class CrosswordService:
@@ -21,6 +22,9 @@ class CrosswordService:
         return crossword
 
     def get_crossword(self, crossword_date) -> Crossword:
+        if not self.db.has_crossword(crossword_date):
+            raise CrosswordError(f"Crossword with date {crossword_date} does not exist")
+
         return self.db.get_crossword(crossword_date)
 
     def get_crosswords(self) -> List[Crossword]:
@@ -28,3 +32,9 @@ class CrosswordService:
 
     def has_crossword(self, crossword_date) -> bool:
         return self.db.has_crossword(crossword_date)
+
+
+class CrosswordError(CommandError):
+    """
+    Exception raised when interacting with a crossword
+    """

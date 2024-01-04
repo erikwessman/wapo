@@ -54,15 +54,46 @@
         - [X] Database
         - [X] Discord bot token
     - [X] Check that geckodriver and selenium work remotely
-- [ ] Fix channel id check for all commands, should only be in \#wapo channel
+- [X] Fix channel id check for all commands, should only be in \#wapo channel
 - [X] Nerf Horsie Steroids
+- [ ] Show roulette start amount
 - [ ] Save completed roulettes in database
 - [ ] Save completed horse races in database
-- [ ] Take snapshots of db
-- [ ] Add better readme with instructions
+- [ ] Configure database backups
 - [ ] Simulate stocks
-- [ ] Add !blackjack command
+    - [X] Stock list
+        - [X] Add a field for each stock
+        - [X] Add current price
+        - [X] Add the price change for 24h, week and month
+        - [X] Include emojis and % change
+        - [X] Check if the price changes are available, if not then add fix
+        - [X] Add $ for the ticker
+    - [X] Event update prices
+        - [X] Fix duplcating prices when updating
+    - [X] Buy
+        - [X] Make sure it works as expected (Holdings)
+    - [X] Sell
+        - [X] Make sure it works as expected (Holdings)
+    - [X] History
+        - [X] Give option to get for 24hrs, week, month
+        - [X] Update the graph to have stock company name and ticker
+    - [X] Use better, cheaper stocks (1 - 100 dollars)
+    - [ ] How to handle floats with buy and sell
+- [X] Merge the latest
+- [X] Mongoengine
+- [X] BETTER ERROR HANDLING FFS
+    - [X] Raise CommandError for errors in the cog layer
+    - [X] Create a custom error that inherits from commanderror when we want to signal to user
+    - [X] Raise ValueError for errors that are internal
+    - [X] Depending on the error raised, throw a different message
+        - [X] CommandError: '!stock error: {error}'
+        - [X] ValueError: 'internal error' and print
+- [X] Slash commands and ephemeral
+- [X] Move store
+- [X] Rename classes to types/schemas
+- [ ] Add better README with instructions
+- [ ] Pylint
+- [ ] Docstrings
+- [ ] Unit testing
 - [ ] Add logging
-- [ ] Get a certain day of the week's puzzle (e.g. !wapo tuesday)
 - [ ] Update Google Sheets with time automatically
-- [ ] Remote hosting

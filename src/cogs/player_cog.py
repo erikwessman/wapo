@@ -1,9 +1,9 @@
 import discord
 from discord.ext import commands
 
-from classes.item import Item
-from classes.player import Player
-from helper import get_embed, check_in_correct_channel
+from schemas.item import Item
+from schemas.player import Player
+from helper import get_embed
 from const import HORSE_INSURANCE_MODIFIER
 
 
@@ -16,11 +16,10 @@ class PlayerCog(commands.Cog):
         self.bot = bot
 
     @commands.hybrid_command(name="profile", description="View your profile")
-    @commands.check(check_in_correct_channel)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def profile(self, ctx: commands.Context):
-        player_name = ctx.author.name
         player = self.bot.player_service.get_player(ctx.author.id)
+        player_name = ctx.author.name
         player_inventory = player.inventory
         player_coins = player.coins
 
@@ -43,10 +42,9 @@ class PlayerCog(commands.Cog):
     @profile.error
     async def profile_error(self, ctx: commands.Context, error):
         if isinstance(error, commands.CommandError):
-            await ctx.send(content=f"`!profile` error: {error}")
+            await ctx.send(content=f"`profile` error: {error}")
 
     @commands.hybrid_command(name="coins", description="Check your coin balance")
-    @commands.check(check_in_correct_channel)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def coins(self, ctx: commands.Context):
         player = self.bot.player_service.get_player(ctx.author.id)
@@ -55,10 +53,33 @@ class PlayerCog(commands.Cog):
     @coins.error
     async def coins_error(self, ctx: commands.Context, error):
         if isinstance(error, commands.CommandError):
-            await ctx.send(content=f"`!coins` error: {error}")
+            await ctx.send(content=f"`coins` error: {error}")
 
-    @commands.hybrid_command(name="inventory", description="See all the items in your inventory")
-    @commands.check(check_in_correct_channel)
+    @commands.hybrid_command(name="holdings", description="Check your holdings")
+    @commands.cooldown(1, 10, commands.BucketType.user)
+    async def holdings(self, ctx: commands.Context):
+        player = self.bot.player_service.get_player(ctx.author.id)
+
+        embed = get_embed("Player Holdings", "", discord.Color.blue())
+
+        for holding in player.holdings.values():
+            embed.add_field(
+                name=f"${holding.ticker}",
+                value=f"Shares: {holding.shares}\n"
+                f"Average Price: ${holding.average_price:.2f}",
+                inline=False,
+            )
+
+        await ctx.send(embed=embed)
+
+    @holdings.error
+    async def holdings_error(self, ctx: commands.Context, error):
+        if isinstance(error, commands.CommandError):
+            await ctx.send(content=f"`holdings` error: {error}")
+
+    @commands.hybrid_command(
+        name="inventory", description="See all the items in your inventory"
+    )
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def inventory(self, ctx: commands.Context):
         player = self.bot.player_service.get_player(ctx.author.id)
@@ -85,57 +106,47 @@ class PlayerCog(commands.Cog):
     @inventory.error
     async def inventory_error(self, ctx: commands.Context, error):
         if isinstance(error, commands.CommandError):
-            await ctx.send(content=f"`!inventory` error: {error}")
+            await ctx.send(content=f"`inventory` error: {error}")
 
     @commands.hybrid_command(name="use", description="Use an item")
-    @commands.check(check_in_correct_channel)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def use(self, ctx: commands.Context, item_id: str):
         player = self.bot.player_service.get_player(ctx.author.id)
-
-        if item_id not in player.inventory:
-            raise commands.CommandError("You don't have this item in your inventory")
-
         item = self.bot.store.get_item(item_id)
 
-        if self.use_item(player, item):
-            await ctx.send(content=f"Used {item.name}")
-        else:
-            raise commands.CommandError("Failed to use item")
+        self.use_item(player, item)
+        await ctx.send(content=f"Used {item.name}")
 
     @use.error
     async def use_error(self, ctx: commands.Context, error):
         if isinstance(error, commands.CommandError):
-            await ctx.send(content=f"`!use` error: {error}")
+            await ctx.send(content=f"`use` error: {error}")
 
-    @commands.hybrid_command(name="give", description="Send some coin to a fellow in need")
-    @commands.check(check_in_correct_channel)
+    @commands.hybrid_command(
+        name="give", description="Send some coin to a fellow in need"
+    )
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def give(self, ctx, user: discord.User, amount: int):
-        player = self.bot.player_service.get_player(ctx.author.id)
-        player_coins = player.coins
-
-        if player.id == user.id:
+        if ctx.author.id == user.id:
             raise commands.BadArgument("Cannot give coins to yourself")
 
         if amount < 1:
             raise commands.BadArgument("Must give at least 1 coin")
 
-        if player_coins < amount:
-            raise commands.BadArgument("Insufficient coins")
+        player = self.bot.player_service.get_player(ctx.author.id)
+        receiver = self.bot.player_service.get_player(user.id)
 
-        self.bot.player_service.update_coins(player.id, -amount)
-        self.bot.player_service.update_coins(user.id, amount)
+        self.bot.player_service.remove_coins(player, amount)
+        self.bot.player_service.add_coins(receiver, amount)
 
         await ctx.send(content=f"Gave {user.name} {amount} coin(s)")
 
     @give.error
     async def give_error(self, ctx: commands.Context, error):
         if isinstance(error, commands.CommandError):
-            await ctx.send(content=f"`!give` error: {error}")
+            await ctx.send(content=f"`give` error: {error}")
 
     @commands.hybrid_command(name="flex", description="Show off your wealth, baby!")
-    @commands.check(check_in_correct_channel)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def flex(self, ctx):
         player = self.bot.player_service.get_player(ctx.author.id)
@@ -177,6 +188,12 @@ class PlayerCog(commands.Cog):
     # --- Helpers ---
 
     def use_item(self, player: Player, item: Item) -> bool:
+        if item.id not in player.inventory:
+            raise commands.CommandError("Item not in inventory")
+
+        if item.one_time_use:
+            self.bot.player_service.remove_item(player, item)
+
         if item.id == "1":  # Horse insurance
             self.apply_gamble_bonus(player)
         elif item.id == "3":  # UFO horse icon
@@ -188,17 +205,13 @@ class PlayerCog(commands.Cog):
         elif item.id == "6":
             self.apply_flex(player, 2)
         else:
-            return False
-
-        if item.one_time_use:
-            self.bot.player_service.remove_item(player.id, item)
-        return True
+            raise commands.CommandError("Failed to use item")
 
     def apply_gamble_bonus(self, player: Player):
-        self.bot.player_service.add_modifier(player.id, HORSE_INSURANCE_MODIFIER)
+        self.bot.player_service.add_modifier(player, HORSE_INSURANCE_MODIFIER)
 
     def apply_flex(self, player: Player, flex_level: int):
-        self.bot.player_service.update_flex_level(player.id, flex_level)
+        self.bot.player_service.update_flex_level(player, flex_level)
 
     def apply_horse_icon(self, player: Player, new_icon: str):
-        self.bot.player_service.update_horse_icon(player.id, new_icon)
+        self.bot.player_service.update_horse_icon(player, new_icon)

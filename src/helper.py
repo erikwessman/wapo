@@ -1,16 +1,21 @@
-import os
 from urllib.parse import urlparse, parse_qs
 from datetime import datetime
 import calendar
 import validators
 import discord
-from discord.ext import commands
 
 from const import GITHUB_REPOSITORY, GITHUB_ICON
 
 
-def check_in_correct_channel(ctx: commands.Context):
-    return str(ctx.channel.id) == os.getenv("CHANNEL_ID")
+def calculate_new_average_price(
+    initial_shares, initial_avg_price, additional_shares, purchase_price
+):
+    total_cost_initial = initial_shares * initial_avg_price
+    total_cost_additional = additional_shares * purchase_price
+    new_total_cost = total_cost_initial + total_cost_additional
+    new_total_shares = initial_shares + additional_shares
+    new_average_price = new_total_cost / new_total_shares
+    return new_average_price
 
 
 def get_embed(

@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from helper import get_embed, check_in_correct_channel
+from helper import get_embed
 
 
 class StoreCog(commands.Cog):
@@ -13,7 +13,6 @@ class StoreCog(commands.Cog):
         self.bot = bot
 
     @commands.hybrid_command(name="store", description="View the item store")
-    @commands.check(check_in_correct_channel)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def store(self, ctx: commands.Context):
         items = self.bot.store.get_items()
@@ -37,30 +36,22 @@ class StoreCog(commands.Cog):
     @store.error
     async def store_error(self, ctx: commands.Context, error):
         if isinstance(error, commands.CommandError):
-            await ctx.send(content=f"`!store` error: {error}")
+            await ctx.send(content=f"`store` error: {error}")
 
     @commands.hybrid_command(name="buy", description="Buy an item from the store")
-    @commands.check(check_in_correct_channel)
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def buy(self, ctx: commands.Context, item_id: str, quantity: int = 1):
-        player = self.bot.player_service.get_player(ctx.author.id)
-
-        if not self.bot.store.has_item(item_id):
-            raise commands.CommandError(f"Item with id {item_id} doesn't exist")
-
         if quantity < 1:
-            raise commands.CommandError("Must buy at least 1 copy of item")
+            raise commands.CommandError("Must buy at least 1 item")
 
+        player = self.bot.player_service.get_player(ctx.author.id)
         item = self.bot.store.get_item(item_id)
 
-        if player.coins < item.price * quantity:
-            raise commands.CommandError("Insufficient coins")
+        self.bot.player_service.buy_item(player, item, quantity)
 
-        self.bot.player_service.buy_item(player.id, item, quantity)
-
-        await ctx.send(content=f"Bought {quantity} {item.name}")
+        await ctx.send(content=f"Bought {quantity} {item.name}(s)")
 
     @buy.error
     async def buy_error(self, ctx: commands.Context, error):
         if isinstance(error, commands.CommandError):
-            await ctx.send(content=f"`!buy` error: {error}")
+            await ctx.send(content=f"`buy` error: {error}")
