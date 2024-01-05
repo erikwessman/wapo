@@ -26,9 +26,6 @@ class StockSim:
     def simulate_next_stock_price(self, stock_prices: pd.DataFrame) -> pd.DataFrame:
         start_date = stock_prices.index[-1]
         end_date = datetime.now()
-
-        print(f"start date {start_date}")
-        print(f"end date {end_date}")
         return self.monte_carlo_simulation(stock_prices, start_date, end_date)
 
     def stock_prices_to_dataframe(self, stock_prices: List[StockPrice]) -> pd.DataFrame:
@@ -77,7 +74,14 @@ class StockSim:
         date_range_start = start_date + pd.Timedelta(hours=1)
         date_range = pd.date_range(start=date_range_start, end=end_date, freq="H")
 
+        # Replace zero or negative values with 1
+        historical_data["Price"] = historical_data["Price"].apply(lambda x: 1 if x <= 0 else x)
+
         log_returns = np.log(1 + historical_data["Price"].pct_change())
+
+        # Handling NaN values that may have been introduced
+        log_returns = log_returns.fillna(0)
+
         mu = log_returns.mean()
         sigma = log_returns.std()
 

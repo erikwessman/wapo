@@ -61,25 +61,19 @@ class StockService:
 
     def simulate_next_stock_prices(self, stock: Stock):
         curr_stock_prices = self.get_stock_prices(stock)
-        print("here1")
         curr_stock_prices_df = self.stock_sim.stock_prices_to_dataframe(
             curr_stock_prices
         )
 
-        print("here2")
         next_stock_prices_df = self.stock_sim.simulate_next_stock_price(
             curr_stock_prices_df
         )
-        print("here3")
         next_stock_prices = self.stock_sim.dataframe_to_stock_prices(
             stock.ticker, next_stock_prices_df
         )
-        print("here4")
 
         for stock_price in next_stock_prices:
-            print("here5")
             self.db.add_stock_price(stock_price)
-            print("here6")
 
     def get_stock(self, ticker) -> Stock:
         if not self.db.has_stock(ticker):

@@ -160,16 +160,16 @@ class StockCog(commands.Cog):
         if isinstance(error, commands.CommandError):
             await ctx.send(f"`stock sell` error: {error}")
 
-    @tasks.loop(minutes=1)
+    @tasks.loop(hours=1)
     async def update_stock_price(self):
         stocks = self.bot.stock_service.get_all_stocks()
 
         for stock in stocks:
-            print(f"Updating prices for ${stock.ticker}...")
-            try:
-                self.bot.stock_service.simulate_next_stock_prices(stock)
-            except Exception as e:
-                print(e)
+            self.bot.stock_service.simulate_next_stock_prices(stock)
+
+    @update_stock_price.error
+    async def update_stock_price_error(self, ctx, error):
+        print(f"Error when updating stocks: {error}")
 
     @update_stock_price.before_loop
     async def before_my_background_task(self):
