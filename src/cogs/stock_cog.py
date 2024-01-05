@@ -160,7 +160,7 @@ class StockCog(commands.Cog):
         if isinstance(error, commands.CommandError):
             await ctx.send(f"`stock sell` error: {error}")
 
-    @tasks.loop(minutes=1)
+    @tasks.loop(hours=1)
     async def update_stock_price(self):
         stocks = self.bot.stock_service.get_all_stocks()
 
