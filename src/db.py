@@ -40,9 +40,9 @@ class DB:
     def get_player(self, player_id: int) -> Player:
         return Player.objects(id=player_id).first()
 
-    def add_player(self, player: Player) -> int:
+    def add_player(self, player: Player) -> str:
         player.save()
-        return player.id
+        return str(player.id)
 
     def update_player(self, player: Player):
         update_data = player.to_mongo().to_dict()

@@ -163,7 +163,13 @@ class StockCog(commands.Cog):
     @tasks.loop(minutes=1)
     async def update_stock_price(self):
         stocks = self.bot.stock_service.get_all_stocks()
-        print(len(stocks))
+
+        for stock in stocks:
+            print(f"Updating prices for ${stock.ticker}...")
+            try:
+                self.bot.stock_service.simulate_next_stock_prices(stock)
+            except Exception as e:
+                print(e)
 
     @update_stock_price.before_loop
     async def before_my_background_task(self):

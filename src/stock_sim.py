@@ -26,6 +26,9 @@ class StockSim:
     def simulate_next_stock_price(self, stock_prices: pd.DataFrame) -> pd.DataFrame:
         start_date = stock_prices.index[-1]
         end_date = datetime.now()
+
+        print(f"start date {start_date}")
+        print(f"end date {end_date}")
         return self.monte_carlo_simulation(stock_prices, start_date, end_date)
 
     def stock_prices_to_dataframe(self, stock_prices: List[StockPrice]) -> pd.DataFrame:
