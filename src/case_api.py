@@ -1,7 +1,6 @@
 import json
 import random
 from typing import Dict, Any
-from tabulate import tabulate
 
 
 class CaseAPI:
