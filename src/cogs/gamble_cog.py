@@ -73,7 +73,10 @@ class GambleCog(commands.Cog):
             discord.Color.gold(),
         )
         await ctx.send(embed=result_embed)
-        await self.handle_case_drop(ctx, player)
+
+        # Give player a chance for case drop if they gamble at least 10
+        if amount >= 10:
+            await self.handle_case_drop(ctx, player)
 
     @gamble.error
     async def gamble_error(self, ctx: commands.Context, error):
