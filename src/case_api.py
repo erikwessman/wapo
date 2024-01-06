@@ -5,8 +5,7 @@ from tabulate import tabulate
 
 
 class CaseAPI:
-    """
-    """
+    """ """
 
     def __init__(self, file_path: str):
         self._cases = self._load_cases(file_path)

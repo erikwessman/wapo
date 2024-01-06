@@ -214,9 +214,7 @@ class PlayerCog(commands.Cog):
                     inline=False,
                 )
         else:
-            embed.add_field(
-                name="No avatars", value="You have no avatars."
-            )
+            embed.add_field(name="No avatars", value="You have no avatars.")
         await ctx.send(embed=embed)
 
     @avatars.error
@@ -259,9 +257,11 @@ class PlayerCog(commands.Cog):
             "Common": 0xFFFFFF,
             "Rare": discord.Color.blue(),
             "Epic": discord.Color.purple(),
-            "Legendary": discord.Color.orange()
+            "Legendary": discord.Color.orange(),
         }
 
         embed = get_embed("Case Opened!", "", rarity_colors.get(rarity, 0xFFFFFF))
-        embed.add_field(name="Congratulations!", value=f"You got a {rarity} {icon}!", inline=False)
+        embed.add_field(
+            name="Congratulations!", value=f"You got a {rarity} {icon}!", inline=False
+        )
         await ctx.send(embed=embed)

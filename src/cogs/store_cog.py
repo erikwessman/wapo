@@ -46,9 +46,18 @@ class StoreCog(commands.Cog):
 
         for tier, tier_info in tiers.items():
             items_string = " ".join(tier_info["items"])
-            embed.add_field(name=f"{tier} {tier_info['drop_rate']}%", value=items_string, inline=False)
+            embed.add_field(
+                name=f"{tier} {tier_info['drop_rate']}%",
+                value=items_string,
+                inline=False,
+            )
 
         await ctx.send(embed=embed)
+
+    @cases.error
+    async def cases_error(self, ctx, error):
+        if isinstance(error, commands.CommandError):
+            await ctx.send(content=f"`cases` error: {error}")
 
     @commands.hybrid_command(name="buy", description="Buy an item from the store")
     @commands.cooldown(1, 10, commands.BucketType.user)

@@ -74,6 +74,15 @@ class PlayerService:
 
         self.db.update_player(player)
 
+    def add_item(self, player: Player, item: Item, quantity: int = 1):
+        """Add an item to a player without deducting their coins"""
+        if item.id in player.inventory:
+            player.inventory[item.id] += quantity
+        else:
+            player.inventory[item.id] = quantity
+
+        self.db.update_player(player)
+
     def add_modifier(self, player: Player, modifier_name: str):
         player.modifiers.append(modifier_name)
         self.db.update_player(player)

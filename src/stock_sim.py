@@ -75,7 +75,9 @@ class StockSim:
         date_range = pd.date_range(start=date_range_start, end=end_date, freq="H")
 
         # Replace zero or negative values with 1
-        historical_data["Price"] = historical_data["Price"].apply(lambda x: 1 if x <= 0 else x)
+        historical_data["Price"] = historical_data["Price"].apply(
+            lambda x: 1 if x <= 0 else x
+        )
 
         log_returns = np.log(1 + historical_data["Price"].pct_change())
 

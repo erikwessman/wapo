@@ -40,6 +40,9 @@ class DB:
     def get_player(self, player_id: int) -> Player:
         return Player.objects(id=player_id).first()
 
+    def get_players(self, skip: int = 0, limit: int = 0) -> List[Player]:
+        return list(Player.objects.skip(skip).limit(limit))
+
     def add_player(self, player: Player) -> str:
         player.save()
         return str(player.id)

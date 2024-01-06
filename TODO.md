@@ -95,10 +95,10 @@
 - [X] Fix stock prices not updating
     - [X] Sort stock prices before returning in get_stock_prices()
     - [X] Make sure update_stock_prices throws/catches an error
-- [ ] Add Horse Case(s)
-    - [ ] New item in shop, Horse Case
-    - [ ] Print the drop rate table tiers and its content with /case
-- [ ] Nerf Horse Insurance (consume item even if not last place)
+- [X] Add Horse Case(s)
+    - [X] New item in shop, Horse Case
+    - [X] Print the drop rate table tiers and its content with /case
+- [X] Nerf Horse Insurance (consume item even if not last place)
 - [ ] Fix not being able to complete crossword
 - [ ] Save information
     - [ ] Save gambles
