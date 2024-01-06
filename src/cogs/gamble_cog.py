@@ -102,8 +102,8 @@ class GambleCog(commands.Cog):
 
             embed = get_embed(
                 "🌟 Roulette Event Alert! 🌟",
-                f"Started by {ctx.author.name}",
-                discord.Color.blue(),
+                f"Started by {ctx.author.name} with {amount} coin(s)",
+                discord.Color.red(),
             )
             embed.add_field(
                 name="Information",
@@ -167,6 +167,7 @@ class GambleCog(commands.Cog):
 
         winner = random.choices(users, weights=user_coins, k=1)[0]
         winner_player = self.bot.player_service.get_player(winner.id)
+        winner_avatar = winner_player.active_avatar or ""
         win_amount = sum(user_coins)
 
         odds_table = get_odds_table(participants)
@@ -179,7 +180,7 @@ class GambleCog(commands.Cog):
             discord.Color.gold(),
         )
         embed.add_field(
-            name=f"{winner.name} won!",
+            name=f"{winner.name}{winner_avatar} won!",
             value=f"You win {win_amount} coin(s).",
             inline=False,
         )
