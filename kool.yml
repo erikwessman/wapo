@@ -1,11 +1,4 @@
 scripts:
-  format: kool exec black .
-
-  python:
-    - kool docker python:3.12
-
-  setup:
-    # - kool docker kooldev/bash -c "cp .env.example .env"
+  dev:
+    - kool docker kooldev/bash -c "cp .env.example .env"
     - kool start
-    # - kool run composer install
-    - kool exec pip install -r requirements.txt
