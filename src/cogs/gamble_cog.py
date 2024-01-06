@@ -167,9 +167,7 @@ class GambleCog(commands.Cog):
 
         winner = random.choices(users, weights=user_coins, k=1)[0]
         winner_player = self.bot.player_service.get_player(winner.id)
-        winner_avatar = (
-            winner_player.active_avatar.icon if winner_player.active_avatar else ""
-        )
+        winner_avatar = winner_player.active_avatar
         win_amount = sum(user_coins)
 
         odds_table = get_odds_table(participants)
@@ -232,7 +230,7 @@ async def handle_race_message(player: Player, row: int, ctx: commands.Context):
     symbols = [EMOJI_ROCKET, EMOJI_PENGUIN, EMOJI_OCTOPUS, EMOJI_SANTA]
 
     if player.active_avatar:
-        symbols[row] = player.active_avatar.icon
+        symbols[row] = player.active_avatar
 
     embed = get_embed(
         "Horse Race",

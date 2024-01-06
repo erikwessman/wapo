@@ -99,7 +99,7 @@ class PlayerService:
         if icon not in player.avatars:
             raise PlayerError("You don't have this avatar")
 
-        player.active_avatar = player.avatars[icon]
+        player.active_avatar = icon
         self.db.update_player(player)
 
     def add_avatar(self, player: Player, icon: str, rarity: str):

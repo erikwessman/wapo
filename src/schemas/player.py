@@ -20,7 +20,7 @@ class Player(Document):
     coins = IntField(default=0)
     modifiers = ListField(StringField(), default=list)
     flex_level = IntField(default=0)
-    active_avatar = EmbeddedDocumentField(Avatar, default=None)
+    active_avatar = StringField(default="")
     avatars = MapField(EmbeddedDocumentField(Avatar), default=lambda: {})
     holdings = MapField(EmbeddedDocumentField(Holding), default=lambda: {})
 
