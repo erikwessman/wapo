@@ -59,9 +59,11 @@ class GambleCog(commands.Cog):
         results = await handle_race_message(player, row, ctx)
         nr_coins_won = get_gamble_result(results, row, amount)
 
-        if HORSE_INSURANCE_MODIFIER in player.modifiers and nr_coins_won == 0:
+        if HORSE_INSURANCE_MODIFIER in player.modifiers:
             self.bot.player_service.use_modifier(player, HORSE_INSURANCE_MODIFIER)
-            nr_coins_won = amount // 2
+
+            if nr_coins_won == 0:
+                nr_coins_won = amount // 2
 
         self.bot.player_service.add_coins(player, nr_coins_won)
 
@@ -71,6 +73,7 @@ class GambleCog(commands.Cog):
             discord.Color.gold(),
         )
         await ctx.send(embed=result_embed)
+        await self.handle_case_drop(ctx, player)
 
     @gamble.error
     async def gamble_error(self, ctx: commands.Context, error):
@@ -138,7 +141,7 @@ class GambleCog(commands.Cog):
     @roulette.error
     async def roulette_error(self, ctx: commands.Context, error):
         if isinstance(error, commands.CommandError):
-            await ctx.send(content=f"`roulette error`: {error}")
+            await ctx.send(content=f"`roulette` error: {error}")
 
     async def handle_roulette_event_end(self, ctx: commands.Context):
         participants = self.roulette_event.participants
@@ -184,6 +187,13 @@ class GambleCog(commands.Cog):
         )
         await ctx.send(embed=embed)
 
+    async def handle_case_drop(self, ctx: commands.Context, player: Player):
+        # 10% chance to drop a case
+        if random.random() < 0.1:
+            item = self.bot.store.get_item("5")  # Hard coded, probably bad
+            self.bot.player_service.add_item(player, item)
+            await ctx.send(content=f"🍀 {ctx.author.mention} got a case in a drop! 🍀")
+
 
 async def handle_roulette_countdown(seconds: int, ctx: commands.Context):
     message = await ctx.send(f"Roulette ending in {seconds} seconds")
@@ -215,9 +225,8 @@ async def handle_race_message(player: Player, row: int, ctx: commands.Context):
     length = 20
     symbols = [EMOJI_ROCKET, EMOJI_PENGUIN, EMOJI_OCTOPUS, EMOJI_SANTA]
 
-    # Use the players custom horse icon (if they have one)
-    if player.horse_icon:
-        symbols[row] = player.horse_icon
+    if player.active_avatar:
+        symbols[row] = player.active_avatar.icon
 
     embed = get_embed(
         "Horse Race",

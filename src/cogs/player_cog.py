@@ -109,13 +109,13 @@ class PlayerCog(commands.Cog):
             await ctx.send(content=f"`inventory` error: {error}")
 
     @commands.hybrid_command(name="use", description="Use an item")
-    @commands.cooldown(1, 10, commands.BucketType.user)
+    @commands.cooldown(1, 5, commands.BucketType.user)
     async def use(self, ctx: commands.Context, item_id: str):
         player = self.bot.player_service.get_player(ctx.author.id)
         item = self.bot.store.get_item(item_id)
 
-        self.use_item(player, item)
-        await ctx.send(content=f"Used {item.name}")
+        await self.use_item(ctx, player, item)
+        await ctx.send(content=f"Used {item.name}", ephemeral=True)
 
     @use.error
     async def use_error(self, ctx: commands.Context, error):
@@ -185,25 +185,60 @@ class PlayerCog(commands.Cog):
 
         await ctx.send(content=message)
 
+    @flex.error
+    async def flex_error(self, ctx: commands.Context, error):
+        if isinstance(error, commands.CommandError):
+            await ctx.send(content=f"`flex` error: {error}")
+
+    @commands.hybrid_command(name="avatar", description="Change your current avatar")
+    async def avatar(self, ctx: commands.Context, avatar: str):
+        player = self.bot.player_service.get_player(ctx.author.id)
+        self.bot.player_service.update_avatar(player, avatar)
+        await ctx.send(content="Updated avatar", ephemeral=True)
+
+    @avatar.error
+    async def avatar_error(self, ctx, error):
+        if isinstance(error, commands.CommandError):
+            await ctx.send(content=f"`avatar` error: {error}")
+
+    @commands.hybrid_command(name="avatars", description="See all your avatars")
+    async def avatars(self, ctx: commands.Context):
+        player = self.bot.player_service.get_player(ctx.author.id)
+        embed = get_embed(f"{ctx.author.name} Avatars", "", discord.Color.blue())
+
+        if player.avatars:
+            for avatar in player.avatars.values():
+                embed.add_field(
+                    name=f"{avatar.icon} - {avatar.rarity} (x{avatar.count})",
+                    value="",
+                    inline=False,
+                )
+        else:
+            embed.add_field(name="No avatars", value="You have no avatars.")
+        await ctx.send(embed=embed)
+
+    @avatars.error
+    async def avatars_error(self, ctx, error):
+        if isinstance(error, commands.CommandError):
+            await ctx.send(content=f"`avatars` error: {error}")
+
     # --- Helpers ---
 
-    def use_item(self, player: Player, item: Item) -> bool:
+    async def use_item(self, ctx: commands.Context, player: Player, item: Item):
         if item.id not in player.inventory:
             raise commands.CommandError("Item not in inventory")
 
         if item.one_time_use:
             self.bot.player_service.remove_item(player, item)
 
-        if item.id == "1":  # Horse insurance
+        if item.id == "1":
             self.apply_gamble_bonus(player)
-        elif item.id == "3":  # UFO horse icon
-            self.apply_horse_icon(player, item.symbol)
-        elif item.id == "4":  # Lips horse icon
-            self.apply_horse_icon(player, item.symbol)
-        elif item.id == "5":
+        elif item.id == "3":
             self.apply_flex(player, 1)
-        elif item.id == "6":
+        elif item.id == "4":
             self.apply_flex(player, 2)
+        elif item.id == "5":
+            await self.open_case(ctx, player)
         else:
             raise commands.CommandError("Failed to use item")
 
@@ -213,5 +248,20 @@ class PlayerCog(commands.Cog):
     def apply_flex(self, player: Player, flex_level: int):
         self.bot.player_service.update_flex_level(player, flex_level)
 
-    def apply_horse_icon(self, player: Player, new_icon: str):
-        self.bot.player_service.update_horse_icon(player, new_icon)
+    async def open_case(self, ctx: commands.Context, player: Player):
+        rarity, icon = self.bot.case_api.get_case_item()
+
+        self.bot.player_service.add_avatar(player, icon, rarity)
+
+        rarity_colors = {
+            "Common": 0xFFFFFF,
+            "Rare": discord.Color.blue(),
+            "Epic": discord.Color.purple(),
+            "Legendary": discord.Color.orange(),
+        }
+
+        embed = get_embed("Case Opened!", "", rarity_colors.get(rarity, 0xFFFFFF))
+        embed.add_field(
+            name="Congratulations!", value=f"You got a {rarity} {icon}!", inline=False
+        )
+        await ctx.send(embed=embed)
