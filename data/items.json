@@ -17,34 +17,26 @@
     },
     "3": {
         "id": "3",
-        "name": "UFO Horse",
-        "description": "Replaces your Horse Race icon",
-        "one_time_use": false,
-        "price": 50,
-        "symbol": "🛸"
-    },
-    "4": {
-        "id": "4",
-        "name": "Lips Horse",
-        "description": "Replaces your Horse Race icon",
-        "one_time_use": false,
-        "price": 35,
-        "symbol": "🫦"
-    },
-    "5": {
-        "id": "5",
         "name": "Flex",
         "description": "Flaunt that wealth, baby 😎",
         "one_time_use": true,
         "price": 100,
         "symbol": "💰"
     },
-    "6": {
-        "id": "6",
+    "4": {
+        "id": "4",
         "name": "MegaFlex",
         "description": "You... you can afford this? 😳",
         "one_time_use": true,
         "price": 500,
         "symbol": "🤑"
+    },
+    "5": {
+        "id": "5",
+        "name": "Avatar Case",
+        "description": "Contains 1 avatar",
+        "one_time_use": true,
+        "price": 10,
+        "symbol": "🎁"
     }
 }

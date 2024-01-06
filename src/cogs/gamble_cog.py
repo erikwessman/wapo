@@ -138,7 +138,7 @@ class GambleCog(commands.Cog):
     @roulette.error
     async def roulette_error(self, ctx: commands.Context, error):
         if isinstance(error, commands.CommandError):
-            await ctx.send(content=f"`roulette error`: {error}")
+            await ctx.send(content=f"`roulette` error: {error}")
 
     async def handle_roulette_event_end(self, ctx: commands.Context):
         participants = self.roulette_event.participants
@@ -215,9 +215,8 @@ async def handle_race_message(player: Player, row: int, ctx: commands.Context):
     length = 20
     symbols = [EMOJI_ROCKET, EMOJI_PENGUIN, EMOJI_OCTOPUS, EMOJI_SANTA]
 
-    # Use the players custom horse icon (if they have one)
-    if player.horse_icon:
-        symbols[row] = player.horse_icon
+    if player.active_avatar:
+        symbols[row] = player.active_avatar.icon
 
     embed = get_embed(
         "Horse Race",

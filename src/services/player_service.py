@@ -5,6 +5,7 @@ from db import DB
 from schemas.player import Player
 from schemas.item import Item
 from schemas.holding import Holding
+from schemas.avatar import Avatar
 from helper import calculate_new_average_price
 
 
@@ -85,8 +86,19 @@ class PlayerService:
         player.flex_level = flex_level
         self.db.update_player(player)
 
-    def update_horse_icon(self, player: Player, new_icon: str):
-        player.horse_icon = new_icon
+    def update_avatar(self, player: Player, icon: str):
+        if icon not in player.avatars:
+            raise PlayerError("You don't have this avatar")
+
+        player.active_avatar = player.avatars[icon]
+        self.db.update_player(player)
+
+    def add_avatar(self, player: Player, icon: str, rarity: str):
+        if icon in player.avatars:
+            player.avatars[icon].count += 1
+        else:
+            player.avatars[icon] = Avatar(icon=icon, rarity=rarity, count=1)
+
         self.db.update_player(player)
 
     def buy_stock(self, player: Player, ticker: str, price: int, quantity: int = 1):

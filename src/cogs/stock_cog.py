@@ -165,6 +165,7 @@ class StockCog(commands.Cog):
         stocks = self.bot.stock_service.get_all_stocks()
 
         for stock in stocks:
+            print(f"Updating {stock.company} stock prices...")
             self.bot.stock_service.simulate_next_stock_prices(stock)
 
     @update_stock_price.error
