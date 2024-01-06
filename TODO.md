@@ -27,7 +27,7 @@
 - [X] !send command
 - [X] Dont allow negative coins in give and send
 - [X] Command not found message
-- [X] Print winnerita number in gambling message
+- [X] Print winner number in gambling message
 - [X] Move cogs to separate files
 - [X] Add typing
 - [X] Add tests
