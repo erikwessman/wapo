@@ -19,23 +19,27 @@ class PlayerCog(commands.Cog):
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def profile(self, ctx: commands.Context):
         player = self.bot.player_service.get_player(ctx.author.id)
-        player_name = ctx.author.name
-        player_inventory = player.inventory
-        player_coins = player.coins
+        name = ctx.author.name
+        avatar = player.active_avatar
+        inventory = player.inventory
+        coins = player.coins
 
         embed = get_embed(
-            f"Profile: {player_name}",
+            f"Profile: {name}",
             f"Player ID: {player.id}",
             discord.Color.green(),
         )
         embed.set_thumbnail(url=ctx.author.avatar.url)
 
         embed.add_field(
+            name="Avatar", value=f"{avatar or 'No custom avatar'}", inline=False
+        )
+        embed.add_field(
             name="Inventory",
-            value=f"{str(len(player_inventory))} item(s)",
+            value=f"{str(len(inventory))} item(s)",
             inline=False,
         )
-        embed.add_field(name="Coins", value=str(player_coins), inline=True)
+        embed.add_field(name="Coins", value=str(coins), inline=True)
 
         await ctx.send(embed=embed, ephemeral=True)
 

@@ -99,13 +99,15 @@
     - [X] New item in shop, Horse Case
     - [X] Print the drop rate table tiers and its content with /case
 - [X] Nerf Horse Insurance (consume item even if not last place)
-- [ ] Make active avatar just be a string
-- [ ] Why people lose coins???
+- [X] Make active avatar just be a string
+- [ ] Add avatar to profile
+- [ ] Figure out why coins disappear mysteriously
 - [ ] Fix not being able to complete crossword
 - [ ] Save information
     - [ ] Save gambles
     - [ ] Create gamble schema (winner, amount, row etc)
     - [ ] Save roulettes
+- [ ] Add /stats command to get roulettes/gambles etc
 - [ ] Add better README with instructions
 - [ ] Get day of the week crossword (e.g. !wapo tuesday)
 - [ ] Update Google Sheets with time automatically
