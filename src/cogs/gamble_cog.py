@@ -50,22 +50,23 @@ class GambleCog(commands.Cog):
             raise commands.BadArgument("You must gamble at least 1 coin")
 
         row -= 1  # Correct the index
-
-        player = self.bot.player_service.get_player(ctx.author.id)
+        player_id = ctx.author.id
         player_name = ctx.author.name
+        player = self.bot.player_service.get_player(player_id)
+        player_avatar = player.active_avatar
 
-        self.bot.player_service.remove_coins(player, amount)
+        self.bot.player_service.remove_coins(player_id, amount)
 
-        results = await handle_race_message(player, row, ctx)
+        results = await handle_race_message(ctx, row, player_avatar)
         nr_coins_won = get_gamble_result(results, row, amount)
 
-        if HORSE_INSURANCE_MODIFIER in player.modifiers:
-            self.bot.player_service.use_modifier(player, HORSE_INSURANCE_MODIFIER)
+        if self.bot.player_service.has_modifier(player_id, HORSE_INSURANCE_MODIFIER):
+            self.bot.player_service.use_modifier(player_id, HORSE_INSURANCE_MODIFIER)
 
             if nr_coins_won == 0:
                 nr_coins_won = amount // 2
 
-        self.bot.player_service.add_coins(player, nr_coins_won)
+        self.bot.player_service.add_coins(player_id, nr_coins_won)
 
         result_embed = get_embed(
             "Horse Race Results",
@@ -76,7 +77,7 @@ class GambleCog(commands.Cog):
 
         # Give player a chance for case drop if they gamble at least 10
         if amount >= 10:
-            await self.handle_case_drop(ctx, player)
+            await self.handle_case_drop(ctx, player_id)
 
     @gamble.error
     async def gamble_error(self, ctx: commands.Context, error):
@@ -85,16 +86,16 @@ class GambleCog(commands.Cog):
 
     @commands.hybrid_command(name="roulette", description="Welcome to Vegas!")
     async def roulette(self, ctx: commands.Context, amount: int):
-        player = self.bot.player_service.get_player(ctx.author.id)
+        player_id = ctx.author.id
 
-        self.bot.player_service.remove_coins(player, amount)
+        self.bot.player_service.remove_coins(player_id, amount)
 
-        if player.id in self.roulette_event.participants:
-            self.roulette_event.participants[player.id]["coins"] += amount
+        if player_id in self.roulette_event.participants:
+            self.roulette_event.participants[player_id]["coins"] += amount
         else:
-            self.roulette_event.participants[player.id] = {}
-            self.roulette_event.participants[player.id]["user"] = ctx.author
-            self.roulette_event.participants[player.id]["coins"] = amount
+            self.roulette_event.participants[player_id] = {}
+            self.roulette_event.participants[player_id]["user"] = ctx.author
+            self.roulette_event.participants[player_id]["coins"] = amount
 
         if not self.roulette_event.event_started:
             self.roulette_event.event_started = True
@@ -152,9 +153,8 @@ class GambleCog(commands.Cog):
         if len(participants) < 2:
             # Refund player coins
             for player_id in participants:
-                player = self.bot.player_service.get_player(player_id)
                 self.bot.player_service.add_coins(
-                    player, participants[player_id]["coins"]
+                    player_id, participants[player_id]["coins"]
                 )
 
             await ctx.send(
@@ -166,13 +166,11 @@ class GambleCog(commands.Cog):
         user_coins = [user_info["coins"] for user_info in participants.values()]
 
         winner = random.choices(users, weights=user_coins, k=1)[0]
-        winner_player = self.bot.player_service.get_player(winner.id)
-        winner_avatar = winner_player.active_avatar
         win_amount = sum(user_coins)
 
         odds_table = get_odds_table(participants)
 
-        self.bot.player_service.add_coins(winner_player, win_amount)
+        self.bot.player_service.add_coins(winner.id, win_amount)
 
         embed = get_embed(
             "🎉 Roulette Winner Announcement 🎉",
@@ -180,7 +178,7 @@ class GambleCog(commands.Cog):
             discord.Color.gold(),
         )
         embed.add_field(
-            name=f"{winner.name}{winner_avatar} won!",
+            name=f"{winner.name} won!",
             value=f"You win {win_amount} coin(s).",
             inline=False,
         )
@@ -191,11 +189,11 @@ class GambleCog(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    async def handle_case_drop(self, ctx: commands.Context, player: Player):
+    async def handle_case_drop(self, ctx: commands.Context, player_id: int):
         # 10% chance to drop a case
         if random.random() < 0.1:
-            item = self.bot.store.get_item("5")  # Hard coded, probably bad
-            self.bot.player_service.add_item(player, item)
+            item = self.bot.store.get_item("5")  # Hard coded, bad
+            self.bot.player_service.add_item(player_id, item)
             await ctx.send(content=f"🍀 {ctx.author.mention} got a case in a drop! 🍀")
 
 
@@ -223,14 +221,14 @@ def get_odds_table(participants: Dict[int, Any]) -> str:
     return table_str
 
 
-async def handle_race_message(player: Player, row: int, ctx: commands.Context):
+async def handle_race_message(ctx: commands.Context, row: int, avatar: str):
     # Race variables
     values = [0, 0, 0, 0]
     length = 20
     symbols = [EMOJI_ROCKET, EMOJI_PENGUIN, EMOJI_OCTOPUS, EMOJI_SANTA]
 
-    if player.active_avatar:
-        symbols[row] = player.active_avatar
+    if avatar:
+        symbols[row] = avatar
 
     embed = get_embed(
         "Horse Race",

@@ -1,10 +1,11 @@
 import json
 import random
 from typing import Dict, Any
+from discord.ext.commands import CommandError
 
 
 class CaseAPI:
-    """ """
+    """"""
 
     def __init__(self, file_path: str):
         self._cases = self._load_cases(file_path)
@@ -14,11 +15,9 @@ class CaseAPI:
             with open(file_path, "r") as file:
                 return json.load(file)
         except FileNotFoundError:
-            print(f"Error: The file '{file_path}' was not found.")
-            return {}
+            raise CaseAPIError(f"The file '{file_path}' was not found.")
         except json.JSONDecodeError:
-            print(f"Error: Could not decode the contents of '{file_path}'.")
-            return {}
+            raise CaseAPIError(f"Could not decode the contents of {file_path}")
 
     def get_case_item(self):
         tier_names = []
@@ -36,4 +35,9 @@ class CaseAPI:
         return selected_tier, random.choice(self._cases[selected_tier]["items"])
 
     def get_tiers(self):
-        return self._cases
+        """Get a dict of the case tiers and items"""
+        return self._cases.copy()
+
+
+class CaseAPIError(CommandError):
+    """Exception raised when interacting with the case API"""

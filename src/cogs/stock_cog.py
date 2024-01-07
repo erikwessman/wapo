@@ -128,11 +128,12 @@ class StockCog(commands.Cog):
             raise commands.CommandError("You must buy at least 1 share")
 
         stock = self.bot.stock_service.get_stock(ticker)
-        player = self.bot.player_service.get_player(ctx.author.id)
         stock_price = self.bot.stock_service.get_current_stock_price(stock)
         total = stock_price * quantity
 
-        self.bot.player_service.buy_stock(player, stock.ticker, stock_price, quantity)
+        self.bot.player_service.buy_stock(
+            ctx.author.id, stock.ticker, stock_price, quantity
+        )
 
         await ctx.send(f"Bought {quantity} shares of {ticker} for {total} coins")
 
@@ -147,11 +148,12 @@ class StockCog(commands.Cog):
             raise commands.CommandError("You must sell at least 1 share")
 
         stock = self.bot.stock_service.get_stock(ticker)
-        player = self.bot.player_service.get_player(ctx.author.id)
-        stock_price = self.bot.stock_service.get_current_stock_price(stock.ticker)
+        stock_price = self.bot.stock_service.get_current_stock_price(stock)
         total = stock_price * quantity
 
-        self.bot.player_service.sell_stock(player, stock.ticker, stock_price, quantity)
+        self.bot.player_service.sell_stock(
+            ctx.author.id, stock.ticker, stock_price, quantity
+        )
 
         await ctx.send(f"Sold {quantity} shares of {ticker} for {total} coins")
 

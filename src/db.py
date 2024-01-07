@@ -52,7 +52,7 @@ class DB:
         update_data.pop("_id", None)
         Player.objects(id=player.id).update_one(**update_data)
 
-    def has_player(self, player_id: int):
+    def has_player(self, player_id: int) -> bool:
         return Player.objects(id=player_id).count() > 0
 
     def delete_player(self, player_id: int) -> None:
