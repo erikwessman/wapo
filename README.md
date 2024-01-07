@@ -40,8 +40,3 @@ kool run dev
 2. Install dependencies in `requirements.txt`
 3. Start a MongoDB instance
 4. Start the bot with `python src/bot.py`
-
-<!-- ------- some developer comments ------- -->
-
-<!-- Dev command, will reset -->
-<!-- docker stop $(docker ps -aq) && docker rm $(docker ps -aq) && docker-compose up --build -->

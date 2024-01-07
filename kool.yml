@@ -1,4 +1,6 @@
 scripts:
+  lint:
+    - kool exec app pip install black
+    - kool exec app black .
   dev:
-    - kool docker kooldev/bash -c "cp .env.example .env"
     - kool start

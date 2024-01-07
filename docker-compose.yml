@@ -7,6 +7,8 @@ services:
       - "8000:8000"
     depends_on:
       - mongo
+    volumes:
+      - .:/app:delegated
 
   mongo:
     image: mongo
