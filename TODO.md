@@ -102,12 +102,12 @@
 - [X] Make active avatar just be a string
 - [X] Add avatar to profile
 - [X] Figure out why coins disappear mysteriously
+- [X] Save information
+    - [X] Save gambles
+    - [X] Create gamble schema (winner, amount, row etc)
+    - [X] Save roulettes
 - [ ] Logging
 - [ ] Fix not being able to complete crossword
-- [ ] Save information
-    - [ ] Save gambles
-    - [ ] Create gamble schema (winner, amount, row etc)
-    - [ ] Save roulettes
 - [ ] Add /stats command to get roulettes/gambles etc
 - [ ] Add better README with instructions
 - [ ] Get day of the week crossword (e.g. !wapo tuesday)
