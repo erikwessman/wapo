@@ -107,7 +107,7 @@ class GambleCog(commands.Cog):
 
         if not self.roulette_event.event_started:
             self.roulette_event.event_started = True
-            event_time = 30
+            event_time = 5 * 60
 
             embed = get_embed(
                 "🌟 Roulette Event Alert! 🌟",
@@ -158,7 +158,7 @@ class GambleCog(commands.Cog):
     async def handle_roulette_event_end(self, ctx: commands.Context):
         participants = self.roulette_event.participants
 
-        if len(participants) < 1:
+        if len(participants) < 2:
             # Refund player coins
             for player_id in participants:
                 player = self.bot.player_service.get_player(player_id)
