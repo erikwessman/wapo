@@ -13,6 +13,7 @@ from cogs.stock_cog import StockCog
 from services.player_service import PlayerService
 from services.crossword_service import CrosswordService
 from services.roulette_service import RouletteService
+from services.horse_race_service import HorseRaceService
 from services.stock_service import StockService
 from store import Store
 from case_api import CaseAPI
@@ -24,6 +25,7 @@ class WaPoBot(commands.Bot):
         self.player_service = PlayerService(db)
         self.crossword_service = CrosswordService(db)
         self.roulette_service = RouletteService(db)
+        self.horse_race_service = HorseRaceService(db)
         self.stock_service = StockService(db)
         self.store = Store("data/items.json")
         self.case_api = CaseAPI("data/cases.json")

@@ -34,18 +34,14 @@ class PlayerService:
     def get_players(self) -> List[Player]:
         return self.db.get_players()
 
-    def add_coins(self, player_id: int, amount: int):
-        player = self.get_player(player_id)
-
+    def add_coins(self, player: Player, amount: int):
         if amount < 0:
             raise ValueError("Cannot add negative coins")
 
         player.coins += amount
         self.db.update_player(player)
 
-    def remove_coins(self, player_id: int, amount: int):
-        player = self.get_player(player_id)
-
+    def remove_coins(self, player: Player, amount: int):
         if amount < 0:
             raise ValueError("Cannot remove negative coins")
 
@@ -55,9 +51,7 @@ class PlayerService:
         player.coins -= amount
         self.db.update_player(player)
 
-    def buy_item(self, player_id: int, item: Item, quantity: int = 1):
-        player = self.get_player(player_id)
-
+    def buy_item(self, player: Player, item: Item, quantity: int = 1):
         if player.coins < item.price * quantity:
             raise PlayerError("Insufficient coins")
 
@@ -69,9 +63,7 @@ class PlayerService:
         player.coins -= item.price * quantity
         self.db.update_player(player)
 
-    def remove_item(self, player_id: int, item: Item, quantity: int = 1):
-        player = self.get_player(player_id)
-
+    def remove_item(self, player: Player, item: Item, quantity: int = 1):
         if item.id not in player.inventory:
             raise PlayerError("Item not in inventory")
 
@@ -82,10 +74,8 @@ class PlayerService:
 
         self.db.update_player(player)
 
-    def add_item(self, player_id: int, item: Item, quantity: int = 1):
+    def add_item(self, player: Player, item: Item, quantity: int = 1):
         """Add an item to a player without deducting their coins"""
-        player = self.get_player(player_id)
-
         if item.id in player.inventory:
             player.inventory[item.id] += quantity
         else:
@@ -93,41 +83,29 @@ class PlayerService:
 
         self.db.update_player(player)
 
-    def add_modifier(self, player_id: int, modifier_name: str):
-        player = self.get_player(player_id)
+    def add_modifier(self, player: Player, modifier_name: str):
         player.modifiers.append(modifier_name)
         self.db.update_player(player)
 
-    def use_modifier(self, player_id: int, modifier_name: str):
-        player = self.get_player(player_id)
-
+    def use_modifier(self, player: Player, modifier_name: str):
         if modifier_name not in player.modifiers:
             raise PlayerError("You don't have this modifier")
 
         player.modifiers.remove(modifier_name)
         self.db.update_player(player)
 
-    def has_modifier(self, player_id: int, modifier_name: str):
-        player = self.get_player(player_id)
-        return modifier_name in player.modifiers
-
-    def update_flex_level(self, player_id: int, flex_level: int):
-        player = self.get_player(player_id)
+    def update_flex_level(self, player: Player, flex_level: int):
         player.flex_level = flex_level
         self.db.update_player(player)
 
-    def update_avatar(self, player_id: int, icon: str):
-        player = self.get_player(player_id)
-
+    def update_avatar(self, player: Player, icon: str):
         if icon not in player.avatars:
             raise PlayerError("You don't have this avatar")
 
         player.active_avatar = icon
         self.db.update_player(player)
 
-    def add_avatar(self, player_id: int, icon: str, rarity: str):
-        player = self.get_player(player_id)
-
+    def add_avatar(self, player: Player, icon: str, rarity: str):
         if icon in player.avatars:
             player.avatars[icon].count += 1
         else:
@@ -135,9 +113,7 @@ class PlayerService:
 
         self.db.update_player(player)
 
-    def buy_stock(self, player_id: int, ticker: str, price: int, quantity: int = 1):
-        player = self.get_player(player_id)
-
+    def buy_stock(self, player: Player, ticker: str, price: int, quantity: int = 1):
         if player.coins < price * quantity:
             raise PlayerError("Insufficient coins")
 
@@ -163,9 +139,7 @@ class PlayerService:
         player.coins -= price * quantity
         self.db.update_player(player)
 
-    def sell_stock(self, player_id: int, ticker: str, price: int, quantity: int = 1):
-        player = self.get_player(player_id)
-
+    def sell_stock(self, player: Player, ticker: str, price: int, quantity: int = 1):
         if ticker not in player.holdings:
             raise PlayerError(f"You do not own any shares of ${ticker}")
 

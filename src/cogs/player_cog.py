@@ -115,9 +115,10 @@ class PlayerCog(commands.Cog):
     @commands.hybrid_command(name="use", description="Use an item")
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def use(self, ctx: commands.Context, item_id: str):
+        player = self.bot.player_service.get_player(ctx.author.id)
         item = self.bot.store.get_item(item_id)
 
-        await self.use_item(ctx, ctx.author.id, item)
+        await self.use_item(ctx, player, item)
         await ctx.send(content=f"Used {item.name}", ephemeral=True)
 
     @use.error
@@ -136,8 +137,11 @@ class PlayerCog(commands.Cog):
         if amount < 1:
             raise commands.BadArgument("Must give at least 1 coin")
 
-        self.bot.player_service.remove_coins(ctx.author.id, amount)
-        self.bot.player_service.add_coins(user.id, amount)
+        sender = self.bot.player_service.get_player(ctx.author.id)
+        receiver = self.bot.player_service.get_player(user.id)
+
+        self.bot.player_service.remove_coins(sender, amount)
+        self.bot.player_service.add_coins(receiver, amount)
 
         await ctx.send(content=f"Gave {user.name} {amount} coin(s)")
 
@@ -192,7 +196,8 @@ class PlayerCog(commands.Cog):
 
     @commands.hybrid_command(name="avatar", description="Change your current avatar")
     async def avatar(self, ctx: commands.Context, avatar: str):
-        self.bot.player_service.update_avatar(ctx.author.id, avatar)
+        player = self.bot.player_service.get_player(ctx.author.id)
+        self.bot.player_service.update_avatar(player, avatar)
         await ctx.send(content="Updated avatar", ephemeral=True)
 
     @avatar.error
@@ -223,31 +228,31 @@ class PlayerCog(commands.Cog):
 
     # --- Helpers ---
 
-    async def use_item(self, ctx: commands.Context, player_id: int, item: Item):
+    async def use_item(self, ctx: commands.Context, player: Player, item: Item):
         if item.one_time_use:
-            self.bot.player_service.remove_item(player_id, item)
+            self.bot.player_service.remove_item(player, item)
 
         if item.id == "1":
-            self.apply_gamble_bonus(player_id)
+            self.apply_gamble_bonus(player)
         elif item.id == "3":
-            self.apply_flex(player_id, 1)
+            self.apply_flex(player, 1)
         elif item.id == "4":
-            self.apply_flex(player_id, 2)
+            self.apply_flex(player, 2)
         elif item.id == "5":
-            await self.open_case(ctx, player_id)
+            await self.open_case(ctx, player)
         else:
             raise commands.CommandError("Failed to use item")
 
-    def apply_gamble_bonus(self, player_id: int):
-        self.bot.player_service.add_modifier(player_id, HORSE_INSURANCE_MODIFIER)
+    def apply_gamble_bonus(self, player: Player):
+        self.bot.player_service.add_modifier(player, HORSE_INSURANCE_MODIFIER)
 
-    def apply_flex(self, player_id: int, flex_level: int):
-        self.bot.player_service.update_flex_level(player_id, flex_level)
+    def apply_flex(self, player: Player, flex_level: int):
+        self.bot.player_service.update_flex_level(player, flex_level)
 
-    async def open_case(self, ctx: commands.Context, player_id: int):
+    async def open_case(self, ctx: commands.Context, player: Player):
         rarity, icon = self.bot.case_api.get_case_item()
 
-        self.bot.player_service.add_avatar(player_id, icon, rarity)
+        self.bot.player_service.add_avatar(player, icon, rarity)
 
         rarity_colors = {
             "Common": 0xFFFFFF,

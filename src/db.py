@@ -7,6 +7,7 @@ from mongoengine import connect
 from schemas.player import Player
 from schemas.crossword import Crossword
 from schemas.roulette import Roulette
+from schemas.horse_race import HorseRace
 from schemas.stock import Stock
 from schemas.stock_price import StockPrice
 
@@ -87,9 +88,6 @@ class DB:
 
     # --- Roulette helper methods ---
 
-    def get_roulette(self, id: str) -> Roulette:
-        return Roulette.objects(id=id).first()
-
     def get_roulettes(self, skip: int = 0, limit: int = 0) -> List[Roulette]:
         return list(Roulette.objects.skip(skip).limit(limit))
 
@@ -97,17 +95,20 @@ class DB:
         roulette.save()
         return str(roulette.id)
 
-    def update_roulette(self, roulette: Roulette) -> None:
-        Roulette.objects(id=roulette.id).update_one(**roulette.to_mongo())
-
-    def has_roulette(self, id: str) -> bool:
-        return Roulette.objects(id=id).count() > 0
-
-    def delete_roulette(self, id: str) -> None:
-        Roulette.objects(id=id).delete()
-
     def delete_all_roulettes(self):
         Roulette.objects.delete()
+
+    # --- HorseRace helper methods ---
+
+    def get_horse_races(self, skip: int = 0, limit: int = 0) -> List[HorseRace]:
+        return list(HorseRace.objects.skip(skip).limit(limit))
+
+    def add_horse_race(self, horse_race: HorseRace) -> str:
+        horse_race.save()
+        return str(horse_race.id)
+
+    def delete_all_horse_races(self):
+        HorseRace.objects.delete()
 
     # --- Stock helper methods ---
 

@@ -65,8 +65,9 @@ class StoreCog(commands.Cog):
         if quantity < 1:
             raise commands.CommandError("Must buy at least 1 item")
 
+        player = self.bot.player_service.get_player(ctx.author.id)
         item = self.bot.store.get_item(item_id)
-        self.bot.player_service.buy_item(ctx.author.id, item, quantity)
+        self.bot.player_service.buy_item(player, item, quantity)
 
         await ctx.send(content=f"Bought {quantity} {item.name}(s)")
 
