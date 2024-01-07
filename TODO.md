@@ -100,8 +100,9 @@
     - [X] Print the drop rate table tiers and its content with /case
 - [X] Nerf Horse Insurance (consume item even if not last place)
 - [X] Make active avatar just be a string
-- [ ] Add avatar to profile
-- [ ] Figure out why coins disappear mysteriously
+- [X] Add avatar to profile
+- [X] Figure out why coins disappear mysteriously
+- [ ] Logging
 - [ ] Fix not being able to complete crossword
 - [ ] Save information
     - [ ] Save gambles
@@ -115,5 +116,4 @@
 - [ ] LOW PRIORITY
     - [ ] Add timezone to date outputs (like plot)
     - [ ] Unit testing
-    - [ ] Logging
     - [ ] Docstrings

@@ -19,23 +19,21 @@ class Store:
                 raw_data = json.load(file)
                 return {key: Item(**item_data) for key, item_data in raw_data.items()}
         except FileNotFoundError:
-            print(f"Error: The file '{file_path}' was not found.")
-            return {}
+            raise StoreError(f"The file '{file_path}' was not found.")
         except json.JSONDecodeError:
-            print(f"Error: Could not decode the contents of '{file_path}'.")
-            return {}
+            raise StoreError(f"Could not decode the contents of '{file_path}'")
 
     def get_item(self, item_id: str) -> Item:
+        """Get an item from the store"""
         if item_id not in self._items:
             raise StoreError(f"Item with id {item_id} does not exist")
 
         return self._items.get(item_id)
 
     def get_items(self) -> List[Item]:
-        return list(self._items.values())
+        """Get all the items the store"""
+        return list(self._items.values()).copy()
 
 
 class StoreError(CommandError):
-    """
-    Exception raised when interacting with a stock
-    """
+    """Exception raised when interacting with the store"""
