@@ -3,21 +3,30 @@
 A bot that sends a link to today's Washington Post crossword puzzle (and a bit more)
 
 - [WAPO Bot](#wapo-bot)
-  - [Setup](#setup)
-    - [Run with kool.dev 😎 🤙](#run-with-kooldev--)
-    - [Run with Docker 😬](#run-with-docker-)
-      - [Run a Clean Installation](#run-a-clean-installation)
+  - [Start the bot](#start-the-bot)
+    - [.env file](#env-file)
+    - [Start with kool.dev](#start-with-kooldev)
+    - [Start manually](#start-manually)
 
+## Start the bot
 
-## Setup
+How to start the bot:
 
-Create and setup .env file:
+1. Setup the .env file as shown [here](#env-file)
+2. Start with kool.dev as shown [here](#run-with-kooldev) *(recommended)*
+3. OR, start manually, see [Start manually](#start-manually)
 
+### .env file
+
+```yml
+DISCORD_TOKEN=your_token # REQUIRED
+
+MONGO_HOST=host          # OPTIONAL if default values
+MONGO_USER=user          # OPTIONAL if default values
+MONGO_PASS=pass          # OPTIONAL if default values
 ```
-DISCORD_TOKEN=your_token
-```
 
-### Run with kool.dev 😎 🤙
+### Start with kool.dev
 
 (Install kool.dev: `curl -fsSL https://kool.dev/install | bash`)
 
@@ -25,14 +34,14 @@ DISCORD_TOKEN=your_token
 kool run dev
 ```
 
-### Run with Docker 😬
+### Start manually
 
-I dunno search it up, but you can do it
+1. Setup the .env file
+2. Install dependencies in `requirements.txt`
+3. Start a MongoDB instance
+4. Start the bot with `python src/bot.py`
 
-#### Run a Clean Installation
+<!-- ------- some developer comments ------- -->
 
-⚠️ ONLY FOR DEV, WILL RESET IT ⚠️
-
-```bash
-docker stop $(docker ps -aq) && docker rm $(docker ps -aq) && docker-compose up --build
-```
+<!-- Dev command, will reset -->
+<!-- docker stop $(docker ps -aq) && docker rm $(docker ps -aq) && docker-compose up --build -->
