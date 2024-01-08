@@ -4,7 +4,7 @@ import calendar
 import validators
 import discord
 
-from const import GITHUB_REPOSITORY, GITHUB_ICON
+from const import GITHUB_REPOSITORY, GITHUB_ICON, DAY_SCORE_TABLE, TIME_MULTIPLIER_TABLE
 
 
 def calculate_new_average_price(
@@ -69,23 +69,12 @@ def get_puzzle_reward(day: str, complete_time: int) -> int:
     Returns:
     - int: The calculated reward score.
     """
-    day_score_table = {
-        "Monday": 1,
-        "Tuesday": 2,
-        "Wednesday": 3,
-        "Thursday": 4,
-        "Friday": 5,
-        "Saturday": 6,
-        "Sunday": 10,
-    }
 
-    time_multiplier_table = {5 * 60: 5, 7 * 60: 4, 10 * 60: 3, 15 * 60: 2}
+    score = DAY_SCORE_TABLE[day]
 
-    score = day_score_table[day]
-
-    for time_s in time_multiplier_table:
+    for time_s, multiplier in TIME_MULTIPLIER_TABLE.items():
         if complete_time <= time_s:
-            score *= time_multiplier_table[time_s]
+            score *= multiplier
             break
 
     return score
