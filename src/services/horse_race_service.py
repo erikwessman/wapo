@@ -20,4 +20,4 @@ class HorseRaceService:
         return self.db.get_horse_races()
 
     def get_player_horse_races(self, player_id: int) -> List[HorseRace]:
-        pass
+        return self.db.get_horse_races_by_player(player_id)

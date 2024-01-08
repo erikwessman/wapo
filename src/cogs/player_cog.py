@@ -20,9 +20,11 @@ class PlayerCog(commands.Cog):
     async def profile(self, ctx: commands.Context):
         player = self.bot.player_service.get_player(ctx.author.id)
         name = ctx.author.name
-        avatar = player.active_avatar
+        avatar = player.active_avatar or "No avatar"
         inventory = player.inventory
         coins = player.coins
+        horse_race_stats = self.get_horse_race_stats(player.id)
+        roulette_stats = self.get_roulette_stats(player.id)
 
         embed = get_embed(
             f"Profile: {name}",
@@ -31,16 +33,23 @@ class PlayerCog(commands.Cog):
         )
         embed.set_thumbnail(url=ctx.author.avatar.url)
 
-        embed.add_field(
-            name="Avatar", value=f"{avatar or 'No custom avatar'}", inline=False
-        )
+        embed.add_field(name="Avatar", value=avatar, inline=False)
         embed.add_field(
             name="Inventory",
             value=f"{str(len(inventory))} item(s)",
             inline=False,
         )
         embed.add_field(name="Coins", value=str(coins), inline=True)
-
+        embed.add_field(
+            name="Horse Race Stats",
+            value=horse_race_stats,
+            inline=False,
+        )
+        embed.add_field(
+            name="Roulette Stats",
+            value=roulette_stats,
+            inline=False,
+        )
         await ctx.send(embed=embed, ephemeral=True)
 
     @profile.error
@@ -227,6 +236,51 @@ class PlayerCog(commands.Cog):
             await ctx.send(content=f"`avatars` error: {error}")
 
     # --- Helpers ---
+
+    def get_horse_race_stats(self, player_id: int) -> str:
+        horse_races = self.bot.horse_race_service.get_player_horse_races(player_id)
+        if horse_races:
+            total_bet = sum(h.bet for h in horse_races)
+            total_win = sum(h.win for h in horse_races)
+            max_win = max(max((h.win - h.bet) for h in horse_races), 0)
+            max_loss = max(max((h.bet - h.win) for h in horse_races), 0)
+
+            return (
+                f"Total bet: {total_bet}\n"
+                f"Total win: {total_win}\n"
+                f"Biggest win: {max_win}\n"
+                f"Biggest loss: {max_loss}"
+            )
+        else:
+            return "No Horse Race data"
+
+    def get_roulette_stats(self, player_id: int) -> str:
+        roulettes = self.bot.roulette_service.get_roulettes_by_player(player_id)
+        total_bet = 0
+        total_win = 0
+        max_win = 0
+        max_loss = 0
+
+        if not roulettes:
+            return "No Roulette data"
+
+        for roulette in roulettes:
+            player_bet = roulette.players.get(str(player_id), 0)
+            total_bet += player_bet
+
+            if roulette.winner == player_id:
+                total_pool = sum(roulette.players.values()) - player_bet
+                total_win += total_pool
+                max_win = max(max_win, total_pool)
+            else:
+                max_loss = max(max_loss, player_bet)
+
+        return (
+            f"Total bet: {total_bet}\n"
+            f"Total win: {total_win}\n"
+            f"Biggest win: {max_win}\n"
+            f"Biggest loss: {max_loss}"
+        )
 
     async def use_item(self, ctx: commands.Context, player: Player, item: Item):
         if item.one_time_use:
