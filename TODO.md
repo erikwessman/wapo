@@ -107,9 +107,9 @@
     - [X] Create gamble schema (winner, amount, row etc)
     - [X] Save roulettes
 - [X] Show gambling stats in /profile
-- [ ] Add rewards cog
-    - [ ] /daily gives 5 coins, 24hr cooldown
-    - [ ] /weekly gives 20, 7 day cooldown
+- [X] Add rewards cog
+    - [X] /daily gives 5 coins, 24hr cooldown
+    - [X] /weekly gives 20, 7 day cooldown
 - [ ] Logging
 - [ ] Fix not being able to complete crossword
 - [ ] Add better README with instructions

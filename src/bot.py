@@ -10,6 +10,7 @@ from cogs.gamble_cog import GambleCog
 from cogs.player_cog import PlayerCog
 from cogs.store_cog import StoreCog
 from cogs.stock_cog import StockCog
+from cogs.reward_cog import RewardCog
 from services.player_service import PlayerService
 from services.crossword_service import CrosswordService
 from services.roulette_service import RouletteService
@@ -88,6 +89,7 @@ async def main():
     await bot.add_cog(PlayerCog(bot))
     await bot.add_cog(StoreCog(bot))
     await bot.add_cog(StockCog(bot))
+    await bot.add_cog(RewardCog(bot))
     await bot.start(os.getenv("DISCORD_TOKEN"))
 
 
