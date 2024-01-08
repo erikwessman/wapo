@@ -108,7 +108,7 @@
     - [X] Save roulettes
 - [ ] Logging
 - [ ] Fix not being able to complete crossword
-- [ ] Add /stats command to get roulettes/gambles etc
+- [ ] Show gambling stats in /profile
 - [ ] Add better README with instructions
 - [ ] Get day of the week crossword (e.g. !wapo tuesday)
 - [ ] Update Google Sheets with time automatically

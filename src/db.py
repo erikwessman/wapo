@@ -91,6 +91,9 @@ class DB:
     def get_roulettes(self, skip: int = 0, limit: int = 0) -> List[Roulette]:
         return list(Roulette.objects.skip(skip).limit(limit))
 
+    def get_roulettes_by_player(self, player_id: int, skip: int = 0, limit: int = 0) -> List[Roulette]:
+        return list(Roulette.objects().skip(skip).limit(limit))
+
     def add_roulette(self, roulette: Roulette) -> str:
         roulette.save()
         return str(roulette.id)
@@ -102,6 +105,9 @@ class DB:
 
     def get_horse_races(self, skip: int = 0, limit: int = 0) -> List[HorseRace]:
         return list(HorseRace.objects.skip(skip).limit(limit))
+
+    def get_horse_races_by_player(self, player_id: int, skip: int = 0, limit: int = 0) -> List[HorseRace]:
+        return list(HorseRace.objects(player=player_id).skip(skip).limit(limit))
 
     def add_horse_race(self, horse_race: HorseRace) -> str:
         horse_race.save()
