@@ -106,9 +106,12 @@
     - [X] Save gambles
     - [X] Create gamble schema (winner, amount, row etc)
     - [X] Save roulettes
+- [X] Show gambling stats in /profile
+- [ ] Add rewards cog
+    - [ ] /daily gives 5 coins, 24hr cooldown
+    - [ ] /weekly gives 20, 7 day cooldown
 - [ ] Logging
 - [ ] Fix not being able to complete crossword
-- [ ] Add /stats command to get roulettes/gambles etc
 - [ ] Add better README with instructions
 - [ ] Get day of the week crossword (e.g. !wapo tuesday)
 - [ ] Update Google Sheets with time automatically
