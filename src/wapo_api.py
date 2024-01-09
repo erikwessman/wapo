@@ -1,6 +1,5 @@
 import os
 import re
-import time
 import traceback
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options as FFOptions
@@ -109,10 +108,6 @@ def get_wapo_url(day: str = None) -> str:
         )
         return textarea_invite_link.get_attribute("value")
 
-    except Exception as error:
-        print(f"Error type: {type(error)}, Error: {error}, Trace: {traceback.format_exc()}")
-        raise
-
     finally:
         driver.quit()
 
@@ -146,11 +141,10 @@ def get_puzzle_time(url: str) -> int:
         )
         driver.switch_to.frame(crossword_frame)
 
-        modal = wait.until(
+        # Wait here for loading
+        wait.until(
             EC.visibility_of_element_located((By.CLASS_NAME, "modal-content"))
         )
-
-        print(modal.get_attribute("innerHTML"))
 
         time_str = wait.until(
             EC.visibility_of_element_located((By.ID, "clock_str"))
@@ -165,7 +159,7 @@ def get_puzzle_time(url: str) -> int:
         return int(minutes) * 60 + int(seconds)
 
     except Exception as error:
-        print(f"Error type: {type(error)}, Error: {error}, Trace: {traceback.format_exc()}")
+        print(f"Cant get xword completing time. Error: {error}, Trace: {traceback.format_exc()}")
         raise
 
     finally:
