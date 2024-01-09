@@ -94,16 +94,19 @@ class CrosswordCog(commands.Cog):
             )
             await message.edit(embed=embed_error)
             return
+        
+        try:
+            puzzle_weekday = helper.get_puzzle_weekday(crossword_date)
+            puzzle_reward = helper.get_puzzle_reward(puzzle_weekday, puzzle_time)
 
-        puzzle_weekday = helper.get_puzzle_weekday(crossword_date)
-        puzzle_reward = helper.get_puzzle_reward(puzzle_weekday, puzzle_time)
+            self.bot.crossword_service.save_crossword(crossword_date)
 
-        self.bot.crossword_service.save_crossword(crossword_date)
+            players = self.bot.player_service.get_players()
 
-        players = self.bot.player_service.get_players()
-
-        for player in players:
-            self.bot.player_service.add_coins(player, puzzle_reward)
+            for player in players:
+                self.bot.player_service.add_coins(player, puzzle_reward)
+        except Exception as e:
+            print(e)
 
         embed_success = get_embed(
             "Crossword Checker",

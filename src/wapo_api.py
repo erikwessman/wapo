@@ -25,14 +25,15 @@ def _get_firefox_driver(geckodriver_path: str):
 
 
 def _get_chrome_driver(chrome_bin_path: str, chromedriver_path: str):
-    chrome_options = ChromeOptions()
-    chrome_options.binary_location = chrome_bin_path
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument("--no-sandbox")
+    options = ChromeOptions()
+    options.binary_location = chrome_bin_path
+    options.add_argument("--headless")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--disable-gpu")
 
     chrome_service = ChromeService(executable_path=chromedriver_path)
-    return webdriver.Chrome(service=chrome_service, options=chrome_options)
+    return webdriver.Chrome(service=chrome_service, options=options)
 
 
 def _get_driver():
@@ -121,28 +122,40 @@ def get_puzzle_time(url: str) -> int:
 
     try:
         driver.get(url)
+        print("here 1")
 
         wait = WebDriverWait(driver, 5)
+
+        print("here 2")
 
         btn_accept_cookies = wait.until(
             EC.element_to_be_clickable((By.ID, "onetrust-accept-btn-handler"))
         )
         btn_accept_cookies.click()
+        print("here 3")
 
         crossword_frame = wait.until(
             EC.element_to_be_clickable((By.ID, "iframe-xword"))
         )
         driver.switch_to.frame(crossword_frame)
+        print("here 4")
 
         time_str = wait.until(
             EC.visibility_of_element_located((By.ID, "clock_str"))
         )  # returns "X minutes and Y seconds"
+        print("here 5")
 
         minutes = re.search(r"(\d+)\s+minutes?", time_str.text)
         seconds = re.search(r"(\d+)\s+seconds?", time_str.text)
 
+        print(minutes)
+        print(seconds)
+
         minutes = int(minutes.group(1)) if minutes else 0
         seconds = int(seconds.group(1)) if seconds else 0
+
+        print(minutes)
+        print(seconds)
 
         return int(minutes) * 60 + int(seconds)
 
