@@ -99,24 +99,10 @@ def get_wapo_url(day: str = None) -> str:
         btn_footer = wait.until(EC.element_to_be_clickable((By.ID, "footer-btn")))
         btn_footer.click()
 
-        driver.execute_script("""
-            var infoModal = document.getElementById('info-modal');
-            if (infoModal) {
-                infoModal.remove();
-            }
-        """)
-
         btn_invite = wait.until(
             EC.element_to_be_clickable((By.CLASS_NAME, "nav-social-play-invite-icon"))
         )
         btn_invite.click()
-
-
-        modal_body_element = wait.until(
-            EC.element_to_be_clickable((By.CLASS_NAME, "modal-body"))
-        )
-        inner_html = modal_body_element.get_attribute('innerHTML')
-        print(inner_html)
 
         textarea_invite_link = wait.until(
             EC.presence_of_element_located((By.ID, "social-link"))
