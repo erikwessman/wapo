@@ -97,7 +97,14 @@ def get_wapo_url(day: str = None) -> str:
         btn_footer.click()
 
         # Wait for things to load
-        time.sleep(2)
+        time.sleep(5)
+
+        driver.execute_script("""
+            var infoModal = document.getElementById('info-modal');
+            if (infoModal) {
+                infoModal.remove();
+            }
+        """)
 
         btn_invite = wait.until(
             EC.element_to_be_clickable((By.CLASS_NAME, "nav-social-play-invite-icon"))
