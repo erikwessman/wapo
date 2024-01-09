@@ -1,6 +1,11 @@
 scripts:
   lint:
+    - kool start
     - kool exec app pip install black
     - kool exec app black .
   dev:
     - kool start
+    - kool exec app /bin/zsh
+  backup:
+    - echo "BEEP BOOP, this is backing up the database"
+    - echo "TODO:\ implement"
