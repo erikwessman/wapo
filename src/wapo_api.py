@@ -141,6 +141,16 @@ def get_puzzle_time(url: str) -> int:
         )
         driver.switch_to.frame(crossword_frame)
 
+        bla = wait.until(
+            EC.visibility_of_element_located((By.CLASS_NAME, "modal-title"))
+        )
+
+        print("here")
+
+        print(bla)
+
+        print(bla.text)
+
         time_str = wait.until(
             EC.visibility_of_element_located((By.ID, "clock_str"))
         )  # returns "X minutes and Y seconds"
