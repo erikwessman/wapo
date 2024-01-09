@@ -10,3 +10,6 @@ RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master
 
 # Install python dependencies
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Dummy command to keep container running
+CMD ["tail", "-f", "/dev/null"]
