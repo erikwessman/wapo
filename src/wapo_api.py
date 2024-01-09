@@ -31,7 +31,6 @@ def _get_chrome_driver(chrome_bin_path: str, chromedriver_path: str):
     options.add_argument("--headless")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
-    options.add_argument("--disable-gpu")
     options.add_argument("--window-size=1920,1080")
 
     chrome_service = ChromeService(executable_path=chromedriver_path)
@@ -78,56 +77,23 @@ def get_wapo_url(day: str = None) -> str:
         )
         btn_accept_cookies.click()
 
-        driver.execute_script("""
-            var leaderboardWrapper = document.getElementById('leaderboard-wrapper');
-            if (leaderboardWrapper) {
-                leaderboardWrapper.remove();
-            }
-        """)
-
         crossword_frame = wait.until(
             EC.element_to_be_clickable((By.ID, "iframe-xword"))
         )
         driver.switch_to.frame(crossword_frame)
-
-        print("here")
 
         item_latest_crossword = wait.until(
             EC.element_to_be_clickable((By.CLASS_NAME, "puzzle-link"))
         )
         item_latest_crossword.click()
 
-        print("here")
-
         btn_footer = wait.until(EC.element_to_be_clickable((By.ID, "footer-btn")))
         btn_footer.click()
-
-        print("here")
-
-        # Wait for things to load
-        time.sleep(2)
-
-        print("here")
-
-        driver.execute_script("""
-            var infoModal = document.getElementById('info-modal');
-            if (infoModal) {
-                infoModal.remove();
-            }
-        """)
-
-        print("here")
-
-        driver.save_screenshot("/app/screen.png")
-
-        print("here")
 
         btn_invite = wait.until(
             EC.element_to_be_clickable((By.CLASS_NAME, "nav-social-play-invite-icon"))
         )
         btn_invite.click()
-
-        print("here")
 
         textarea_invite_link = wait.until(
             EC.presence_of_element_located((By.ID, "social-link"))
