@@ -19,6 +19,7 @@ def _get_firefox_driver(geckodriver_path: str):
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-gpu")
+    options.add_argument("--window-size=1920,1080")
 
     service = FFService(executable_path=geckodriver_path)
     return webdriver.Firefox(options=options, service=service)
@@ -31,6 +32,7 @@ def _get_chrome_driver(chrome_bin_path: str, chromedriver_path: str):
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-gpu")
+    options.add_argument("--window-size=1920,1080")
 
     chrome_service = ChromeService(executable_path=chromedriver_path)
     return webdriver.Chrome(service=chrome_service, options=options)
