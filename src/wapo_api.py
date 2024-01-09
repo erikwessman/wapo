@@ -75,6 +75,13 @@ def get_wapo_url(day: str = None) -> str:
         )
         btn_accept_cookies.click()
 
+        driver.execute_script("""
+            var leaderboardWrapper = document.getElementById('leaderboard-wrapper');
+            if (leaderboardWrapper) {
+                leaderboardWrapper.remove();
+            }
+        """)
+
         crossword_frame = wait.until(
             EC.element_to_be_clickable((By.ID, "iframe-xword"))
         )
