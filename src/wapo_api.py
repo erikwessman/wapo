@@ -111,7 +111,10 @@ def get_wapo_url(day: str = None) -> str:
         )
         btn_invite.click()
 
-        modal_body_element = driver.find_element_by_class_name("modal-body")
+
+        modal_body_element = wait.until(
+            EC.element_to_be_clickable((By.CLASS_NAME, "modal-body"))
+        )
         inner_html = modal_body_element.get_attribute('innerHTML')
         print(inner_html)
 
