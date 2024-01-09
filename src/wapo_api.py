@@ -25,14 +25,15 @@ def _get_firefox_driver(geckodriver_path: str):
 
 
 def _get_chrome_driver(chrome_bin_path: str, chromedriver_path: str):
-    chrome_options = ChromeOptions()
-    chrome_options.binary_location = chrome_bin_path
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument("--no-sandbox")
+    options = ChromeOptions()
+    options.binary_location = chrome_bin_path
+    options.add_argument("--headless")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--disable-gpu")
 
     chrome_service = ChromeService(executable_path=chromedriver_path)
-    return webdriver.Chrome(service=chrome_service, options=chrome_options)
+    return webdriver.Chrome(service=chrome_service, options=options)
 
 
 def _get_driver():
@@ -140,8 +141,6 @@ def get_puzzle_time(url: str) -> int:
             EC.element_to_be_clickable((By.ID, "iframe-xword"))
         )
         driver.switch_to.frame(crossword_frame)
-
-        driver.save_screenshot("/app/my_screenshot.png")
 
         time_str = wait.until(
             EC.visibility_of_element_located((By.ID, "clock_str"))
