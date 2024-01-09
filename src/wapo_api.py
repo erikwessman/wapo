@@ -68,7 +68,7 @@ def get_wapo_url(day: str = None) -> str:
     try:
         driver.get("https://www.washingtonpost.com/crossword-puzzles/daily/")
 
-        wait = WebDriverWait(driver, 5)
+        wait = WebDriverWait(driver, 10)
 
         btn_accept_cookies = wait.until(
             EC.element_to_be_clickable((By.ID, "onetrust-accept-btn-handler"))
