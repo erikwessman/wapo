@@ -31,7 +31,9 @@ def _get_chrome_driver(chrome_bin_path: str, chromedriver_path: str):
     options.add_argument("--headless")
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--disable-gpu")
     options.add_argument("--window-size=1920,1080")
+    options.add_argument("--start-maximized")
 
     chrome_service = ChromeService(executable_path=chromedriver_path)
     return webdriver.Chrome(service=chrome_service, options=options)
@@ -77,6 +79,13 @@ def get_wapo_url(day: str = None) -> str:
         )
         btn_accept_cookies.click()
 
+        driver.execute_script("""
+            var leaderboardWrapper = document.getElementById('leaderboard-wrapper');
+            if (leaderboardWrapper) {
+                leaderboardWrapper.remove();
+            }
+        """)
+
         crossword_frame = wait.until(
             EC.element_to_be_clickable((By.ID, "iframe-xword"))
         )
@@ -90,10 +99,21 @@ def get_wapo_url(day: str = None) -> str:
         btn_footer = wait.until(EC.element_to_be_clickable((By.ID, "footer-btn")))
         btn_footer.click()
 
+        driver.execute_script("""
+            var infoModal = document.getElementById('info-modal');
+            if (infoModal) {
+                infoModal.remove();
+            }
+        """)
+
         btn_invite = wait.until(
             EC.element_to_be_clickable((By.CLASS_NAME, "nav-social-play-invite-icon"))
         )
         btn_invite.click()
+
+        modal_body_element = driver.find_element_by_class_name("modal-body")
+        inner_html = modal_body_element.get_attribute('innerHTML')
+        print(inner_html)
 
         textarea_invite_link = wait.until(
             EC.presence_of_element_located((By.ID, "social-link"))
