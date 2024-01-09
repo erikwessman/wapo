@@ -19,24 +19,37 @@ class PlayerCog(commands.Cog):
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def profile(self, ctx: commands.Context):
         player = self.bot.player_service.get_player(ctx.author.id)
-        player_name = ctx.author.name
-        player_inventory = player.inventory
-        player_coins = player.coins
+        name = ctx.author.name
+        avatar = player.active_avatar or "No avatar"
+        inventory = player.inventory
+        coins = player.coins
+        horse_race_stats = self.get_horse_race_stats(player.id)
+        roulette_stats = self.get_roulette_stats(player.id)
 
         embed = get_embed(
-            f"Profile: {player_name}",
+            f"Profile: {name}",
             f"Player ID: {player.id}",
             discord.Color.green(),
         )
         embed.set_thumbnail(url=ctx.author.avatar.url)
 
+        embed.add_field(name="Avatar", value=avatar, inline=False)
         embed.add_field(
             name="Inventory",
-            value=f"{str(len(player_inventory))} item(s)",
+            value=f"{str(len(inventory))} item(s)",
             inline=False,
         )
-        embed.add_field(name="Coins", value=str(player_coins), inline=True)
-
+        embed.add_field(name="Coins", value=str(coins), inline=True)
+        embed.add_field(
+            name="Horse Race Stats",
+            value=horse_race_stats,
+            inline=False,
+        )
+        embed.add_field(
+            name="Roulette Stats",
+            value=roulette_stats,
+            inline=False,
+        )
         await ctx.send(embed=embed, ephemeral=True)
 
     @profile.error
@@ -83,13 +96,13 @@ class PlayerCog(commands.Cog):
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def inventory(self, ctx: commands.Context):
         player = self.bot.player_service.get_player(ctx.author.id)
-        player_inventory = player.inventory
+        inventory = player.inventory
 
         embed = get_embed(f"{ctx.author.name}'s Inventory", "", discord.Color.orange())
         embed.set_thumbnail(url=ctx.author.avatar.url)
 
-        if player_inventory:
-            for item_id, quantity in player_inventory.items():
+        if inventory:
+            for item_id, quantity in inventory.items():
                 item = self.bot.store.get_item(item_id)
                 embed.add_field(
                     name=f"{item.name} {item.symbol} (x{quantity})",
@@ -109,13 +122,13 @@ class PlayerCog(commands.Cog):
             await ctx.send(content=f"`inventory` error: {error}")
 
     @commands.hybrid_command(name="use", description="Use an item")
-    @commands.cooldown(1, 10, commands.BucketType.user)
+    @commands.cooldown(1, 5, commands.BucketType.user)
     async def use(self, ctx: commands.Context, item_id: str):
         player = self.bot.player_service.get_player(ctx.author.id)
         item = self.bot.store.get_item(item_id)
 
-        self.use_item(player, item)
-        await ctx.send(content=f"Used {item.name}")
+        await self.use_item(ctx, player, item)
+        await ctx.send(content=f"Used {item.name}", ephemeral=True)
 
     @use.error
     async def use_error(self, ctx: commands.Context, error):
@@ -133,10 +146,10 @@ class PlayerCog(commands.Cog):
         if amount < 1:
             raise commands.BadArgument("Must give at least 1 coin")
 
-        player = self.bot.player_service.get_player(ctx.author.id)
+        sender = self.bot.player_service.get_player(ctx.author.id)
         receiver = self.bot.player_service.get_player(user.id)
 
-        self.bot.player_service.remove_coins(player, amount)
+        self.bot.player_service.remove_coins(sender, amount)
         self.bot.player_service.add_coins(receiver, amount)
 
         await ctx.send(content=f"Gave {user.name} {amount} coin(s)")
@@ -185,25 +198,102 @@ class PlayerCog(commands.Cog):
 
         await ctx.send(content=message)
 
+    @flex.error
+    async def flex_error(self, ctx: commands.Context, error):
+        if isinstance(error, commands.CommandError):
+            await ctx.send(content=f"`flex` error: {error}")
+
+    @commands.hybrid_command(name="avatar", description="Change your current avatar")
+    async def avatar(self, ctx: commands.Context, avatar: str):
+        player = self.bot.player_service.get_player(ctx.author.id)
+        self.bot.player_service.update_avatar(player, avatar)
+        await ctx.send(content="Updated avatar", ephemeral=True)
+
+    @avatar.error
+    async def avatar_error(self, ctx, error):
+        if isinstance(error, commands.CommandError):
+            await ctx.send(content=f"`avatar` error: {error}")
+
+    @commands.hybrid_command(name="avatars", description="See all your avatars")
+    async def avatars(self, ctx: commands.Context):
+        player = self.bot.player_service.get_player(ctx.author.id)
+        embed = get_embed(f"{ctx.author.name} Avatars", "", discord.Color.blue())
+
+        if player.avatars:
+            for avatar in player.avatars.values():
+                embed.add_field(
+                    name=f"{avatar.icon} - {avatar.rarity} (x{avatar.count})",
+                    value="",
+                    inline=False,
+                )
+        else:
+            embed.add_field(name="No avatars", value="You have no avatars.")
+        await ctx.send(embed=embed)
+
+    @avatars.error
+    async def avatars_error(self, ctx, error):
+        if isinstance(error, commands.CommandError):
+            await ctx.send(content=f"`avatars` error: {error}")
+
     # --- Helpers ---
 
-    def use_item(self, player: Player, item: Item) -> bool:
-        if item.id not in player.inventory:
-            raise commands.CommandError("Item not in inventory")
+    def get_horse_race_stats(self, player_id: int) -> str:
+        horse_races = self.bot.horse_race_service.get_player_horse_races(player_id)
+        if horse_races:
+            total_bet = sum(h.bet for h in horse_races)
+            total_win = sum(h.win for h in horse_races)
+            max_win = max(max((h.win - h.bet) for h in horse_races), 0)
+            max_loss = max(max((h.bet - h.win) for h in horse_races), 0)
 
+            return (
+                f"Total bet: {total_bet}\n"
+                f"Total win: {total_win}\n"
+                f"Biggest win: {max_win}\n"
+                f"Biggest loss: {max_loss}"
+            )
+        else:
+            return "No Horse Race data"
+
+    def get_roulette_stats(self, player_id: int) -> str:
+        roulettes = self.bot.roulette_service.get_roulettes_by_player(player_id)
+        total_bet = 0
+        total_win = 0
+        max_win = 0
+        max_loss = 0
+
+        if not roulettes:
+            return "No Roulette data"
+
+        for roulette in roulettes:
+            player_bet = roulette.players.get(str(player_id), 0)
+            total_bet += player_bet
+
+            if roulette.winner == player_id:
+                total_pool = sum(roulette.players.values()) - player_bet
+                total_win += total_pool
+                max_win = max(max_win, total_pool)
+            else:
+                max_loss = max(max_loss, player_bet)
+
+        return (
+            f"Total bet: {total_bet}\n"
+            f"Total win: {total_win}\n"
+            f"Biggest win: {max_win}\n"
+            f"Biggest loss: {max_loss}"
+        )
+
+    async def use_item(self, ctx: commands.Context, player: Player, item: Item):
         if item.one_time_use:
             self.bot.player_service.remove_item(player, item)
 
-        if item.id == "1":  # Horse insurance
+        if item.id == "1":
             self.apply_gamble_bonus(player)
-        elif item.id == "3":  # UFO horse icon
-            self.apply_horse_icon(player, item.symbol)
-        elif item.id == "4":  # Lips horse icon
-            self.apply_horse_icon(player, item.symbol)
-        elif item.id == "5":
+        elif item.id == "3":
             self.apply_flex(player, 1)
-        elif item.id == "6":
+        elif item.id == "4":
             self.apply_flex(player, 2)
+        elif item.id == "5":
+            await self.open_case(ctx, player)
         else:
             raise commands.CommandError("Failed to use item")
 
@@ -213,5 +303,20 @@ class PlayerCog(commands.Cog):
     def apply_flex(self, player: Player, flex_level: int):
         self.bot.player_service.update_flex_level(player, flex_level)
 
-    def apply_horse_icon(self, player: Player, new_icon: str):
-        self.bot.player_service.update_horse_icon(player, new_icon)
+    async def open_case(self, ctx: commands.Context, player: Player):
+        rarity, icon = self.bot.case_api.get_case_item()
+
+        self.bot.player_service.add_avatar(player, icon, rarity)
+
+        rarity_colors = {
+            "Common": 0xFFFFFF,
+            "Rare": discord.Color.blue(),
+            "Epic": discord.Color.purple(),
+            "Legendary": discord.Color.orange(),
+        }
+
+        embed = get_embed("Case Opened!", "", rarity_colors.get(rarity, 0xFFFFFF))
+        embed.add_field(
+            name="Congratulations!", value=f"You got a {rarity} {icon}!", inline=False
+        )
+        await ctx.send(embed=embed)

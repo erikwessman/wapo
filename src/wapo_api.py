@@ -1,6 +1,6 @@
 import os
 import re
-import time
+import traceback
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options as FFOptions
 from selenium.webdriver.firefox.service import Service as FFService
@@ -18,20 +18,24 @@ def _get_firefox_driver(geckodriver_path: str):
     options.add_argument("--no-sandbox")
     options.add_argument("--disable-dev-shm-usage")
     options.add_argument("--disable-gpu")
+    options.add_argument("--window-size=1920,1080")
 
     service = FFService(executable_path=geckodriver_path)
     return webdriver.Firefox(options=options, service=service)
 
 
 def _get_chrome_driver(chrome_bin_path: str, chromedriver_path: str):
-    chrome_options = ChromeOptions()
-    chrome_options.binary_location = chrome_bin_path
-    chrome_options.add_argument("--headless")
-    chrome_options.add_argument("--disable-dev-shm-usage")
-    chrome_options.add_argument("--no-sandbox")
+    options = ChromeOptions()
+    options.binary_location = chrome_bin_path
+    options.add_argument("--headless")
+    options.add_argument("--no-sandbox")
+    options.add_argument("--disable-dev-shm-usage")
+    options.add_argument("--disable-gpu")
+    options.add_argument("--window-size=1920,1080")
+    options.add_argument("--start-maximized")
 
     chrome_service = ChromeService(executable_path=chromedriver_path)
-    return webdriver.Chrome(service=chrome_service, options=chrome_options)
+    return webdriver.Chrome(service=chrome_service, options=options)
 
 
 def _get_driver():
@@ -67,12 +71,19 @@ def get_wapo_url(day: str = None) -> str:
     try:
         driver.get("https://www.washingtonpost.com/crossword-puzzles/daily/")
 
-        wait = WebDriverWait(driver, 5)
+        wait = WebDriverWait(driver, 10)
 
         btn_accept_cookies = wait.until(
             EC.element_to_be_clickable((By.ID, "onetrust-accept-btn-handler"))
         )
         btn_accept_cookies.click()
+
+        driver.execute_script("""
+            var leaderboardWrapper = document.getElementById('leaderboard-wrapper');
+            if (leaderboardWrapper) {
+                leaderboardWrapper.remove();
+            }
+        """)
 
         crossword_frame = wait.until(
             EC.element_to_be_clickable((By.ID, "iframe-xword"))
@@ -86,9 +97,6 @@ def get_wapo_url(day: str = None) -> str:
 
         btn_footer = wait.until(EC.element_to_be_clickable((By.ID, "footer-btn")))
         btn_footer.click()
-
-        # Wait for things to load
-        time.sleep(2)
 
         btn_invite = wait.until(
             EC.element_to_be_clickable((By.CLASS_NAME, "nav-social-play-invite-icon"))
@@ -104,70 +112,24 @@ def get_wapo_url(day: str = None) -> str:
         driver.quit()
 
 
-def is_complete(url: str) -> bool:
-    """
-    Checks if the crossword puzzle at the given URL is completed.
-
-    Parameters:
-    - url (str): The URL of the crossword puzzle to be checked.
-
-    Returns:
-    - bool: True if the crossword puzzle is completed, False otherwise.
-
-    Raises:
-    - WebDriverException: If there are issues in controlling the browser through WebDriver.
-    - TimeoutException: If the expected elements do not appear within the given time.
-    """
-    driver = _get_driver()
-
-    try:
-        driver.get(url)
-
-        wait = WebDriverWait(driver, 5)
-
-        btn_accept_cookies = wait.until(
-            EC.element_to_be_clickable((By.ID, "onetrust-accept-btn-handler"))
-        )
-        btn_accept_cookies.click()
-
-        crossword_frame = wait.until(
-            EC.element_to_be_clickable((By.ID, "iframe-xword"))
-        )
-        driver.switch_to.frame(crossword_frame)
-
-        modal_title = wait.until(
-            EC.visibility_of_element_located((By.CLASS_NAME, "modal-title"))
-        )
-        return modal_title.text == "Congratulations!"
-
-    except Exception as error:
-        print(f"Unable to check puzzle complete: {error}")
-        return False
-
-    finally:
-        driver.quit()
-
-
 def get_puzzle_time(url: str) -> int:
     """
     Retrieves the time taken to complete a crossword puzzle from a given URL.
+
+    If the webdriver cannot get the puzzle time it raises a ValueError
 
     Parameters:
     - url (str): The URL of the crossword puzzle.
 
     Returns:
     - int: The completion time of the puzzle in seconds.
-
-    Raises:
-    - WebDriverException: If there are issues in controlling the browser through WebDriver.
-    - TimeoutException: If the expected elements do not appear within the given time.
     """
     driver = _get_driver()
 
     try:
         driver.get(url)
 
-        wait = WebDriverWait(driver, 5)
+        wait = WebDriverWait(driver, 10)
 
         btn_accept_cookies = wait.until(
             EC.element_to_be_clickable((By.ID, "onetrust-accept-btn-handler"))
@@ -178,6 +140,11 @@ def get_puzzle_time(url: str) -> int:
             EC.element_to_be_clickable((By.ID, "iframe-xword"))
         )
         driver.switch_to.frame(crossword_frame)
+
+        # Wait here for loading
+        wait.until(
+            EC.visibility_of_element_located((By.CLASS_NAME, "modal-content"))
+        )
 
         time_str = wait.until(
             EC.visibility_of_element_located((By.ID, "clock_str"))
@@ -190,6 +157,10 @@ def get_puzzle_time(url: str) -> int:
         seconds = int(seconds.group(1)) if seconds else 0
 
         return int(minutes) * 60 + int(seconds)
+
+    except Exception as error:
+        print(f"Cant get xword completing time. Error: {error}, Trace: {traceback.format_exc()}")
+        raise
 
     finally:
         driver.quit()

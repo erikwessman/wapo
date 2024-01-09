@@ -127,8 +127,8 @@ class StockCog(commands.Cog):
         if quantity < 1:
             raise commands.CommandError("You must buy at least 1 share")
 
-        stock = self.bot.stock_service.get_stock(ticker)
         player = self.bot.player_service.get_player(ctx.author.id)
+        stock = self.bot.stock_service.get_stock(ticker)
         stock_price = self.bot.stock_service.get_current_stock_price(stock)
         total = stock_price * quantity
 
@@ -146,9 +146,9 @@ class StockCog(commands.Cog):
         if quantity < 1:
             raise commands.CommandError("You must sell at least 1 share")
 
-        stock = self.bot.stock_service.get_stock(ticker)
         player = self.bot.player_service.get_player(ctx.author.id)
-        stock_price = self.bot.stock_service.get_current_stock_price(stock.ticker)
+        stock = self.bot.stock_service.get_stock(ticker)
+        stock_price = self.bot.stock_service.get_current_stock_price(stock)
         total = stock_price * quantity
 
         self.bot.player_service.sell_stock(player, stock.ticker, stock_price, quantity)
@@ -165,9 +165,13 @@ class StockCog(commands.Cog):
         stocks = self.bot.stock_service.get_all_stocks()
 
         for stock in stocks:
-            print(f"Updating prices for ${stock.ticker}...")
+            print(f"Updating ${stock.ticker} stock prices...")
             self.bot.stock_service.simulate_next_stock_prices(stock)
 
+    @update_stock_price.error
+    async def update_stock_price_error(self, error):
+        print(f"Error when updating stocks: {error}")
+
     @update_stock_price.before_loop
-    async def before_my_background_task(self):
+    async def before_update_stock_price(self):
         await self.bot.wait_until_ready()

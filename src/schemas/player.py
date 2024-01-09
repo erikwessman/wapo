@@ -7,6 +7,7 @@ from mongoengine import (
     ListField,
 )
 from schemas.holding import Holding
+from schemas.avatar import Avatar
 
 
 class Player(Document):
@@ -19,7 +20,8 @@ class Player(Document):
     coins = IntField(default=0)
     modifiers = ListField(StringField(), default=list)
     flex_level = IntField(default=0)
-    horse_icon = StringField(default="")
+    active_avatar = StringField(default="")
+    avatars = MapField(EmbeddedDocumentField(Avatar), default=lambda: {})
     holdings = MapField(EmbeddedDocumentField(Holding), default=lambda: {})
 
     meta = {"collection": "players"}

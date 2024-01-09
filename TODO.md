@@ -78,7 +78,6 @@
         - [X] Give option to get for 24hrs, week, month
         - [X] Update the graph to have stock company name and ticker
     - [X] Use better, cheaper stocks (1 - 100 dollars)
-    - [ ] How to handle floats with buy and sell
 - [X] Merge the latest
 - [X] Mongoengine
 - [X] BETTER ERROR HANDLING FFS
@@ -92,11 +91,32 @@
 - [X] Move store
 - [X] Rename classes to types/schemas
 - [X] Pylint
-- [ ] Should not be able to buy when stock is 0 (maybe switch to float..)
+- [X] Should not be able to buy when stock is 0 (maybe switch to float..)
+- [X] Fix stock prices not updating
+    - [X] Sort stock prices before returning in get_stock_prices()
+    - [X] Make sure update_stock_prices throws/catches an error
+- [X] Add Horse Case(s)
+    - [X] New item in shop, Horse Case
+    - [X] Print the drop rate table tiers and its content with /case
+- [X] Nerf Horse Insurance (consume item even if not last place)
+- [X] Make active avatar just be a string
+- [X] Add avatar to profile
+- [X] Figure out why coins disappear mysteriously
+- [X] Save information
+    - [X] Save gambles
+    - [X] Create gamble schema (winner, amount, row etc)
+    - [X] Save roulettes
+- [X] Show gambling stats in /profile
+- [X] Add rewards cog
+    - [X] /daily gives 5 coins, 24hr cooldown
+    - [X] /weekly gives 20, 7 day cooldown
+- [ ] Logging
 - [ ] Fix not being able to complete crossword
 - [ ] Add better README with instructions
 - [ ] Get day of the week crossword (e.g. !wapo tuesday)
-- [ ] Docstrings
-- [ ] Unit testing
-- [ ] Add logging
 - [ ] Update Google Sheets with time automatically
+
+- [ ] LOW PRIORITY
+    - [ ] Add timezone to date outputs (like plot)
+    - [ ] Unit testing
+    - [ ] Docstrings

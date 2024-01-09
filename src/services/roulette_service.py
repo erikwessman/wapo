@@ -1,5 +1,4 @@
-import uuid
-import time
+from typing import Dict, List
 
 from db import DB
 from schemas.roulette import Roulette
@@ -13,10 +12,12 @@ class RouletteService:
     def __init__(self, db: DB):
         self.db = db
 
-    def add_roulette(self, roulette_id: int) -> Roulette:
-        if self.db.has_roulette(roulette_id):
-            raise ValueError("Roulette already exists")
-
-        roulette = Roulette(id=uuid.uuid4(), timestamp=time.time())
+    def add_roulette(self, date, players: Dict[str, int], winner: int):
+        roulette = Roulette(date=date, players=players, winner=winner)
         self.db.add_roulette(roulette)
-        return roulette
+
+    def get_roulettes(self) -> List[Roulette]:
+        return self.db.get_roulettes()
+
+    def get_roulettes_by_player(self, player_id: int) -> List[Roulette]:
+        return self.db.get_roulettes_by_player(player_id)

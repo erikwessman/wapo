@@ -53,6 +53,13 @@ class StockService:
                     for stock_price in stock_prices:
                         self.db.add_stock_price(stock_price)
 
+    def add_stock(self, ticker: str, company: str):
+        if self.db.has_stock(ticker):
+            raise ValueError("Stock with this ticker already exists")
+
+        stock = Stock(ticker=ticker, company=company)
+        self.db.add_stock(stock)
+
     def get_stock_price_plot(self, stock: Stock, stock_prices: List[StockPrice]):
         if not stock_prices:
             raise StockError(f"No data to plot for stock {stock.company}")
@@ -103,13 +110,6 @@ class StockService:
 
     def has_stock_price(self, ticker: str) -> bool:
         return self.db.has_stock_price(ticker)
-
-    def add_stock(self, ticker: str, company: str):
-        if self.db.has_stock(ticker):
-            raise ValueError("Stock with this ticker already exists")
-
-        stock = Stock(ticker=ticker, company=company)
-        self.db.add_stock(stock)
 
 
 class StockError(CommandError):

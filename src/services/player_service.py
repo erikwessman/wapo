@@ -5,6 +5,7 @@ from db import DB
 from schemas.player import Player
 from schemas.item import Item
 from schemas.holding import Holding
+from schemas.avatar import Avatar
 from helper import calculate_new_average_price
 
 
@@ -73,11 +74,23 @@ class PlayerService:
 
         self.db.update_player(player)
 
+    def add_item(self, player: Player, item: Item, quantity: int = 1):
+        """Add an item to a player without deducting their coins"""
+        if item.id in player.inventory:
+            player.inventory[item.id] += quantity
+        else:
+            player.inventory[item.id] = quantity
+
+        self.db.update_player(player)
+
     def add_modifier(self, player: Player, modifier_name: str):
         player.modifiers.append(modifier_name)
         self.db.update_player(player)
 
     def use_modifier(self, player: Player, modifier_name: str):
+        if modifier_name not in player.modifiers:
+            raise PlayerError("You don't have this modifier")
+
         player.modifiers.remove(modifier_name)
         self.db.update_player(player)
 
@@ -85,13 +98,27 @@ class PlayerService:
         player.flex_level = flex_level
         self.db.update_player(player)
 
-    def update_horse_icon(self, player: Player, new_icon: str):
-        player.horse_icon = new_icon
+    def update_avatar(self, player: Player, icon: str):
+        if icon not in player.avatars:
+            raise PlayerError("You don't have this avatar")
+
+        player.active_avatar = icon
+        self.db.update_player(player)
+
+    def add_avatar(self, player: Player, icon: str, rarity: str):
+        if icon in player.avatars:
+            player.avatars[icon].count += 1
+        else:
+            player.avatars[icon] = Avatar(icon=icon, rarity=rarity, count=1)
+
         self.db.update_player(player)
 
     def buy_stock(self, player: Player, ticker: str, price: int, quantity: int = 1):
         if player.coins < price * quantity:
             raise PlayerError("Insufficient coins")
+
+        if quantity < 1:
+            raise PlayerError("Can't buy a negative amount of shares")
 
         if price <= 0:
             raise PlayerError("Can't buy a stock for 0")
@@ -118,6 +145,9 @@ class PlayerService:
     def sell_stock(self, player: Player, ticker: str, price: int, quantity: int = 1):
         if ticker not in player.holdings:
             raise PlayerError(f"You do not own any shares of ${ticker}")
+
+        if quantity < 1:
+            raise PlayerError("Can't sell a negative amount of shares")
 
         if price <= 0:
             raise PlayerError("Can't sell a stock for 0")

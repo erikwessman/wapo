@@ -38,6 +38,27 @@ class StoreCog(commands.Cog):
         if isinstance(error, commands.CommandError):
             await ctx.send(content=f"`store` error: {error}")
 
+    @commands.hybrid_command(name="", description="")
+    @commands.cooldown(1, 10, commands.BucketType.user)
+    async def cases(self, ctx: commands.Context):
+        embed = get_embed("Case Odds & Items", "", discord.Color.red())
+        tiers = self.bot.case_api.get_tiers()
+
+        for tier, tier_info in tiers.items():
+            items_string = " ".join(tier_info["items"])
+            embed.add_field(
+                name=f"{tier} {tier_info['drop_rate']}%",
+                value=items_string,
+                inline=False,
+            )
+
+        await ctx.send(embed=embed)
+
+    @cases.error
+    async def cases_error(self, ctx, error):
+        if isinstance(error, commands.CommandError):
+            await ctx.send(content=f"`cases` error: {error}")
+
     @commands.hybrid_command(name="buy", description="Buy an item from the store")
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def buy(self, ctx: commands.Context, item_id: str, quantity: int = 1):
@@ -46,7 +67,6 @@ class StoreCog(commands.Cog):
 
         player = self.bot.player_service.get_player(ctx.author.id)
         item = self.bot.store.get_item(item_id)
-
         self.bot.player_service.buy_item(player, item, quantity)
 
         await ctx.send(content=f"Bought {quantity} {item.name}(s)")

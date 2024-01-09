@@ -74,7 +74,16 @@ class StockSim:
         date_range_start = start_date + pd.Timedelta(hours=1)
         date_range = pd.date_range(start=date_range_start, end=end_date, freq="H")
 
+        # Replace zero or negative values with 1
+        historical_data["Price"] = historical_data["Price"].apply(
+            lambda x: 1 if x <= 0 else x
+        )
+
         log_returns = np.log(1 + historical_data["Price"].pct_change())
+
+        # Handling NaN values that may have been introduced
+        log_returns = log_returns.fillna(0)
+
         mu = log_returns.mean()
         sigma = log_returns.std()
 

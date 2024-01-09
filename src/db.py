@@ -7,6 +7,7 @@ from mongoengine import connect
 from schemas.player import Player
 from schemas.crossword import Crossword
 from schemas.roulette import Roulette
+from schemas.horse_race import HorseRace
 from schemas.stock import Stock
 from schemas.stock_price import StockPrice
 
@@ -40,16 +41,19 @@ class DB:
     def get_player(self, player_id: int) -> Player:
         return Player.objects(id=player_id).first()
 
-    def add_player(self, player: Player) -> int:
+    def get_players(self, skip: int = 0, limit: int = 0) -> List[Player]:
+        return list(Player.objects.skip(skip).limit(limit))
+
+    def add_player(self, player: Player) -> str:
         player.save()
-        return player.id
+        return str(player.id)
 
     def update_player(self, player: Player):
         update_data = player.to_mongo().to_dict()
         update_data.pop("_id", None)
         Player.objects(id=player.id).update_one(**update_data)
 
-    def has_player(self, player_id: int):
+    def has_player(self, player_id: int) -> bool:
         return Player.objects(id=player_id).count() > 0
 
     def delete_player(self, player_id: int) -> None:
@@ -84,27 +88,38 @@ class DB:
 
     # --- Roulette helper methods ---
 
-    def get_roulette(self, id: str) -> Roulette:
-        return Roulette.objects(id=id).first()
-
     def get_roulettes(self, skip: int = 0, limit: int = 0) -> List[Roulette]:
         return list(Roulette.objects.skip(skip).limit(limit))
+
+    def get_roulettes_by_player(
+        self, player_id: int, skip: int = 0, limit: int = 0
+    ) -> List[Roulette]:
+        query = {f"players.{player_id}": {"$exists": True}}
+        return list(Roulette.objects(__raw__=query).skip(skip).limit(limit))
 
     def add_roulette(self, roulette: Roulette) -> str:
         roulette.save()
         return str(roulette.id)
 
-    def update_roulette(self, roulette: Roulette) -> None:
-        Roulette.objects(id=roulette.id).update_one(**roulette.to_mongo())
-
-    def has_roulette(self, id: str) -> bool:
-        return Roulette.objects(id=id).count() > 0
-
-    def delete_roulette(self, id: str) -> None:
-        Roulette.objects(id=id).delete()
-
     def delete_all_roulettes(self):
         Roulette.objects.delete()
+
+    # --- HorseRace helper methods ---
+
+    def get_horse_races(self, skip: int = 0, limit: int = 0) -> List[HorseRace]:
+        return list(HorseRace.objects.skip(skip).limit(limit))
+
+    def get_horse_races_by_player(
+        self, player_id: int, skip: int = 0, limit: int = 0
+    ) -> List[HorseRace]:
+        return list(HorseRace.objects(player=player_id).skip(skip).limit(limit))
+
+    def add_horse_race(self, horse_race: HorseRace) -> str:
+        horse_race.save()
+        return str(horse_race.id)
+
+    def delete_all_horse_races(self):
+        HorseRace.objects.delete()
 
     # --- Stock helper methods ---
 

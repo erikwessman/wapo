@@ -17,7 +17,7 @@ class CrosswordService:
         if self.db.has_crossword(crossword_date):
             raise ValueError("Crossword already exists")
 
-        crossword = Crossword(crossword_date, score)
+        crossword = Crossword(date=crossword_date, score=score)
         self.db.add_crossword(crossword)
         return crossword
 
