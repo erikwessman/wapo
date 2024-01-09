@@ -97,7 +97,7 @@ def get_wapo_url(day: str = None) -> str:
         btn_footer.click()
 
         # Wait for things to load
-        time.sleep(5)
+        time.sleep(2)
 
         driver.execute_script("""
             var infoModal = document.getElementById('info-modal');
@@ -148,6 +148,8 @@ def get_puzzle_time(url: str) -> int:
             EC.element_to_be_clickable((By.ID, "iframe-xword"))
         )
         driver.switch_to.frame(crossword_frame)
+
+        time.sleep(2)
 
         time_str = wait.until(
             EC.visibility_of_element_located((By.ID, "clock_str"))
