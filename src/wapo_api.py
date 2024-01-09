@@ -90,16 +90,24 @@ def get_wapo_url(day: str = None) -> str:
         )
         driver.switch_to.frame(crossword_frame)
 
+        print("here")
+
         item_latest_crossword = wait.until(
             EC.element_to_be_clickable((By.CLASS_NAME, "puzzle-link"))
         )
         item_latest_crossword.click()
 
+        print("here")
+
         btn_footer = wait.until(EC.element_to_be_clickable((By.ID, "footer-btn")))
         btn_footer.click()
 
+        print("here")
+
         # Wait for things to load
         time.sleep(2)
+
+        print("here")
 
         driver.execute_script("""
             var infoModal = document.getElementById('info-modal');
@@ -108,15 +116,27 @@ def get_wapo_url(day: str = None) -> str:
             }
         """)
 
+        print("here")
+
+        driver.save_screenshot("/app/screen.png")
+
+        print("here")
+
         btn_invite = wait.until(
             EC.element_to_be_clickable((By.CLASS_NAME, "nav-social-play-invite-icon"))
         )
         btn_invite.click()
 
+        print("here")
+
         textarea_invite_link = wait.until(
             EC.presence_of_element_located((By.ID, "social-link"))
         )
         return textarea_invite_link.get_attribute("value")
+
+    except Exception as error:
+        print(f"Error type: {type(error)}, Error: {error}, Trace: {traceback.format_exc()}")
+        raise
 
     finally:
         driver.quit()
