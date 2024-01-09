@@ -9,6 +9,7 @@ from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from selenium.common import exceptions
 
 
 def _get_firefox_driver(geckodriver_path: str):
@@ -104,63 +105,17 @@ def get_wapo_url(day: str = None) -> str:
         driver.quit()
 
 
-def is_complete(url: str) -> bool:
-    """
-    Checks if the crossword puzzle at the given URL is completed.
-
-    Parameters:
-    - url (str): The URL of the crossword puzzle to be checked.
-
-    Returns:
-    - bool: True if the crossword puzzle is completed, False otherwise.
-
-    Raises:
-    - WebDriverException: If there are issues in controlling the browser through WebDriver.
-    - TimeoutException: If the expected elements do not appear within the given time.
-    """
-    driver = _get_driver()
-
-    try:
-        driver.get(url)
-
-        wait = WebDriverWait(driver, 5)
-
-        btn_accept_cookies = wait.until(
-            EC.element_to_be_clickable((By.ID, "onetrust-accept-btn-handler"))
-        )
-        btn_accept_cookies.click()
-
-        crossword_frame = wait.until(
-            EC.element_to_be_clickable((By.ID, "iframe-xword"))
-        )
-        driver.switch_to.frame(crossword_frame)
-
-        modal_title = wait.until(
-            EC.visibility_of_element_located((By.CLASS_NAME, "modal-title"))
-        )
-        return modal_title.text == "Congratulations!"
-
-    except Exception as error:
-        print(f"Unable to check puzzle complete: {error}")
-        return False
-
-    finally:
-        driver.quit()
-
-
 def get_puzzle_time(url: str) -> int:
     """
     Retrieves the time taken to complete a crossword puzzle from a given URL.
+
+    If the webdriver cannot get the puzzle time it raises a ValueError
 
     Parameters:
     - url (str): The URL of the crossword puzzle.
 
     Returns:
     - int: The completion time of the puzzle in seconds.
-
-    Raises:
-    - WebDriverException: If there are issues in controlling the browser through WebDriver.
-    - TimeoutException: If the expected elements do not appear within the given time.
     """
     driver = _get_driver()
 
@@ -190,6 +145,10 @@ def get_puzzle_time(url: str) -> int:
         seconds = int(seconds.group(1)) if seconds else 0
 
         return int(minutes) * 60 + int(seconds)
+
+    except (exceptions.WebDriverException, exceptions.TimeoutException) as error:
+        print(f"Unable to check puzzle complete: {error}")
+        raise ValueError from error
 
     finally:
         driver.quit()

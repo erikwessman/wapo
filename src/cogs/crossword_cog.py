@@ -84,18 +84,21 @@ class CrosswordCog(commands.Cog):
             await message.edit(embed=embed_warning)
             return
 
-        if not wapo_api.is_complete(crossword_link):
+        try:
+            puzzle_time = wapo_api.get_puzzle_time(crossword_link)
+        except Exception:
             embed_error = get_embed(
-                "Crossword Checker", "Crossword is not complete", discord.Color.red()
+                "Error",
+                "Crossword is not complete",
+                discord.Color.red()
             )
             await message.edit(embed=embed_error)
             return
 
-        self.bot.crossword_service.save_crossword(crossword_date)
-
         puzzle_weekday = helper.get_puzzle_weekday(crossword_date)
-        puzzle_time = wapo_api.get_puzzle_time(crossword_link)
         puzzle_reward = helper.get_puzzle_reward(puzzle_weekday, puzzle_time)
+
+        self.bot.crossword_service.save_crossword(crossword_date)
 
         players = self.bot.player_service.get_players()
 
