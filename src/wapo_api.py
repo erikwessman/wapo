@@ -1,6 +1,7 @@
 import os
 import re
 import time
+import traceback
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options as FFOptions
 from selenium.webdriver.firefox.service import Service as FFService
@@ -9,7 +10,6 @@ from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-from selenium.common import exceptions
 
 
 def _get_firefox_driver(geckodriver_path: str):
@@ -122,7 +122,7 @@ def get_puzzle_time(url: str) -> int:
     try:
         driver.get(url)
 
-        wait = WebDriverWait(driver, 5)
+        wait = WebDriverWait(driver, 10)
 
         btn_accept_cookies = wait.until(
             EC.element_to_be_clickable((By.ID, "onetrust-accept-btn-handler"))
@@ -146,9 +146,9 @@ def get_puzzle_time(url: str) -> int:
 
         return int(minutes) * 60 + int(seconds)
 
-    except (exceptions.WebDriverException, exceptions.TimeoutException) as error:
-        print(f"Unable to check puzzle complete: {error}")
-        raise ValueError from error
+    except Exception as error:
+        print(f"Error type: {type(error)}, Error: {error}, Trace: {traceback.format_exc()}")
+        raise
 
     finally:
         driver.quit()
