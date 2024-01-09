@@ -146,7 +146,11 @@ def get_puzzle_time(url: str) -> int:
         )
         driver.switch_to.frame(crossword_frame)
 
-        time.sleep(2)
+        modal = wait.until(
+            EC.visibility_of_element_located((By.CLASS_NAME, "modal-content"))
+        )
+
+        print(modal.get_attribute("innerHTML"))
 
         time_str = wait.until(
             EC.visibility_of_element_located((By.ID, "clock_str"))
