@@ -141,7 +141,7 @@ def get_puzzle_time(url: str) -> int:
         )
         driver.switch_to.frame(crossword_frame)
 
-        driver.save_full_page_screenshot("my_screenshot.png")
+        driver.save_screenshot("my_screenshot.png")
 
         time_str = wait.until(
             EC.visibility_of_element_located((By.ID, "clock_str"))
