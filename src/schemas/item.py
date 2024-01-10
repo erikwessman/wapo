@@ -6,7 +6,6 @@ class Item(EmbeddedDocument):
     Represents an inventory item
     """
 
-    id = StringField(required=True)
     name = StringField(required=True)
     description = StringField()
     one_time_use = BooleanField(required=True)

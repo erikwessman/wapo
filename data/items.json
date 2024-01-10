@@ -1,42 +1,37 @@
-{
-    "1": {
-        "id": "1",
+[
+    {
         "name": "Horse Insurance",
         "description": "Receive 50% of your bet back if your horse finishes last; valid for one race",
         "one_time_use": true,
         "price": 10,
         "symbol": "📜"
     },
-    "2": {
-        "id": "2",
+    {
         "name": "Cricket",
         "description": "Does nothing",
         "one_time_use": false,
         "price": 5,
         "symbol": "🦗"
     },
-    "3": {
-        "id": "3",
+    {
         "name": "Flex",
         "description": "Flaunt that wealth, baby 😎",
         "one_time_use": true,
         "price": 100,
         "symbol": "💰"
     },
-    "4": {
-        "id": "4",
+    {
         "name": "MegaFlex",
         "description": "You... you can afford this? 😳",
         "one_time_use": true,
         "price": 500,
         "symbol": "🤑"
     },
-    "5": {
-        "id": "5",
+    {
         "name": "Avatar Case",
         "description": "Contains 1 avatar",
         "one_time_use": true,
         "price": 10,
         "symbol": "🎁"
     }
-}
+]

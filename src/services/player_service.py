@@ -55,31 +55,31 @@ class PlayerService:
         if player.coins < item.price * quantity:
             raise PlayerError("Insufficient coins")
 
-        if item.id in player.inventory:
-            player.inventory[item.id] += quantity
+        if item.name in player.inventory:
+            player.inventory[item.name] += quantity
         else:
-            player.inventory[item.id] = quantity
+            player.inventory[item.name] = quantity
 
         player.coins -= item.price * quantity
         self.db.update_player(player)
 
     def remove_item(self, player: Player, item: Item, quantity: int = 1):
-        if item.id not in player.inventory:
+        if item.name not in player.inventory:
             raise PlayerError("Item not in inventory")
 
-        player.inventory[item.id] -= quantity
+        player.inventory[item.name] -= quantity
 
-        if player.inventory[item.id] <= 0:
-            del player.inventory[item.id]
+        if player.inventory[item.name] <= 0:
+            del player.inventory[item.name]
 
         self.db.update_player(player)
 
     def add_item(self, player: Player, item: Item, quantity: int = 1):
         """Add an item to a player without deducting their coins"""
-        if item.id in player.inventory:
-            player.inventory[item.id] += quantity
+        if item.name in player.inventory:
+            player.inventory[item.name] += quantity
         else:
-            player.inventory[item.id] = quantity
+            player.inventory[item.name] = quantity
 
         self.db.update_player(player)
 

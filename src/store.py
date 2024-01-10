@@ -2,6 +2,7 @@ import json
 from typing import List, Dict
 from discord.ext.commands import CommandError
 
+import helper
 from schemas.item import Item
 
 
@@ -17,18 +18,24 @@ class Store:
         try:
             with open(file_path, "r") as file:
                 raw_data = json.load(file)
-                return {key: Item(**item_data) for key, item_data in raw_data.items()}
+                return {item_data["name"]: Item(**item_data) for item_data in raw_data}
         except FileNotFoundError:
             raise StoreError(f"The file '{file_path}' was not found.")
         except json.JSONDecodeError:
             raise StoreError(f"Could not decode the contents of '{file_path}'")
 
-    def get_item(self, item_id: str) -> Item:
-        """Get an item from the store"""
-        if item_id not in self._items:
-            raise StoreError(f"Item with id {item_id} does not exist")
+    def get_item(self, item_name: str) -> Item:
+        """
+        Get an item from the store
+        Use fuzzy matching to match with the item that has the closest name
+        """
+        all_item_names = [i.name for i in self.get_items()]
+        item_name = helper.closest_match(item_name, all_item_names)
 
-        return self._items.get(item_id)
+        if item_name not in self._items:
+            raise StoreError(f"Item {item_name} does not exist")
+
+        return self._items.get(item_name)
 
     def get_items(self) -> List[Item]:
         """Get all the items the store"""
