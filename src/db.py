@@ -22,7 +22,7 @@ class DB:
 
     @staticmethod
     def connect(db_name: str = None):
-        db_host = os.getenv("MONGO_HOST") or "localhost"
+        db_host = os.getenv("MONGO_HOST") or "mongo"
         db_user = os.getenv("MONGO_USER") or None
         db_pass = os.getenv("MONGO_PASS") or None
 
