@@ -65,9 +65,3 @@ kool run shell
 ```bash
 kool run lint
 ```
-
-💾 Backup database:
-
-```bash
-kool run backup
-```

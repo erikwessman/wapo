@@ -3,6 +3,7 @@ import asyncio
 import discord
 from discord.ext import commands
 from dotenv import load_dotenv
+from tabulate import tabulate
 from db import DB
 from cogs.crossword_cog import CrosswordCog
 from cogs.admin_cog import AdminCog
@@ -36,6 +37,7 @@ class WaPoBot(commands.Bot):
         try:
             synced = await self.tree.sync()
             print(f"Synced {len(synced)} command(s)")
+            pretty_message("Bot is ready!")
         except Exception as e:
             print(e)
 
@@ -94,6 +96,19 @@ async def main():
     await bot.start(os.getenv("DISCORD_TOKEN"))
 
 
+def pretty_message(message: str):
+    table = [[message]]
+    print(tabulate(table))
+
+
 if __name__ == "__main__":
     load_dotenv()
+
+    discord_token = os.getenv("DISCORD_TOKEN")
+    if discord_token is None or discord_token.strip() == "":
+        pretty_message(
+            "Please set the DISCORD_TOKEN environment variable\nExiting... 👋"
+        )
+        exit(1)
+
     asyncio.run(main())
