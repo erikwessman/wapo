@@ -9,10 +9,3 @@ scripts:
   lint:
     - kool exec app pip install black
     - kool exec app black .
-
-  backup:
-    - echo "BEEP BOOP, this is backing up the database"
-    - echo "TODO:\ implement"
-
-  show-db:
-    - kool exec mongo mongosh wapo --eval "db.stock_prices.find().pretty()"
