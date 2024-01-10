@@ -111,9 +111,9 @@
     - [X] /daily gives 5 coins, 24hr cooldown
     - [X] /weekly gives 20, 7 day cooldown
 - [X] Fix not being able to complete crossword
-- [ ] Change the way items are stored and used
-    - [ ] Make player items be a dictionary that maps the item name to the number of items
-    - [ ] When using an item, look at the name instead of the ID
+- [X] Change the way items are stored and used
+    - [X] Make player items be a dictionary that maps the item name to the number of items
+    - [X] When using an item, look at the name instead of the ID
 - [ ] Logging
 - [ ] Add better README with instructions
 - [ ] Get day of the week crossword (e.g. !wapo tuesday)

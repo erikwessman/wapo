@@ -14,11 +14,13 @@ exceptiongroup==1.2.0
 fonttools==4.47.0
 frozendict==2.3.10
 frozenlist==1.4.0
+fuzzywuzzy==0.18.0
 h11==0.14.0
 html5lib==1.1
 idna==3.6
 iniconfig==2.0.0
 kiwisolver==1.4.5
+Levenshtein==0.23.0
 lxml==5.0.0
 matplotlib==3.8.2
 mongoengine==0.27.0
@@ -37,7 +39,9 @@ PySocks==1.7.1
 pytest==7.4.3
 python-dateutil==2.8.2
 python-dotenv==1.0.0
+python-Levenshtein==0.23.0
 pytz==2023.3.post1
+rapidfuzz==3.6.1
 requests==2.31.0
 selenium==4.16.0
 six==1.16.0
