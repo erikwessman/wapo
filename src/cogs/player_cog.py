@@ -102,11 +102,11 @@ class PlayerCog(commands.Cog):
         embed.set_thumbnail(url=ctx.author.avatar.url)
 
         if inventory:
-            for item_id, quantity in inventory.items():
-                item = self.bot.store.get_item(item_id)
+            for item_name, quantity in inventory.items():
+                item = self.bot.store.get_item(item_name)
                 embed.add_field(
-                    name=f"{item.name} {item.symbol} (x{quantity})",
-                    value=f"ID: {item.id}",
+                    name=f"{item.name} {item.symbol}",
+                    value=f"x{quantity}",
                     inline=False,
                 )
         else:
@@ -123,9 +123,9 @@ class PlayerCog(commands.Cog):
 
     @commands.hybrid_command(name="use", description="Use an item")
     @commands.cooldown(1, 5, commands.BucketType.user)
-    async def use(self, ctx: commands.Context, item_id: str):
+    async def use(self, ctx: commands.Context, item_name: str):
         player = self.bot.player_service.get_player(ctx.author.id)
-        item = self.bot.store.get_item(item_id)
+        item = self.bot.store.get_item(item_name)
 
         await self.use_item(ctx, player, item)
         await ctx.send(content=f"Used {item.name}", ephemeral=True)
@@ -286,16 +286,16 @@ class PlayerCog(commands.Cog):
         if item.one_time_use:
             self.bot.player_service.remove_item(player, item)
 
-        if item.id == "1":
+        if item.name == "Horse Insurance":
             self.apply_gamble_bonus(player)
-        elif item.id == "3":
+        elif item.name == "Flex":
             self.apply_flex(player, 1)
-        elif item.id == "4":
+        elif item.name == "MegaFlex":
             self.apply_flex(player, 2)
-        elif item.id == "5":
+        elif item.name == "Avatar Case":
             await self.open_case(ctx, player)
         else:
-            raise commands.CommandError("Failed to use item")
+            raise commands.CommandError(f"Failed to use {item.name}")
 
     def apply_gamble_bonus(self, player: Player):
         self.bot.player_service.add_modifier(player, HORSE_INSURANCE_MODIFIER)

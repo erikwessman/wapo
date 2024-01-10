@@ -20,7 +20,6 @@ class StoreCog(commands.Cog):
 
         for item in items:
             item_details = (
-                f"**Item ID:** {item.id}\n"
                 f"**Description:** {item.description}\n"
                 f"**Price:** {item.price} coins\n"
                 f"**One Time Use:** {'Yes' if item.one_time_use else 'No'}"
@@ -61,12 +60,12 @@ class StoreCog(commands.Cog):
 
     @commands.hybrid_command(name="buy", description="Buy an item from the store")
     @commands.cooldown(1, 10, commands.BucketType.user)
-    async def buy(self, ctx: commands.Context, item_id: str, quantity: int = 1):
+    async def buy(self, ctx: commands.Context, item_name: str, quantity: int = 1):
         if quantity < 1:
             raise commands.CommandError("Must buy at least 1 item")
 
         player = self.bot.player_service.get_player(ctx.author.id)
-        item = self.bot.store.get_item(item_id)
+        item = self.bot.store.get_item(item_name)
         self.bot.player_service.buy_item(player, item, quantity)
 
         await ctx.send(content=f"Bought {quantity} {item.name}(s)")

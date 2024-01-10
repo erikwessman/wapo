@@ -207,7 +207,7 @@ class GambleCog(commands.Cog):
     async def handle_case_drop(self, ctx: commands.Context, player: Player):
         # 10% chance to drop a case
         if random.random() < 0.1:
-            item = self.bot.store.get_item("5")  # Hard coded, bad
+            item = self.bot.store.get_item("Avatar Case")
             self.bot.player_service.add_item(player, item)
             await ctx.send(content=f"🍀 {ctx.author.mention} got a case in a drop! 🍀")
 

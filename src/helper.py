@@ -1,8 +1,10 @@
-from urllib.parse import urlparse, parse_qs
-from datetime import datetime
 import calendar
 import validators
 import discord
+from fuzzywuzzy import process
+from urllib.parse import urlparse, parse_qs
+from datetime import datetime
+from typing import List
 
 from const import GITHUB_REPOSITORY, GITHUB_ICON, DAY_SCORE_TABLE, TIME_MULTIPLIER_TABLE
 
@@ -91,3 +93,8 @@ def is_message_url(message: str) -> bool:
     - bool: True if the message is a valid URL, False otherwise.
     """
     return validators.url(message)
+
+
+def closest_match(query: str, choices: List[str]):
+    best_match = process.extractOne(query, choices)
+    return best_match[0]
