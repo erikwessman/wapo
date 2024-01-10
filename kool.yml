@@ -13,3 +13,6 @@ scripts:
   backup:
     - echo "BEEP BOOP, this is backing up the database"
     - echo "TODO:\ implement"
+
+  show-db:
+    - kool exec mongo mongosh wapo --eval "db.stock_prices.find().pretty()"
