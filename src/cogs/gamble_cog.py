@@ -4,7 +4,8 @@ import asyncio
 from datetime import datetime
 from typing import List, Dict, Any
 import discord
-from discord.ui import Button, View
+from discord.ui import Button
+from discord.ui.button import ButtonStyle
 from discord.ext import commands
 from tabulate import tabulate
 
@@ -256,21 +257,33 @@ class GambleCog(commands.Cog):
 
         view = CustomView(time_to_complete)
 
-        async def button_callback(interaction):
+        async def button_callback(interaction: discord.Interaction):
             if interaction.user.id != ctx.author.id:
                 return
 
-            # Get player again in case data has updated
             player = self.bot.player_service.get_player(ctx.author.id)
 
-            if interaction.data["custom_id"] == correct_answer:
+            selected_answer = interaction.data['custom_id']
+
+            if selected_answer == correct_answer:
+                for button in view.children:
+                    if button.custom_id == correct_answer:
+                        button.style = discord.ButtonStyle.success
+                    button.disabled = True
+
                 nr_coins = difficulty_coins_map.get(difficulty, 0)
-                response = f"Correct answer! You get {nr_coins} coins"
+                response = f"Correct! You get {nr_coins} coins"
                 self.bot.player_service.add_coins(player, nr_coins)
+
             else:
+                for button in view.children:
+                    if button.custom_id == selected_answer:
+                        button.style = discord.ButtonStyle.danger
+                    button.disabled = True
                 response = "Wrong. The correct answer was " + correct_answer
 
-            await interaction.response.send_message(response)
+            await interaction.response.edit_message(view=view)
+            await ctx.send(content=response)
 
         for index, answer in enumerate(answers):
             row = index // 2

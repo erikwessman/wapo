@@ -9,6 +9,9 @@ class CustomView(discord.ui.View):
         self.message = None
 
     async def on_timeout(self):
+        self.disable_buttons()
+
+    async def disable_buttons(self):
         for item in self.children:
             if isinstance(item, discord.ui.Button):
                 item.disabled = True
