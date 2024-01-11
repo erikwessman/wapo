@@ -217,7 +217,7 @@ class GambleCog(commands.Cog):
         name="trivia",
         description="Get a trivia question for 5 coins, answer correctly and win.",
     )
-    @commands.cooldown(1, 1, commands.BucketType.user)
+    @commands.cooldown(1, 3600, commands.BucketType.user)
     async def trivia(self, ctx: commands.Context):
         player = self.bot.player_service.get_player(ctx.author.id)
         self.bot.player_service.remove_coins(player, 5)
