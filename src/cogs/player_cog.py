@@ -163,12 +163,10 @@ class PlayerCog(commands.Cog):
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def flex(self, ctx):
         player = self.bot.player_service.get_player(ctx.author.id)
-        flex_level = player.flex_level
+        player_balance = player.coins
         message = ""
 
-        if flex_level == 1:
-            message = f"<@{ctx.author.id}> is the coolest mofo in the world!! 😎😎😎"
-        elif flex_level == 2:
+        if player_balance >= 250:
             ascii_art = """```
                  ________________________
                 |.----------------------.|
@@ -193,8 +191,12 @@ class PlayerCog(commands.Cog):
                 '------------------------'
             ```"""
             message = f"<@{ctx.author.id}> is so rich they can afford the Mona Lisa!\n{ascii_art}"
+        elif player_balance >= 100:
+            message = f"<@{ctx.author.id}> is the coolest mofo in the world!! 😎😎😎"
+        elif player_balance >= 50:
+            message = f"Mmkay, <@{ctx.author.id}> has some serious balance! #FTG 💪"
         else:
-            message = f"Wow... {ctx.author.name} truly is pathetic."
+            message = f"Wow <@{ctx.author.id}>... you're trying to flex with this amount of money? 😬"
 
         await ctx.send(content=message)
 
@@ -288,10 +290,6 @@ class PlayerCog(commands.Cog):
 
         if item.name == "Horse Insurance":
             self.apply_gamble_bonus(player)
-        elif item.name == "Flex":
-            self.apply_flex(player, 1)
-        elif item.name == "MegaFlex":
-            self.apply_flex(player, 2)
         elif item.name == "Avatar Case":
             await self.open_case(ctx, player)
         else:
@@ -299,9 +297,6 @@ class PlayerCog(commands.Cog):
 
     def apply_gamble_bonus(self, player: Player):
         self.bot.player_service.add_modifier(player, HORSE_INSURANCE_MODIFIER)
-
-    def apply_flex(self, player: Player, flex_level: int):
-        self.bot.player_service.update_flex_level(player, flex_level)
 
     async def open_case(self, ctx: commands.Context, player: Player):
         rarity, icon = self.bot.case_api.get_case_item()

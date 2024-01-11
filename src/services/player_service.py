@@ -94,10 +94,6 @@ class PlayerService:
         player.modifiers.remove(modifier_name)
         self.db.update_player(player)
 
-    def update_flex_level(self, player: Player, flex_level: int):
-        player.flex_level = flex_level
-        self.db.update_player(player)
-
     def update_avatar(self, player: Player, icon: str):
         if icon not in player.avatars:
             raise PlayerError("You don't have this avatar")
