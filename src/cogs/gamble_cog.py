@@ -247,7 +247,7 @@ class GambleCog(commands.Cog):
         embed = get_embed(
             question,
             (
-                f"Time: {time_to_complete}\n"
+                f"Time: {time_to_complete} seconds\n"
                 f"Category: {category}\n"
                 f"Difficulty: {difficulty}\n\n"
                 f"{answers_string}"
