@@ -88,9 +88,7 @@ class CrosswordCog(commands.Cog):
             puzzle_time = wapo_api.get_puzzle_time(crossword_link)
         except Exception:
             embed_error = get_embed(
-                "Crossword Checker",
-                "Crossword is not complete",
-                discord.Color.red()
+                "Crossword Checker", "Crossword is not complete", discord.Color.red()
             )
             await message.edit(embed=embed_error)
             return

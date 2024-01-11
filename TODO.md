@@ -114,12 +114,19 @@
 - [X] Change the way items are stored and used
     - [X] Make player items be a dictionary that maps the item name to the number of items
     - [X] When using an item, look at the name instead of the ID
+- [X] Add better README with instructions
+- [X] /trivia command
+    - [X] /trivia to fetch a trivia question
+    - [X] Present alternatives as buttons
+    - [ ] Fetch data from https://opentdb.com/api_config.php
+    - [ ] Award points to correct answer, maybe negative for wrong (?)
 - [ ] Logging
-- [ ] Add better README with instructions
+    - [ ] https://discordpy.readthedocs.io/en/stable/logging.html
+- [ ] Unit testing
+- [ ] Add feature list to README
 - [ ] Get day of the week crossword (e.g. !wapo tuesday)
 - [ ] Update Google Sheets with time automatically
 
 - [ ] LOW PRIORITY
     - [ ] Add timezone to date outputs (like plot)
-    - [ ] Unit testing
     - [ ] Docstrings
