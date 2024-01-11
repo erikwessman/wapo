@@ -263,7 +263,7 @@ class GambleCog(commands.Cog):
 
             player = self.bot.player_service.get_player(ctx.author.id)
 
-            selected_answer = interaction.data['custom_id']
+            selected_answer = interaction.data["custom_id"]
 
             if selected_answer == correct_answer:
                 for button in view.children:

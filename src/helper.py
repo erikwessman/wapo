@@ -123,6 +123,6 @@ def decode_html_entities(obj):
 def get_trivia():
     trivia_api = "https://opentdb.com/api.php?amount=1&type=multiple"
     trivia_response = requests.get(trivia_api)
-    trivia_dict = json.loads(trivia_response.content.decode('utf-8'))
+    trivia_dict = json.loads(trivia_response.content.decode("utf-8"))
     decoded_trivia = decode_html_entities(trivia_dict)
     return decoded_trivia["results"][0]
