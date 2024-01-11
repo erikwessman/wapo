@@ -14,20 +14,6 @@
         "symbol": "🦗"
     },
     {
-        "name": "Flex",
-        "description": "Flaunt that wealth, baby 😎",
-        "one_time_use": true,
-        "price": 100,
-        "symbol": "💰"
-    },
-    {
-        "name": "MegaFlex",
-        "description": "You... you can afford this? 😳",
-        "one_time_use": true,
-        "price": 500,
-        "symbol": "🤑"
-    },
-    {
         "name": "Avatar Case",
         "description": "Contains 1 avatar",
         "one_time_use": true,
