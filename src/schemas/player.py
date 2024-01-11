@@ -19,7 +19,6 @@ class Player(Document):
     inventory = MapField(field=IntField(), default=lambda: {})
     coins = IntField(default=0)
     modifiers = ListField(StringField(), default=list)
-    flex_level = IntField(default=0) # TODO: remove. no longer used but bot breaks if removed
     active_avatar = StringField(default="")
     avatars = MapField(EmbeddedDocumentField(Avatar), default=lambda: {})
     holdings = MapField(EmbeddedDocumentField(Holding), default=lambda: {})
