@@ -78,12 +78,14 @@ def get_wapo_url(day: str = None) -> str:
         )
         btn_accept_cookies.click()
 
-        driver.execute_script("""
+        driver.execute_script(
+            """
             var leaderboardWrapper = document.getElementById('leaderboard-wrapper');
             if (leaderboardWrapper) {
                 leaderboardWrapper.remove();
             }
-        """)
+        """
+        )
 
         crossword_frame = wait.until(
             EC.element_to_be_clickable((By.ID, "iframe-xword"))
@@ -142,9 +144,7 @@ def get_puzzle_time(url: str) -> int:
         driver.switch_to.frame(crossword_frame)
 
         # Wait here for loading
-        wait.until(
-            EC.visibility_of_element_located((By.CLASS_NAME, "modal-content"))
-        )
+        wait.until(EC.visibility_of_element_located((By.CLASS_NAME, "modal-content")))
 
         time_str = wait.until(
             EC.visibility_of_element_located((By.ID, "clock_str"))
@@ -159,7 +159,9 @@ def get_puzzle_time(url: str) -> int:
         return int(minutes) * 60 + int(seconds)
 
     except Exception as error:
-        print(f"Cant get xword completing time. Error: {error}, Trace: {traceback.format_exc()}")
+        print(
+            f"Cant get xword completing time. Error: {error}, Trace: {traceback.format_exc()}"
+        )
         raise
 
     finally:

@@ -1,6 +1,10 @@
 import calendar
 import validators
+import requests
+import json
+import random
 import discord
+import html
 from fuzzywuzzy import process
 from urllib.parse import urlparse, parse_qs
 from datetime import datetime
@@ -98,3 +102,27 @@ def is_message_url(message: str) -> bool:
 def closest_match(query: str, choices: List[str]):
     best_match = process.extractOne(query, choices)
     return best_match[0]
+
+
+def shuffle_choices(choices: list) -> list:
+    random.shuffle(choices)
+    return choices
+
+
+def decode_html_entities(obj):
+    if isinstance(obj, str):
+        return html.unescape(obj)
+    elif isinstance(obj, dict):
+        return {key: decode_html_entities(value) for key, value in obj.items()}
+    elif isinstance(obj, list):
+        return [decode_html_entities(element) for element in obj]
+    else:
+        return obj
+
+
+def get_trivia():
+    trivia_api = "https://opentdb.com/api.php?amount=1&type=multiple"
+    trivia_response = requests.get(trivia_api)
+    trivia_dict = json.loads(trivia_response.content.decode('utf-8'))
+    decoded_trivia = decode_html_entities(trivia_dict)
+    return decoded_trivia["results"][0]

@@ -4,11 +4,13 @@ import asyncio
 from datetime import datetime
 from typing import List, Dict, Any
 import discord
+from discord.ui import Button, View
 from discord.ext import commands
 from tabulate import tabulate
 
+from custom_view import CustomView
 from schemas.player import Player
-from helper import get_embed
+from helper import get_embed, get_trivia, shuffle_choices
 from const import (
     EMOJI_ROCKET,
     EMOJI_PENGUIN,
@@ -210,6 +212,78 @@ class GambleCog(commands.Cog):
             item = self.bot.store.get_item("Avatar Case")
             self.bot.player_service.add_item(player, item)
             await ctx.send(content=f"🍀 {ctx.author.mention} got a case in a drop! 🍀")
+
+    @commands.hybrid_command(
+        name="trivia",
+        description="Get a trivia question for 5 coins, answer correctly and win.",
+    )
+    @commands.cooldown(1, 1, commands.BucketType.user)
+    async def trivia(self, ctx: commands.Context):
+        player = self.bot.player_service.get_player(ctx.author.id)
+        self.bot.player_service.remove_coins(player, 5)
+
+        trivia = get_trivia()
+
+        time_to_complete = 30
+        question = trivia["question"]
+        incorrect_answers = trivia["incorrect_answers"]
+        correct_answer = trivia["correct_answer"]
+        category = trivia["category"]
+        difficulty = trivia["difficulty"]
+
+        difficulty_colors_map = {
+            "easy": discord.Color.green(),
+            "medium": discord.Color.orange(),
+            "hard": discord.Color.red(),
+        }
+
+        difficulty_coins_map = {"easy": 10, "medium": 15, "hard": 20}
+
+        answers = shuffle_choices(incorrect_answers + [correct_answer])
+        answers_numbered = [f"{i+1}. {a}" for i, a in enumerate(answers)]
+        answers_string = "\n".join(answers_numbered)
+
+        embed = get_embed(
+            question,
+            (
+                f"Time: {time_to_complete}\n"
+                f"Category: {category}\n"
+                f"Difficulty: {difficulty}\n\n"
+                f"{answers_string}"
+            ),
+            difficulty_colors_map.get(difficulty, 0xFFFFFF),
+        )
+
+        view = CustomView(time_to_complete)
+
+        async def button_callback(interaction):
+            if interaction.user.id != ctx.author.id:
+                return
+
+            # Get player again in case data has updated
+            player = self.bot.player_service.get_player(ctx.author.id)
+
+            if interaction.data["custom_id"] == correct_answer:
+                nr_coins = difficulty_coins_map.get(difficulty, 0)
+                response = f"Correct answer! You get {nr_coins} coins"
+                self.bot.player_service.add_coins(player, nr_coins)
+            else:
+                response = "Wrong. The correct answer was " + correct_answer
+
+            await interaction.response.send_message(response)
+
+        for index, answer in enumerate(answers):
+            row = index // 2
+            button = Button(label=index + 1, custom_id=answer, row=row)
+            button.callback = button_callback
+            view.add_item(button)
+
+        view.message = await ctx.send(embed=embed, view=view)
+
+    @trivia.error
+    async def trivia_error(self, ctx, error):
+        if isinstance(error, commands.CommandError):
+            await ctx.send(content=f"`trivia` error: {error}")
 
 
 async def handle_roulette_countdown(seconds: int, ctx: commands.Context):
