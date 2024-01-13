@@ -8,6 +8,8 @@ from db import DB
 from cogs.crossword_cog import CrosswordCog
 from cogs.admin_cog import AdminCog
 from cogs.gamble_cog import GambleCog
+from cogs.roulette_cog import RouletteCog
+from cogs.trivia_cog import TriviaCog
 from cogs.player_cog import PlayerCog
 from cogs.store_cog import StoreCog
 from cogs.stock_cog import StockCog
@@ -88,6 +90,8 @@ async def main():
     bot.help_command = WaPoHelp()
     await bot.add_cog(CrosswordCog(bot))
     await bot.add_cog(GambleCog(bot))
+    await bot.add_cog(RouletteCog(bot))
+    await bot.add_cog(TriviaCog(bot))
     await bot.add_cog(PlayerCog(bot))
     await bot.add_cog(StoreCog(bot))
     await bot.add_cog(StockCog(bot))
