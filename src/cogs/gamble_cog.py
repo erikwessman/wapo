@@ -2,34 +2,20 @@ import math
 import random
 import asyncio
 from datetime import datetime
-from typing import List, Dict, Any
+from typing import List
 import discord
 from discord.ui import Button
-from discord.ui.button import ButtonStyle
 from discord.ext import commands
-from tabulate import tabulate
 
 from custom_view import CustomView
-from schemas.player import Player
-from helper import get_embed, get_trivia, shuffle_choices
+from helper import get_embed, shuffle_choices
 from const import (
     EMOJI_ROCKET,
     EMOJI_PENGUIN,
     EMOJI_OCTOPUS,
     EMOJI_SANTA,
     HORSE_INSURANCE_MODIFIER,
-    ROULETTE_ICON,
 )
-
-
-class Event:
-    """
-    Helper class for keeping track of events
-    """
-
-    def __init__(self):
-        self.participants = {}
-        self.event_started = False
 
 
 class GambleCog(commands.Cog):
@@ -39,7 +25,6 @@ class GambleCog(commands.Cog):
 
     def __init__(self, bot):
         self.bot = bot
-        self.roulette_event = Event()
 
     @commands.hybrid_command(
         name="gamble",
@@ -94,233 +79,6 @@ class GambleCog(commands.Cog):
     async def gamble_error(self, ctx: commands.Context, error):
         if isinstance(error, commands.CommandError):
             await ctx.send(content=f"`gamble` error: {error}")
-
-    @commands.hybrid_command(name="roulette", description="Welcome to Vegas!")
-    async def roulette(self, ctx: commands.Context, amount: int):
-        player = self.bot.player_service.get_player(ctx.author.id)
-
-        self.bot.player_service.remove_coins(player, amount)
-
-        if player.id in self.roulette_event.participants:
-            self.roulette_event.participants[player.id]["coins"] += amount
-        else:
-            self.roulette_event.participants[player.id] = {}
-            self.roulette_event.participants[player.id]["user"] = ctx.author
-            self.roulette_event.participants[player.id]["coins"] = amount
-
-        if not self.roulette_event.event_started:
-            self.roulette_event.event_started = True
-            event_time = 5 * 60
-
-            embed = get_embed(
-                "🌟 Roulette Event Alert! 🌟",
-                f"Started by {ctx.author.name} with {amount} coin(s)",
-                discord.Color.red(),
-            )
-            embed.add_field(
-                name="Information",
-                value=f"Ending in {event_time // 60} minutes",
-                inline=False,
-            )
-            embed.set_thumbnail(url=ROULETTE_ICON)
-            await ctx.send(embed=embed)
-
-            countdown_length = min(event_time, 10)
-            await asyncio.sleep(event_time - countdown_length)
-            await handle_roulette_countdown(countdown_length, ctx)
-            await self.handle_roulette_event_end(ctx)
-
-            self.roulette_event.participants = {}
-            self.roulette_event.event_started = False
-            return
-
-        total_players = len(self.roulette_event.participants)
-        total_coins = sum(
-            player["coins"] for player in self.roulette_event.participants.values()
-        )
-
-        odds_table = get_odds_table(self.roulette_event.participants)
-
-        embed = get_embed(
-            f"Roulette Event Joined by {ctx.author.name}",
-            (
-                f"🎲 {ctx.author.name} has joined the roulette with {amount} coin(s)!\n\n"
-                f"👥 **Total Players:** {total_players}\n"
-                f"💰 **Total coins:** {total_coins}\n\n"
-            ),
-            discord.Color.blue(),
-        )
-        embed.add_field(name="📊 Odds", value=f"```{odds_table}```", inline=False)
-        await ctx.send(embed=embed)
-
-    @roulette.error
-    async def roulette_error(self, ctx: commands.Context, error):
-        if isinstance(error, commands.CommandError):
-            await ctx.send(content=f"`roulette` error: {error}")
-
-    async def handle_roulette_event_end(self, ctx: commands.Context):
-        participants = self.roulette_event.participants
-
-        if len(participants) < 2:
-            # Refund player coins
-            for player_id in participants:
-                player = self.bot.player_service.get_player(player_id)
-                self.bot.player_service.add_coins(
-                    player, participants[player_id]["coins"]
-                )
-
-            await ctx.send(
-                content="Not enough participants for roulette to start. Refunding coins."
-            )
-            return
-
-        users = [user_info["user"] for user_info in participants.values()]
-        user_coins = [user_info["coins"] for user_info in participants.values()]
-
-        winner = random.choices(users, weights=user_coins, k=1)[0]
-        winner_player = self.bot.player_service.get_player(winner.id)
-        win_amount = sum(user_coins)
-
-        self.bot.player_service.add_coins(winner_player, win_amount)
-
-        odds_table = get_odds_table(participants)
-        embed = get_embed(
-            "🎉 Roulette Winner Announcement 🎉",
-            f"Congratulations {winner.mention}!",
-            discord.Color.gold(),
-        )
-        embed.add_field(
-            name=f"{winner.name} won!",
-            value=f"You win {win_amount} coin(s).",
-            inline=False,
-        )
-        embed.add_field(
-            name="📊 Odds",
-            value=f"```{odds_table}```",
-            inline=False,
-        )
-        await ctx.send(embed=embed)
-
-        # Save roulette information
-        player_dict = {
-            str(player_id): data["coins"] for player_id, data in participants.items()
-        }
-        self.bot.roulette_service.add_roulette(datetime.today(), player_dict, winner.id)
-
-    async def handle_case_drop(self, ctx: commands.Context, player: Player):
-        # 10% chance to drop a case
-        if random.random() < 0.1:
-            item = self.bot.store.get_item("Avatar Case")
-            self.bot.player_service.add_item(player, item)
-            await ctx.send(content=f"🍀 {ctx.author.mention} got a case in a drop! 🍀")
-
-    @commands.hybrid_command(
-        name="trivia",
-        description="Get a trivia question for 5 coins, answer correctly and win.",
-    )
-    @commands.cooldown(1, 3600, commands.BucketType.user)
-    async def trivia(self, ctx: commands.Context):
-        player = self.bot.player_service.get_player(ctx.author.id)
-        self.bot.player_service.remove_coins(player, 5)
-
-        trivia = get_trivia()
-
-        time_to_complete = 30
-        question = trivia["question"]
-        incorrect_answers = trivia["incorrect_answers"]
-        correct_answer = trivia["correct_answer"]
-        category = trivia["category"]
-        difficulty = trivia["difficulty"]
-
-        difficulty_colors_map = {
-            "easy": discord.Color.green(),
-            "medium": discord.Color.orange(),
-            "hard": discord.Color.red(),
-        }
-
-        difficulty_coins_map = {"easy": 10, "medium": 15, "hard": 20}
-
-        answers = shuffle_choices(incorrect_answers + [correct_answer])
-        answers_numbered = [f"{i+1}. {a}" for i, a in enumerate(answers)]
-        answers_string = "\n".join(answers_numbered)
-
-        embed = get_embed(
-            question,
-            (
-                f"Time: {time_to_complete} seconds\n"
-                f"Category: {category}\n"
-                f"Difficulty: {difficulty}\n\n"
-                f"{answers_string}"
-            ),
-            difficulty_colors_map.get(difficulty, 0xFFFFFF),
-        )
-
-        view = CustomView(time_to_complete)
-
-        async def button_callback(interaction: discord.Interaction):
-            if interaction.user.id != ctx.author.id:
-                return
-
-            player = self.bot.player_service.get_player(ctx.author.id)
-
-            selected_answer = interaction.data["custom_id"]
-
-            if selected_answer == correct_answer:
-                for button in view.children:
-                    if button.custom_id == correct_answer:
-                        button.style = discord.ButtonStyle.success
-                    button.disabled = True
-
-                nr_coins = difficulty_coins_map.get(difficulty, 0)
-                response = f"Correct! You get {nr_coins} coins"
-                self.bot.player_service.add_coins(player, nr_coins)
-
-            else:
-                for button in view.children:
-                    if button.custom_id == selected_answer:
-                        button.style = discord.ButtonStyle.danger
-                    button.disabled = True
-                response = "Wrong. The correct answer was " + correct_answer
-
-            await interaction.response.edit_message(view=view)
-            await ctx.send(content=response)
-
-        for index, answer in enumerate(answers):
-            row = index // 2
-            button = Button(label=index + 1, custom_id=answer, row=row)
-            button.callback = button_callback
-            view.add_item(button)
-
-        view.message = await ctx.send(embed=embed, view=view)
-
-    @trivia.error
-    async def trivia_error(self, ctx, error):
-        if isinstance(error, commands.CommandError):
-            await ctx.send(content=f"`trivia` error: {error}")
-
-
-async def handle_roulette_countdown(seconds: int, ctx: commands.Context):
-    message = await ctx.send(f"Roulette ending in {seconds} seconds")
-
-    while seconds > 0:
-        await asyncio.sleep(1)
-        seconds -= 1
-        await message.edit(content=f"Roulette ending in {seconds} seconds")
-
-
-def get_odds_table(participants: Dict[int, Any]) -> str:
-    table_data = []
-    total_coins = sum(player["coins"] for player in participants.values())
-
-    for user_info in participants.values():
-        odds = (user_info["coins"] / total_coins) * 100
-        line = [user_info["user"].name, user_info["coins"], f"{odds:.2f}%"]
-        table_data.append(line)
-
-    table_str = tabulate(
-        table_data, headers=["Player", "Coins", "Odds"], tablefmt="plain"
-    )
-    return table_str
 
 
 async def handle_race_message(ctx: commands.Context, row: int, avatar: str):
