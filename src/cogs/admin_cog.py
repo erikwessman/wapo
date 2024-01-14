@@ -22,3 +22,14 @@ class AdminCog(commands.Cog):
             return
 
         await ctx.send(content="Pong!", ephemeral=True)
+
+    @commands.hybrid_command(name="dev-wealthize", description="Give oneself money")
+    async def dev_wealthize(self, ctx: commands.Context):
+        if not self.is_dev_mode():
+            await ctx.send(content=self._NOT_DEV_MODE_MSG, ephemeral=True)
+            return
+        
+        player = self.bot.player_service.get_player(ctx.author.id)
+        self.bot.player_service.add_coins(player, 100)
+
+        await ctx.send(content="You are now rich!", ephemeral=True)
