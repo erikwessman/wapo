@@ -109,9 +109,9 @@ class Duel:
         if move.move_type == MoveType.ATTACK:
             defender.take_damage(move.value)
         elif move.move_type == MoveType.DEFEND:
-            defender.shield()
+            attacker.shield()
         elif move.move_type == MoveType.HEAL:
-            defender.heal(move.value)
+            attacker.heal(move.value)
 
         return self.generate_attack_message(attacker, defender, move, shielded)
 
@@ -157,9 +157,9 @@ class Duel:
 
     def get_winner(self) -> Duelist:
         if self.challenger.is_defeated():
-            return self.challenger
-        elif self.challengee.is_defeated():
             return self.challengee
+        elif self.challengee.is_defeated():
+            return self.challenger
         else:
             return None
 
