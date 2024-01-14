@@ -187,8 +187,8 @@ class DuelCog(commands.Cog):
 
     @duel.command(name="start")
     async def duel_start(self, ctx: commands.Context, user: discord.User, amount: int):
-        #if ctx.author.id == user.id:
-        #    raise commands.CommandError("Can't challenge yourself")
+        if ctx.author.id == user.id:
+            raise commands.CommandError("Can't challenge yourself")
 
         if amount < 1:
             raise commands.CommandError("Must wager at least 1 coin")
