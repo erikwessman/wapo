@@ -4,11 +4,9 @@ import asyncio
 from datetime import datetime
 from typing import List
 import discord
-from discord.ui import Button
 from discord.ext import commands
 
-from custom_view import CustomView
-from helper import get_embed, shuffle_choices
+from helper import get_embed
 from const import (
     EMOJI_ROCKET,
     EMOJI_PENGUIN,
