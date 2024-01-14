@@ -238,7 +238,7 @@ class DuelCog(commands.Cog):
 
     @duel.command(name="accept")
     async def duel_accept(self, ctx: commands.Context, user: discord.User = None):
-        if ctx.author.id == user.id:
+        if user and ctx.author.id == user.id:
             raise commands.CommandError("Can't accept a duel from yourself")
 
         player = self.bot.player_service.get_player(ctx.author.id)
