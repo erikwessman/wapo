@@ -214,7 +214,7 @@ class DuelCog(commands.Cog):
 
         embed = get_embed(
             "\U0001F4A5 Duel Request \U0001F4A5",
-            f"{ctx.author.name} challenged {user.name} to a duel for {amount} coins!",
+            f"{ctx.author.name} challenged {user.mention} to a duel for {amount} coins!",
             discord.Color.red(),
         )
         embed.add_field(name="Information", value="Ending in 1 minute", inline=False)
@@ -224,10 +224,10 @@ class DuelCog(commands.Cog):
 
         # Duel never got accepted
         if duel.state == DuelState.PENDING:
-            p1 = self.bot.player_service.get_player(
-                ctx.author.id
-            )  # Prevent race condition
+            # Prevent race condition on player object
+            p1 = self.bot.player_service.get_player(ctx.author.id)
             self.bot.player_service.add_coins(p1, amount)
+
             self.duels.remove(duel)
             await ctx.send(content="Duel request expired, refunded coins")
 
