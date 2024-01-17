@@ -4,6 +4,7 @@ import discord
 from discord.ext import commands
 from dotenv import load_dotenv
 from tabulate import tabulate
+
 from db import DB
 from cogs.crossword_cog import CrosswordCog
 from cogs.admin_cog import AdminCog
@@ -22,6 +23,7 @@ from services.horse_race_service import HorseRaceService
 from services.stock_service import StockService
 from store import Store
 from case_api import CaseAPI
+from log import set_up_logger
 
 
 class WaPoBot(commands.Bot):
@@ -109,6 +111,7 @@ def pretty_message(message: str):
 
 if __name__ == "__main__":
     load_dotenv()
+    set_up_logger(True, "wapo_logs.txt")
 
     discord_token = os.getenv("DISCORD_TOKEN")
     if discord_token is None or discord_token.strip() == "":
