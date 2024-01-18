@@ -26,4 +26,16 @@ def set_up_logger(debug: bool = True, log_filename: str = None):
     handler.setFormatter(formatter)
     logger.addHandler(handler)
 
+    # Only get warnings and errors from the Discord module
+    logger = logging.getLogger("discord")
+    logger.setLevel(logging.WARNING)
+
+    # Only get warnings and errors from the Matplotlib module
+    logger = logging.getLogger("matplotlib")
+    logger.setLevel(logging.WARNING)
+
+    # Only get warnings and errors from the Matplotlib module
+    logger = logging.getLogger("PIL")
+    logger.setLevel(logging.WARNING)
+
     logging.debug("Set up logger")

@@ -16,7 +16,7 @@ class RewardCog(commands.Cog):
 
     @daily.error
     async def daily_error(self, ctx, error):
-        if isinstance(error, commands.CommandError):
+        if isinstance(error, commands.BadArgument):
             await ctx.send(content=f"`daily` error: {error}")
 
     @commands.hybrid_command(name="weekly", description="Get your weekly coins")
@@ -28,5 +28,5 @@ class RewardCog(commands.Cog):
 
     @weekly.error
     async def weekly_error(self, ctx, error):
-        if isinstance(error, commands.CommandError):
+        if isinstance(error, commands.BadArgument):
             await ctx.send(content=f"`weekly` error: {error}")

@@ -86,7 +86,7 @@ class RouletteCog(commands.Cog):
 
     @roulette.error
     async def roulette_error(self, ctx: commands.Context, error):
-        if isinstance(error, commands.CommandError):
+        if isinstance(error, commands.BadArgument):
             await ctx.send(content=f"`roulette` error: {error}")
 
     async def handle_roulette_event_end(self, ctx: commands.Context):

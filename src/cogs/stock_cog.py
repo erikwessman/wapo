@@ -1,3 +1,4 @@
+import logging
 import discord
 from datetime import datetime, timedelta
 from discord.ext import commands, tasks
@@ -18,11 +19,11 @@ class StockCog(commands.Cog):
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def stock(self, ctx):
         if ctx.invoked_subcommand is None:
-            await ctx.send("Invalid stock command. Try !stock <subcommand>.")
+            await ctx.send("Invalid stock command")
 
     @stock.error
     async def stock_error(self, ctx: commands.Context, error):
-        if isinstance(error, commands.CommandError):
+        if isinstance(error, commands.BadArgument):
             await ctx.send(f"`stock` error: {error}")
 
     @stock.command(name="list")
@@ -74,7 +75,7 @@ class StockCog(commands.Cog):
 
     @stock_list.error
     async def stock_list_error(self, ctx: commands.Context, error):
-        if isinstance(error, commands.CommandError):
+        if isinstance(error, commands.BadArgument):
             await ctx.send(f"`stock list` error: {error}")
 
     @stock.command(name="price")
@@ -85,7 +86,7 @@ class StockCog(commands.Cog):
 
     @stock_price.error
     async def stock_price_error(self, ctx: commands.Context, error):
-        if isinstance(error, commands.CommandError):
+        if isinstance(error, commands.BadArgument):
             await ctx.send(f"`stock_price` error: {error}")
 
     @stock.command(name="history")
@@ -103,7 +104,7 @@ class StockCog(commands.Cog):
                     stock, start_date, end_date
                 )
             else:
-                raise commands.CommandError(
+                raise commands.BadArgument(
                     f"Available date ranges: {' '.join(date_ranges)}"
                 )
         else:
@@ -119,17 +120,15 @@ class StockCog(commands.Cog):
 
     @stock_history.error
     async def stock_history_error(self, ctx: commands.Context, error):
-        if isinstance(error, commands.CommandError):
+        if isinstance(error, commands.BadArgument):
             await ctx.send(f"`stock history` error: {error}")
 
     @stock.command(name="buy")
     async def stock_buy(self, ctx: commands.Context, ticker: str, quantity: int):
-        if quantity < 1:
-            raise commands.CommandError("You must buy at least 1 share")
-
         player = self.bot.player_service.get_player(ctx.author.id)
         stock = self.bot.stock_service.get_stock(ticker)
         stock_price = self.bot.stock_service.get_current_stock_price(stock)
+
         total = stock_price * quantity
 
         self.bot.player_service.buy_stock(player, stock.ticker, stock_price, quantity)
@@ -138,17 +137,15 @@ class StockCog(commands.Cog):
 
     @stock_buy.error
     async def stock_buy_error(self, ctx: commands.Context, error):
-        if isinstance(error, commands.CommandError):
+        if isinstance(error, commands.BadArgument):
             await ctx.send(f"`stock buy` error: {error}")
 
     @stock.command(name="sell")
     async def stock_sell(self, ctx: commands.Context, ticker: str, quantity: int):
-        if quantity < 1:
-            raise commands.CommandError("You must sell at least 1 share")
-
         player = self.bot.player_service.get_player(ctx.author.id)
         stock = self.bot.stock_service.get_stock(ticker)
         stock_price = self.bot.stock_service.get_current_stock_price(stock)
+
         total = stock_price * quantity
 
         self.bot.player_service.sell_stock(player, stock.ticker, stock_price, quantity)
@@ -157,7 +154,7 @@ class StockCog(commands.Cog):
 
     @stock_sell.error
     async def stock_sell_error(self, ctx: commands.Context, error):
-        if isinstance(error, commands.CommandError):
+        if isinstance(error, commands.BadArgument):
             await ctx.send(f"`stock sell` error: {error}")
 
     @tasks.loop(hours=1)
@@ -165,12 +162,8 @@ class StockCog(commands.Cog):
         stocks = self.bot.stock_service.get_all_stocks()
 
         for stock in stocks:
-            print(f"Updating ${stock.ticker} stock prices...")
+            logging.debug(f"Updating ${stock.ticker} stock prices...")
             self.bot.stock_service.simulate_next_stock_prices(stock)
-
-    @update_stock_price.error
-    async def update_stock_price_error(self, error):
-        print(f"Error when updating stocks: {error}")
 
     @update_stock_price.before_loop
     async def before_update_stock_price(self):

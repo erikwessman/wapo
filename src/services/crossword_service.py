@@ -1,5 +1,5 @@
 from typing import List
-from discord.ext.commands import CommandError
+from discord.ext.commands import BadArgument
 
 from db import DB
 from schemas.crossword import Crossword
@@ -15,7 +15,7 @@ class CrosswordService:
 
     def save_crossword(self, crossword_date: str, score: int = 0) -> Crossword:
         if self.db.has_crossword(crossword_date):
-            raise ValueError("Crossword already exists")
+            raise BadArgument("Crossword already exists")
 
         crossword = Crossword(date=crossword_date, score=score)
         self.db.add_crossword(crossword)
@@ -23,7 +23,7 @@ class CrosswordService:
 
     def get_crossword(self, crossword_date) -> Crossword:
         if not self.db.has_crossword(crossword_date):
-            raise CrosswordError(f"Crossword with date {crossword_date} does not exist")
+            raise BadArgument(f"Crossword with date {crossword_date} does not exist")
 
         return self.db.get_crossword(crossword_date)
 
@@ -32,9 +32,3 @@ class CrosswordService:
 
     def has_crossword(self, crossword_date) -> bool:
         return self.db.has_crossword(crossword_date)
-
-
-class CrosswordError(CommandError):
-    """
-    Exception raised when interacting with a crossword
-    """
