@@ -104,7 +104,7 @@ class TriviaCog(commands.Cog):
             await ctx.send(content=f"`trivia` error: {error}")
 
     @commands.hybrid_command(name="movie", description="Guess the movie!")
-    @commands.cooldown(1, 3600, commands.BucketType.channel)
+    @commands.cooldown(1, 2, commands.BucketType.channel)
     async def movie_trivia(self, ctx: commands.Context):
         movie = self.movie_client.get_random_movie()
         self.movie_channel_dict[ctx.channel.id] = movie
@@ -128,8 +128,15 @@ class TriviaCog(commands.Cog):
             similarity_score = self.get_similarity_score(message.content, movie.name)
 
             if similarity_score >= 90:
-                await message.channel.send(content=f"Correct! The movie was {movie.name}")
                 del self.movie_channel_dict[message.channel.id]
+                embed = get_embed(
+                    f"Correct! The movie was {movie.name}",
+                    f"Release Date: {movie.date}",
+                    0x00FF00,
+                )
+                embed.add_field(name="Reward", value="You get 10 coins!", inline=False)
+                embed.set_image(url=movie.poster_url)
+                await message.channel.send(embed=embed)
 
     def get_similarity_score(self, title1: str, title2: str) -> int:
         return fuzz.ratio(title1.lower(), title2.lower())
