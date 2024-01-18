@@ -1,6 +1,10 @@
+import os
+import random
 import json
 import html
 import requests
+import logging
+from fuzzywuzzy import fuzz
 import discord
 from discord.ui import Button
 from discord.ext import commands
@@ -12,6 +16,8 @@ from helper import get_embed, shuffle_choices
 class TriviaCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.movie_client = MovieDatabaseClient()
+        self.movie_channel_dict = {}  # Maps a channel id to a movie
 
     @commands.hybrid_command(
         name="trivia",
@@ -96,6 +102,97 @@ class TriviaCog(commands.Cog):
     async def trivia_error(self, ctx, error):
         if isinstance(error, commands.BadArgument):
             await ctx.send(content=f"`trivia` error: {error}")
+
+    @commands.hybrid_command(name="movie", description="Guess the movie!")
+    @commands.cooldown(1, 3600, commands.BucketType.channel)
+    async def movie_trivia(self, ctx: commands.Context):
+        movie = self.movie_client.get_random_movie()
+        self.movie_channel_dict[ctx.channel.id] = movie
+        embed = get_embed(
+            "Movie Trivia!",
+            "Guess the movie title based on the image",
+            discord.Color.teal(),
+        )
+        embed.set_image(url=movie.backdrop_url)
+        await ctx.send(embed=embed)
+
+    @movie_trivia.error
+    async def movie_trivia_error(self, ctx, error):
+        if isinstance(error, commands.BadArgument):
+            await ctx.send(content=f"`movie` error: {error}")
+
+    @commands.Cog.listener()
+    async def on_message(self, message: discord.Message):
+        if message.channel.id in self.movie_channel_dict:
+            movie = self.movie_channel_dict[message.channel.id]
+            similarity_score = self.get_similarity_score(message.content, movie.name)
+
+            if similarity_score >= 90:
+                await message.channel.send(content=f"Correct! The movie was {movie.name}")
+                del self.movie_channel_dict[message.channel.id]
+
+    def get_similarity_score(self, title1: str, title2: str) -> int:
+        return fuzz.ratio(title1.lower(), title2.lower())
+
+
+class Movie:
+    def __init__(self, name: str, date: int, poster_url: str, backdrop_url: str):
+        self.name = name
+        self.date = date
+        self.poster_url = poster_url
+        self.backdrop_url = backdrop_url
+
+    def __str__(self):
+        return (
+            f"Movie: {self.name}\n"
+            f"Release Date: {self.date}\n"
+            f"Poster URL: {self.poster_url}\n"
+            f"Backdrop URL: {self.backdrop_url}"
+        )
+
+
+class MovieDatabaseClient:
+    def __init__(self):
+        self.api_key = os.getenv("TMDB_API_KEY")
+        self.image_url_base = "https://image.tmdb.org/t/p/original"
+
+        if not self.api_key:
+            raise ValueError("TMDB API key not found in environment variables")
+
+        self.top_movies_cache = []
+
+    def fetch_top_movies(self, pages=5):
+        """Fetch top movies from TMDB and cache them"""
+
+        self.top_movies_cache = []
+        api_url = "https://api.themoviedb.org/3/movie/top_rated?language=en-US"
+
+        for page_nr in range(1, pages + 1):
+            response = requests.get(
+                f"{api_url}&page={page_nr}",
+                headers={
+                    "accept": "application/json",
+                    "Authorization": f"Bearer {self.api_key}",
+                },
+            )
+            if response.ok:
+                movies_dict = json.loads(response.content.decode("utf-8"))
+                self.top_movies_cache.extend(movies_dict["results"])
+            else:
+                logging.error("Unable to fetch list of movies")
+
+    def get_random_movie(self) -> Movie:
+        """Get a random movie from the cached top movies"""
+        if not self.top_movies_cache:
+            self.fetch_top_movies()
+
+        movie_dict = random.choice(self.top_movies_cache)
+        return Movie(
+            name=movie_dict["title"],
+            date=movie_dict["release_date"],
+            poster_url=self.image_url_base + movie_dict["poster_path"],
+            backdrop_url=self.image_url_base + movie_dict["backdrop_path"],
+        )
 
 
 def decode_html_entities(obj):
