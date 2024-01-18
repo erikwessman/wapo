@@ -125,10 +125,12 @@ class TriviaCog(commands.Cog):
     async def on_message(self, message: discord.Message):
         if message.channel.id in self.movie_channel_dict:
             movie = self.movie_channel_dict[message.channel.id]
+            player = self.bot.player_service.get_player(message.author.id)
             similarity_score = self.get_similarity_score(message.content, movie.name)
 
             if similarity_score >= 90:
                 del self.movie_channel_dict[message.channel.id]
+                self.bot.player_service.add_coins(player, 10)
                 embed = get_embed(
                     f"Correct! The movie was {movie.name}",
                     f"Release Date: {movie.date}",
