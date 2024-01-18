@@ -104,7 +104,7 @@ class TriviaCog(commands.Cog):
             await ctx.send(content=f"`trivia` error: {error}")
 
     @commands.hybrid_command(name="movie", description="Guess the movie!")
-    @commands.cooldown(1, 2, commands.BucketType.channel)
+    @commands.cooldown(1, 3600, commands.BucketType.channel)
     async def movie_trivia(self, ctx: commands.Context):
         movie = self.movie_client.get_random_movie()
         self.movie_channel_dict[ctx.channel.id] = movie
