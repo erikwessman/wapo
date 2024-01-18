@@ -94,7 +94,7 @@ class TriviaCog(commands.Cog):
 
     @trivia.error
     async def trivia_error(self, ctx, error):
-        if isinstance(error, commands.CommandError):
+        if isinstance(error, commands.BadArgument):
             await ctx.send(content=f"`trivia` error: {error}")
 
 

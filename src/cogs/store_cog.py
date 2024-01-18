@@ -34,7 +34,7 @@ class StoreCog(commands.Cog):
 
     @store.error
     async def store_error(self, ctx: commands.Context, error):
-        if isinstance(error, commands.CommandError):
+        if isinstance(error, commands.BadArgument):
             await ctx.send(content=f"`store` error: {error}")
 
     @commands.hybrid_command(name="", description="")
@@ -55,14 +55,14 @@ class StoreCog(commands.Cog):
 
     @cases.error
     async def cases_error(self, ctx, error):
-        if isinstance(error, commands.CommandError):
+        if isinstance(error, commands.BadArgument):
             await ctx.send(content=f"`cases` error: {error}")
 
     @commands.hybrid_command(name="buy", description="Buy an item from the store")
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def buy(self, ctx: commands.Context, item_name: str, quantity: int = 1):
         if quantity < 1:
-            raise commands.CommandError("Must buy at least 1 item")
+            raise commands.BadArgument("Must buy at least 1 item")
 
         player = self.bot.player_service.get_player(ctx.author.id)
         item = self.bot.store.get_item(item_name)
@@ -72,5 +72,5 @@ class StoreCog(commands.Cog):
 
     @buy.error
     async def buy_error(self, ctx: commands.Context, error):
-        if isinstance(error, commands.CommandError):
+        if isinstance(error, commands.BadArgument):
             await ctx.send(content=f"`buy` error: {error}")

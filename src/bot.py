@@ -1,9 +1,10 @@
 import os
 import asyncio
 import discord
+import logging
 from discord.ext import commands
 from dotenv import load_dotenv
-from tabulate import tabulate
+
 from db import DB
 from cogs.crossword_cog import CrosswordCog
 from cogs.admin_cog import AdminCog
@@ -22,6 +23,7 @@ from services.horse_race_service import HorseRaceService
 from services.stock_service import StockService
 from store import Store
 from case_api import CaseAPI
+from log import set_up_logger
 
 
 class WaPoBot(commands.Bot):
@@ -36,21 +38,25 @@ class WaPoBot(commands.Bot):
         self.case_api = CaseAPI("data/cases.json")
 
     async def on_ready(self):
-        print(f"{self.user} has connected!")
+        logging.info(f"{self.user} has connected!")
         try:
             synced = await self.tree.sync()
-            print(f"Synced {len(synced)} command(s)")
-            pretty_message("Bot is ready!")
-        except Exception as e:
-            print(e)
+            logging.info(f"Synced {len(synced)} command(s)")
+            logging.info("*** Bot is ready ***")
+        except Exception as error:
+            logging.error(error, exc_info=True)
 
     async def on_command_error(self, ctx, error):
-        print(f"Error: {error}")
-
-        if isinstance(error, commands.CommandNotFound):
+        if isinstance(error, commands.BadArgument):
+            # These errors are handled at command-level, ignore
+            pass
+        elif isinstance(error, commands.CommandNotFound):
             await ctx.send(content=error)
-        elif isinstance(error, ValueError):
-            await ctx.send(content="Internal error")
+        elif isinstance(error, commands.CommandOnCooldown):
+            await ctx.send(content=error)
+        else:
+            logging.error(error, exc_info=True)
+            await ctx.send("Internal error. Command failed")
 
 
 class WaPoHelp(commands.HelpCommand):
@@ -102,19 +108,13 @@ async def main():
     await bot.start(os.getenv("DISCORD_TOKEN"))
 
 
-def pretty_message(message: str):
-    table = [[message]]
-    print(tabulate(table))
-
-
 if __name__ == "__main__":
     load_dotenv()
+    set_up_logger(True, "logs.txt")
 
     discord_token = os.getenv("DISCORD_TOKEN")
     if discord_token is None or discord_token.strip() == "":
-        pretty_message(
-            "Please set the DISCORD_TOKEN environment variable\nExiting... 👋"
-        )
+        logging.error("DISCORD_TOKEN environment variable must be set")
         exit(1)
 
     asyncio.run(main())

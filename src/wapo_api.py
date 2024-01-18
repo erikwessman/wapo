@@ -1,6 +1,6 @@
 import os
 import re
-import traceback
+import logging
 from selenium import webdriver
 from selenium.webdriver.firefox.options import Options as FFOptions
 from selenium.webdriver.firefox.service import Service as FFService
@@ -159,9 +159,7 @@ def get_puzzle_time(url: str) -> int:
         return int(minutes) * 60 + int(seconds)
 
     except Exception as error:
-        print(
-            f"Cant get xword completing time. Error: {error}, Trace: {traceback.format_exc()}"
-        )
+        logging.error(error, exc_info=True)
         raise
 
     finally:

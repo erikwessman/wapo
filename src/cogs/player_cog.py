@@ -54,7 +54,7 @@ class PlayerCog(commands.Cog):
 
     @profile.error
     async def profile_error(self, ctx: commands.Context, error):
-        if isinstance(error, commands.CommandError):
+        if isinstance(error, commands.BadArgument):
             await ctx.send(content=f"`profile` error: {error}")
 
     @commands.hybrid_command(name="coins", description="Check your coin balance")
@@ -65,7 +65,7 @@ class PlayerCog(commands.Cog):
 
     @coins.error
     async def coins_error(self, ctx: commands.Context, error):
-        if isinstance(error, commands.CommandError):
+        if isinstance(error, commands.BadArgument):
             await ctx.send(content=f"`coins` error: {error}")
 
     @commands.hybrid_command(name="holdings", description="Check your holdings")
@@ -87,7 +87,7 @@ class PlayerCog(commands.Cog):
 
     @holdings.error
     async def holdings_error(self, ctx: commands.Context, error):
-        if isinstance(error, commands.CommandError):
+        if isinstance(error, commands.BadArgument):
             await ctx.send(content=f"`holdings` error: {error}")
 
     @commands.hybrid_command(
@@ -118,7 +118,7 @@ class PlayerCog(commands.Cog):
 
     @inventory.error
     async def inventory_error(self, ctx: commands.Context, error):
-        if isinstance(error, commands.CommandError):
+        if isinstance(error, commands.BadArgument):
             await ctx.send(content=f"`inventory` error: {error}")
 
     @commands.hybrid_command(name="use", description="Use an item")
@@ -132,7 +132,7 @@ class PlayerCog(commands.Cog):
 
     @use.error
     async def use_error(self, ctx: commands.Context, error):
-        if isinstance(error, commands.CommandError):
+        if isinstance(error, commands.BadArgument):
             await ctx.send(content=f"`use` error: {error}")
 
     @commands.hybrid_command(
@@ -156,7 +156,7 @@ class PlayerCog(commands.Cog):
 
     @give.error
     async def give_error(self, ctx: commands.Context, error):
-        if isinstance(error, commands.CommandError):
+        if isinstance(error, commands.BadArgument):
             await ctx.send(content=f"`give` error: {error}")
 
     @commands.hybrid_command(name="flex", description="Show off your wealth, baby!")
@@ -202,7 +202,7 @@ class PlayerCog(commands.Cog):
 
     @flex.error
     async def flex_error(self, ctx: commands.Context, error):
-        if isinstance(error, commands.CommandError):
+        if isinstance(error, commands.BadArgument):
             await ctx.send(content=f"`flex` error: {error}")
 
     @commands.hybrid_command(name="avatar", description="Change your current avatar")
@@ -213,7 +213,7 @@ class PlayerCog(commands.Cog):
 
     @avatar.error
     async def avatar_error(self, ctx, error):
-        if isinstance(error, commands.CommandError):
+        if isinstance(error, commands.BadArgument):
             await ctx.send(content=f"`avatar` error: {error}")
 
     @commands.hybrid_command(name="avatars", description="See all your avatars")
@@ -234,7 +234,7 @@ class PlayerCog(commands.Cog):
 
     @avatars.error
     async def avatars_error(self, ctx, error):
-        if isinstance(error, commands.CommandError):
+        if isinstance(error, commands.BadArgument):
             await ctx.send(content=f"`avatars` error: {error}")
 
     # --- Helpers ---
@@ -293,7 +293,7 @@ class PlayerCog(commands.Cog):
         elif item.name == "Avatar Case":
             await self.open_case(ctx, player)
         else:
-            raise commands.CommandError(f"Failed to use {item.name}")
+            raise commands.BadArgument(f"Failed to use {item.name}")
 
     def apply_gamble_bonus(self, player: Player):
         self.bot.player_service.add_modifier(player, HORSE_INSURANCE_MODIFIER)

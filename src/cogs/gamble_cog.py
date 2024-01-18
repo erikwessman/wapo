@@ -76,7 +76,7 @@ class GambleCog(commands.Cog):
 
     @gamble.error
     async def gamble_error(self, ctx: commands.Context, error):
-        if isinstance(error, commands.CommandError):
+        if isinstance(error, commands.BadArgument):
             await ctx.send(content=f"`gamble` error: {error}")
 
     async def handle_case_drop(self, ctx: commands.Context, player: Player):

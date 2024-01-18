@@ -118,8 +118,9 @@
 - [X] /trivia command
     - [X] /trivia to fetch a trivia question
     - [X] Present alternatives as buttons
-    - [ ] Fetch data from https://opentdb.com/api_config.php
-    - [ ] Award points to correct answer, maybe negative for wrong (?)
+    - [X] Fetch data from https://opentdb.com/api_config.php
+    - [X] Award points to correct answer, maybe negative for wrong (?)
+- [X] /duel
 - [ ] Logging
     - [ ] https://discordpy.readthedocs.io/en/stable/logging.html
 - [ ] Unit testing

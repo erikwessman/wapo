@@ -178,24 +178,24 @@ class DuelCog(commands.Cog):
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def duel(self, ctx: commands.Context):
         if ctx.invoked_subcommand is None:
-            raise commands.CommandError("No subcommand invoked")
+            raise commands.BadArgument("No subcommand invoked")
 
     @duel.error
     async def duel_error(self, ctx, error):
-        if isinstance(error, commands.CommandError):
+        if isinstance(error, commands.BadArgument):
             await ctx.send(f"`duel` error: {error}")
 
     @duel.command(name="start")
     async def duel_start(self, ctx: commands.Context, user: discord.User, amount: int):
         if ctx.author.id == user.id:
-            raise commands.CommandError("Can't challenge yourself")
+            raise commands.BadArgument("Can't duel yourself")
 
         if amount < 1:
-            raise commands.CommandError("Must wager at least 1 coin")
+            raise commands.BadArgument("Must wager at least 1 coin")
 
         for duel in self.duels:
             if duel.has_player(user.id) and duel.state != DuelState.COMPLETED:
-                raise commands.CommandError(
+                raise commands.BadArgument(
                     "You have an active challenge with this user"
                 )
 
@@ -203,7 +203,7 @@ class DuelCog(commands.Cog):
         p2 = self.bot.player_service.get_player(user.id)
 
         if p2.coins < amount:
-            raise commands.CommandError(f"{user.name} doesn't have enough coins")
+            raise commands.BadArgument(f"{user.name} doesn't have enough coins")
 
         self.bot.player_service.remove_coins(p1, amount)
 
@@ -233,13 +233,13 @@ class DuelCog(commands.Cog):
 
     @duel_start.error
     async def duel_start_error(self, ctx, error):
-        if isinstance(error, commands.CommandError):
+        if isinstance(error, commands.BadArgument):
             await ctx.send(f"`duel start` error: {error}")
 
     @duel.command(name="accept")
     async def duel_accept(self, ctx: commands.Context, user: discord.User = None):
         if user and ctx.author.id == user.id:
-            raise commands.CommandError("Can't accept a duel from yourself")
+            raise commands.BadArgument("Can't accept a duel from yourself")
 
         player = self.bot.player_service.get_player(ctx.author.id)
 
@@ -250,7 +250,7 @@ class DuelCog(commands.Cog):
                 pending_duels.append(duel)
 
         if not pending_duels:
-            raise commands.CommandError("No pending duels")
+            raise commands.BadArgument("No pending duels")
 
         if user:
             for duel in pending_duels:
@@ -258,14 +258,14 @@ class DuelCog(commands.Cog):
                     await self.handle_accept_duel(player, ctx, duel)
         else:
             if len(pending_duels) > 1:
-                raise commands.CommandError("You have more than one pending duel")
+                raise commands.BadArgument("You have more than one pending duel")
 
             duel = pending_duels.pop()
             await self.handle_accept_duel(player, ctx, duel)
 
     @duel_accept.error
     async def duel_accept_error(self, ctx, error):
-        if isinstance(error, commands.CommandError):
+        if isinstance(error, commands.BadArgument):
             await ctx.send(f"`duel accept` error: {error}")
 
     async def handle_accept_duel(

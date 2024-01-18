@@ -1,7 +1,8 @@
 import json
 import datetime
+import logging
 from typing import List
-from discord.ext.commands import CommandError
+from discord.ext.commands import BadArgument
 
 from db import DB
 from schemas.stock import Stock
@@ -37,11 +38,11 @@ class StockService:
                 real_ticker = stock_dict["real_ticker"]
 
                 if not self.has_stock(ticker):
-                    print(f"Adding stock information for {company}")
+                    logging.debug(f"Adding stock information for {company}")
                     self.add_stock(ticker, company)
 
                 if not self.has_stock_price(ticker):
-                    print(
+                    logging.info(
                         f"Adding initial batch of stock prices for {company} using real ticker {real_ticker}"
                     )
                     stock_prices_df = self.stock_sim.simulate_initial_stock_prices(
@@ -55,14 +56,14 @@ class StockService:
 
     def add_stock(self, ticker: str, company: str):
         if self.db.has_stock(ticker):
-            raise ValueError("Stock with this ticker already exists")
+            raise BadArgument("Stock with this ticker already exists")
 
         stock = Stock(ticker=ticker, company=company)
         self.db.add_stock(stock)
 
     def get_stock_price_plot(self, stock: Stock, stock_prices: List[StockPrice]):
         if not stock_prices:
-            raise StockError(f"No data to plot for stock {stock.company}")
+            raise BadArgument(f"No data to plot for ${stock.ticker}")
 
         return self.stock_sim.plot_stock_prices(stock, stock_prices)
 
@@ -84,7 +85,7 @@ class StockService:
 
     def get_stock(self, ticker) -> Stock:
         if not self.db.has_stock(ticker):
-            raise StockError(f"Stock with ticker {ticker} does not exist")
+            raise BadArgument(f"Stock with ticker {ticker} does not exist")
 
         return self.db.get_stock(ticker)
 
@@ -110,9 +111,3 @@ class StockService:
 
     def has_stock_price(self, ticker: str) -> bool:
         return self.db.has_stock_price(ticker)
-
-
-class StockError(CommandError):
-    """
-    Exception raised when interacting with a stock
-    """

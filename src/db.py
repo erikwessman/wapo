@@ -1,5 +1,6 @@
 import os
 import datetime
+import logging
 from urllib.parse import quote_plus
 from typing import List
 from mongoengine import connect
@@ -33,7 +34,7 @@ class DB:
         else:
             mongo_uri = f"mongodb://{db_host}"
 
-        print(f"Connecting to database host {db_host}...")
+        logging.info(f"Connecting to database host {db_host}...")
         connect(db_name, host=mongo_uri)
 
     # --- Player helper methods ---

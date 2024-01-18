@@ -47,7 +47,7 @@ class CrosswordCog(commands.Cog):
                 discord.Color.red(),
             )
             await ctx.sent_message.edit(embed=embed_error)
-        elif isinstance(error, commands.CommandError):
+        elif isinstance(error, commands.BadArgument):
             await ctx.send(content=f"`wapo` error: {error}")
 
     @commands.Cog.listener()

@@ -1,5 +1,6 @@
 import os
 from discord.ext import commands
+from discord.ext.commands import BadArgument, Context
 
 
 class AdminCog(commands.Cog):
@@ -18,7 +19,11 @@ class AdminCog(commands.Cog):
     @commands.hybrid_command(name="dev-ping", description="Ping, pong!")
     async def dev_ping(self, ctx: commands.Context):
         if not self.is_dev_mode():
-            await ctx.send(content=self._NOT_DEV_MODE_MSG, ephemeral=True)
-            return
+            raise BadArgument(self._NOT_DEV_MODE_MSG)
 
         await ctx.send(content="Pong!", ephemeral=True)
+
+    @dev_ping.error
+    async def dev_ping_error(self, ctx: Context, error):
+        if isinstance(error, BadArgument):
+            await ctx.send(content=f"`dev-ping` error: {error}", ephemeral=True)
