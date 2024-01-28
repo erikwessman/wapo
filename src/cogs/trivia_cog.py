@@ -126,7 +126,8 @@ class TriviaCog(commands.Cog):
         if message.channel.id in self.movie_channel_dict:
             movie = self.movie_channel_dict[message.channel.id]
             player = self.bot.player_service.get_player(message.author.id)
-            similarity_score = self.get_similarity_score(message.content, movie.name)
+            similarity_score = self.get_similarity_score(
+                message.content, movie.name)
 
             if similarity_score >= 90:
                 del self.movie_channel_dict[message.channel.id]
@@ -136,7 +137,8 @@ class TriviaCog(commands.Cog):
                     f"Release Date: {movie.date}",
                     0x00FF00,
                 )
-                embed.add_field(name="Reward", value="You get 10 coins!", inline=False)
+                embed.add_field(
+                    name="Reward", value="You get 10 coins!", inline=False)
                 embed.set_image(url=movie.poster_url)
                 await message.channel.send(embed=embed)
 
@@ -169,8 +171,9 @@ class MovieDatabaseClient:
             raise ValueError("TMDB API key not found in environment variables")
 
         self.top_movies_cache = []
+        self.popular_movies_cache = []
 
-    def fetch_top_movies(self, pages=5):
+    def fetch_top_movies(self, pages=10):
         """Fetch top movies from TMDB and cache them"""
 
         self.top_movies_cache = []
@@ -190,12 +193,37 @@ class MovieDatabaseClient:
             else:
                 logging.error("Unable to fetch list of movies")
 
+    def fetch_popular_movies(self, pages=5):
+        """Fetch popular movies from TMDB and cache them"""
+
+        self.popular_movies_cache = []
+        api_url = "https://api.themoviedb.org/3/movie/popular?language=en-US"
+
+        for page_nr in range(1, pages + 1):
+            response = requests.get(
+                f"{api_url}&page={page_nr}",
+                headers={
+                    "accept": "application/json",
+                    "Authorization": f"Bearer {self.api_key}",
+                },
+            )
+            if response.ok:
+                movies_dict = json.loads(response.content.decode("utf-8"))
+                self.popular_movies_cache.extend(movies_dict["results"])
+            else:
+                logging.error("Unable to fetch list of popular movies")
+
     def get_random_movie(self) -> Movie:
         """Get a random movie from the cached top movies"""
         if not self.top_movies_cache:
             self.fetch_top_movies()
 
-        movie_dict = random.choice(self.top_movies_cache)
+        if not self.popular_movies_cache:
+            self.fetch_popular_movies()
+
+        combined_movies = self.top_movies_cache + self.popular_movies_cache
+        movie_dict = random.choice(combined_movies)
+
         return Movie(
             name=movie_dict["title"],
             date=movie_dict["release_date"],
