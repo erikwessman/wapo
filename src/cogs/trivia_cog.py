@@ -4,6 +4,7 @@ import json
 import html
 import requests
 import logging
+import asyncio
 from fuzzywuzzy import fuzz
 import discord
 from discord.ui import Button
@@ -110,11 +111,15 @@ class TriviaCog(commands.Cog):
         self.movie_channel_dict[ctx.channel.id] = movie
         embed = get_embed(
             "Movie Trivia!",
-            "Guess the movie title based on the image",
+            "Starting in 10 seconds...",
             discord.Color.teal(),
         )
+        message = await ctx.send(embed=embed)
+
+        await asyncio.sleep(10)
+
         embed.set_image(url=movie.backdrop_url)
-        await ctx.send(embed=embed)
+        await message.edit(embed=embed)
 
     @movie_trivia.error
     async def movie_trivia_error(self, ctx, error):
@@ -129,7 +134,7 @@ class TriviaCog(commands.Cog):
             similarity_score = self.get_similarity_score(
                 message.content, movie.name)
 
-            if similarity_score >= 90:
+            if similarity_score >= 85:
                 del self.movie_channel_dict[message.channel.id]
                 self.bot.player_service.add_coins(player, 10)
                 embed = get_embed(
