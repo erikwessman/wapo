@@ -118,6 +118,7 @@ class TriviaCog(commands.Cog):
 
         await asyncio.sleep(10)
 
+        embed.description = "Guess the movie based on the image"
         embed.set_image(url=movie.backdrop_url)
         await message.edit(embed=embed)
 
