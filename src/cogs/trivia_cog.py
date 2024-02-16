@@ -105,7 +105,7 @@ class TriviaCog(commands.Cog):
             await ctx.send(content=f"`trivia` error: {error}")
 
     @commands.hybrid_command(name="movie", description="Guess the movie!")
-    @commands.cooldown(1, 3600, commands.BucketType.channel)
+    @commands.cooldown(1, 1, commands.BucketType.channel)
     async def movie_trivia(self, ctx: commands.Context):
         movie = self.movie_client.get_random_movie()
         self.movie_channel_dict[ctx.channel.id] = movie
@@ -126,6 +126,16 @@ class TriviaCog(commands.Cog):
     async def movie_trivia_error(self, ctx, error):
         if isinstance(error, commands.BadArgument):
             await ctx.send(content=f"`movie` error: {error}")
+
+    @commands.hybrid_command(name="hint", description="Get a hint for the movie.")
+    @commands.cooldown(1, 60, commands.BucketType.user)
+    async def hint(self, ctx: commands.Context):
+        movie = self.movie_channel_dict.get(ctx.channel.id)
+        if movie:
+            hint = self.movie_client.get_hint(movie)
+            await ctx.send(content=hint)
+        else:
+            await ctx.send(content="No active movie trivia in this channel.")
 
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message):
@@ -153,11 +163,14 @@ class TriviaCog(commands.Cog):
 
 
 class Movie:
-    def __init__(self, name: str, date: int, poster_url: str, backdrop_url: str):
+    def __init__(self, name: str, date: int, poster_url: str, backdrop_url: str, overview: str, vote_average: float, genres: list[str]):
         self.name = name
         self.date = date
         self.poster_url = poster_url
         self.backdrop_url = backdrop_url
+        self.overview = overview
+        self.vote_average = vote_average
+        self.genres = genres
 
     def __str__(self):
         return (
@@ -165,6 +178,9 @@ class Movie:
             f"Release Date: {self.date}\n"
             f"Poster URL: {self.poster_url}\n"
             f"Backdrop URL: {self.backdrop_url}"
+            f"Overview: {self.overview}"
+            f"Vote Average: {self.vote_average}"
+            f"Genres: {self.genres}"
         )
 
 
@@ -178,6 +194,7 @@ class MovieDatabaseClient:
 
         self.top_movies_cache = []
         self.popular_movies_cache = []
+        self.genres_cache = {}
 
     def fetch_top_movies(self, pages=10):
         """Fetch top movies from TMDB and cache them"""
@@ -219,24 +236,78 @@ class MovieDatabaseClient:
             else:
                 logging.error("Unable to fetch list of popular movies")
 
+    def fetch_genres(self):
+        """Fetch movie genres from TMDB and cache them"""
+
+        self.genres_cache = {}
+        api_url = "https://api.themoviedb.org/3/genre/movie/list?language=en"
+
+        response = requests.get(api_url, headers={
+            "accept": "application/json",
+            "Authorization": f"Bearer {self.api_key}"
+        })
+
+        if response.ok:
+            genre_data = response.json()
+            self.genres_cache = {genre['id']: genre['name'] for genre in genre_data['genres']}
+        else:
+            logging.error("Unable to fetch list of genres")
+
     def get_random_movie(self) -> Movie:
         """Get a random movie from the cached top movies"""
         if not self.top_movies_cache:
             self.fetch_top_movies()
 
         if not self.popular_movies_cache:
-            self.fetch_popular_movies()
+            self.popular_movies_cache = []
+            # issue with popular movies, temporarily disabled
+            # self.fetch_popular_movies()
+
+        if self.genres_cache == None:
+            self.genres_cache = self.fetch_genres()
 
         combined_movies = self.top_movies_cache + self.popular_movies_cache
         movie_dict = random.choice(combined_movies)
+
+        genre_names = [self.genres_cache.get(id, "Unknown Genre") for id in movie_dict["genre_ids"]]
 
         return Movie(
             name=movie_dict["title"],
             date=movie_dict["release_date"],
             poster_url=self.image_url_base + movie_dict["poster_path"],
             backdrop_url=self.image_url_base + movie_dict["backdrop_path"],
+            overview=movie_dict["overview"],
+            vote_average=movie_dict["vote_average"],
+            genres=genre_names,
         )
 
+    def get_hint(self, movie: Movie) -> str:
+        snarky_hints = [
+            "Oh, need a hint, do we? Let's see if this makes it too easy:",
+            "I suppose everyone needs a little help sometimes. Here's your 'little help':",
+            "Alright, since you asked so nicely... Oh, wait, you didn't.",
+            "I'm not saying you're struggling, but here's a hint anyway:",
+            "Because everyone deserves a second chance... or a third... or a fourth.",
+            "Sure, let me just pull out my crystal ball for this one.",
+            "Hints, hints, always with the hints. Fine, here you go:",
+            "I was hoping you'd figure it out on your own, but alright...",
+            "Digging for clues? Let me throw you a bone.",
+            "Wouldn't want you to break a sweat. Here's a little nudge:",
+            "In the spirit of generosity, I bestow upon you this clue:",
+            "Don't tell anyone I'm making it this easy for you.",
+            "If I had a dime for every hint I gave... Well, here's another:",
+            "Keep this under your hat, but here's a sneaky clue for you:",
+            "Because who doesn't love a bit of insider information?"
+        ]
+
+        date_hint = f"Release Year: {str(movie.date)[:4]}"  # Assuming date is in 'YYYY-MM-DD' format
+        vote_average_hint = f"Rating: {movie.vote_average}/10"
+        genres_hint = f"Genres: {', '.join(movie.genres)}"  # Assuming genres is a list of genre names
+        overview_hint = f"Overview: {' '.join(movie.overview.split()[:20])}..."  # First 20 words of the overview
+
+        # Choosing a random hint from the prepared options
+        hint = random.choice([date_hint, vote_average_hint, genres_hint, overview_hint])
+        return f"{random.choice(snarky_hints)}\n{hint}"
 
 def decode_html_entities(obj):
     if isinstance(obj, str):
