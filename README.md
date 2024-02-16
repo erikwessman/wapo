@@ -22,9 +22,11 @@ How to start the bot:
 ```yml
 DISCORD_TOKEN=your_token # REQUIRED
 
-MONGO_HOST=host          # OPTIONAL if default values
-MONGO_USER=user          # OPTIONAL if default values
-MONGO_PASS=pass          # OPTIONAL if default values
+# OPTIONAL Only needed if running locally
+# with non-default values
+MONGO_HOST=your_hostname
+MONGO_USER=your_username
+MONGO_PASS=your_password
 ```
 
 ### Start with kool.dev
@@ -41,7 +43,6 @@ kool run dev
 2. Install dependencies in `requirements.txt`
 3. Start a MongoDB instance
 4. Start the bot with `python src/bot.py`
-
 
 ## kool commands
 
