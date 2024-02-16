@@ -31,11 +31,9 @@ MONGO_PASS=your_password
 
 ### Start with kool.dev
 
-(Install kool.dev: `curl -fsSL https://kool.dev/install | bash`)
-
-```bash
-kool run dev
-```
+1. (Install kool.dev: `curl -fsSL https://kool.dev/install | bash`)
+2. Run the following command: `kool run dev`
+3. Start the bot with `python src/bot.py`
 
 ### Start manually
 
