@@ -10,9 +10,9 @@ from schemas.player import Player
 from helper import get_embed
 from const import (
     EMOJI_ROCKET,
-    EMOJI_PENGUIN,
-    EMOJI_OCTOPUS,
-    EMOJI_SANTA,
+    EMOJI_BABY,
+    EMOJI_TROLLEY,
+    EMOJI_RABBIT,
     HORSE_INSURANCE_MODIFIER,
 )
 
@@ -91,7 +91,7 @@ async def handle_race_message(ctx: commands.Context, row: int, avatar: str):
     # Race variables
     values = [0, 0, 0, 0]
     length = 20
-    symbols = [EMOJI_ROCKET, EMOJI_PENGUIN, EMOJI_OCTOPUS, EMOJI_SANTA]
+    symbols = [EMOJI_ROCKET, EMOJI_BABY, EMOJI_TROLLEY, EMOJI_RABBIT]
 
     if avatar:
         symbols[row] = avatar
