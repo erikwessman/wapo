@@ -128,7 +128,7 @@ class TriviaCog(commands.Cog):
             await ctx.send(content=f"`movie` error: {error}")
 
     @commands.hybrid_command(name="hint", description="Get a hint for the movie.")
-    @commands.cooldown(1, 60, commands.BucketType.user)
+    @commands.cooldown(1, 60, commands.BucketType.channel)
     async def hint(self, ctx: commands.Context):
         movie = self.movie_channel_dict.get(ctx.channel.id)
         if movie:
