@@ -104,3 +104,9 @@ def closest_match(query: str, choices: List[str]):
 def shuffle_choices(choices: list) -> list:
     random.shuffle(choices)
     return choices
+
+
+def format_seconds(seconds):
+    minutes = seconds // 60
+    seconds_remainder = seconds % 60
+    return f"{minutes}m {seconds_remainder}s"

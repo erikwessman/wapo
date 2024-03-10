@@ -106,8 +106,10 @@ class CrosswordCog(commands.Cog):
         embed_success = get_embed(
             "Crossword Checker",
             (
-                f"Crossword complete! {puzzle_reward} coin(s)"
-                f" rewarded to {len(players)} players"
+                "Crossword complete!"
+                f" Completed in {helper.format_seconds(puzzle_time)},"
+                f" {puzzle_reward} coin(s)"
+                f" rewarded to {len(players)} players."
             ),
             discord.Color.green(),
         )
