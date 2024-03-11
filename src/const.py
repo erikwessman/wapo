@@ -13,15 +13,15 @@ WEEKLY_REWARD = 20
 
 # Crosswords
 DAY_SCORE_TABLE = {
-    "Monday": 2,
-    "Tuesday": 4,
-    "Wednesday": 6,
+    "Monday": 5,
+    "Tuesday": 6,
+    "Wednesday": 7,
     "Thursday": 8,
-    "Friday": 10,
-    "Saturday": 15,
-    "Sunday": 30,
+    "Friday": 15,
+    "Saturday": 20,
+    "Sunday": 50,
 }
-TIME_MULTIPLIER_TABLE = {7 * 60: 5, 10 * 60: 4, 15 * 60: 3, 20 * 60: 2}
+TIME_MULTIPLIER_TABLE = {7 * 60: 10, 10 * 60: 6, 15 * 60: 4, 20 * 60: 2}
 
 # Modifiers
 HORSE_INSURANCE_MODIFIER = "gamble_insurance"
