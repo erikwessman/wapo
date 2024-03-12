@@ -1,12 +1,5 @@
 [
     {
-        "name": "Horse Insurance",
-        "description": "Receive 50% of your bet back if your horse finishes last; valid for one race",
-        "one_time_use": true,
-        "price": 10,
-        "symbol": "📜"
-    },
-    {
         "name": "Cricket",
         "description": "Does nothing",
         "one_time_use": false,

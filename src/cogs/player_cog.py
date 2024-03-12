@@ -4,7 +4,6 @@ from discord.ext import commands
 from schemas.item import Item
 from schemas.player import Player
 from helper import get_embed
-from const import HORSE_INSURANCE_MODIFIER
 
 
 class PlayerCog(commands.Cog):
@@ -288,15 +287,10 @@ class PlayerCog(commands.Cog):
         if item.one_time_use:
             self.bot.player_service.remove_item(player, item)
 
-        if item.name == "Horse Insurance":
-            self.apply_gamble_bonus(player)
         elif item.name == "Avatar Case":
             await self.open_case(ctx, player)
         else:
             raise commands.BadArgument(f"Failed to use {item.name}")
-
-    def apply_gamble_bonus(self, player: Player):
-        self.bot.player_service.add_modifier(player, HORSE_INSURANCE_MODIFIER)
 
     async def open_case(self, ctx: commands.Context, player: Player):
         rarity, icon = self.bot.case_api.get_case_item()
