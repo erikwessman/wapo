@@ -12,8 +12,7 @@ from const import (
     EMOJI_ROCKET,
     EMOJI_BABY,
     EMOJI_TROLLEY,
-    EMOJI_RABBIT,
-    HORSE_INSURANCE_MODIFIER,
+    EMOJI_RABBIT
 )
 
 
@@ -30,7 +29,7 @@ class GambleCog(commands.Cog):
         description="Invest your well earned coins in a horse race, kiddo",
     )
     @commands.cooldown(1, 30, commands.BucketType.user)
-    async def gamble(self, ctx: commands.Context, row: int, amount: int):
+    async def gamble(self, ctx: commands.Context, row: int, amount: int, use_insurance: bool = False):
         if not 1 <= row <= 4:
             raise commands.BadArgument("You must gamble on rows 1-4")
 
@@ -42,16 +41,17 @@ class GambleCog(commands.Cog):
         player_name = ctx.author.name
         player_avatar = player.active_avatar
 
-        self.bot.player_service.remove_coins(player, amount)
+        if use_insurance:
+            insurance_cost = max(1, amount // 10)
+            self.bot.player_service.remove_coins(player, amount + insurance_cost)
+        else:
+            self.bot.player_service.remove_coins(player, amount)
 
         results = await handle_race_message(ctx, row, player_avatar)
-        nr_coins_won = get_gamble_result(results, row, amount)
+        nr_coins_won = get_nr_coins_won(results, row, amount)
 
-        if HORSE_INSURANCE_MODIFIER in player.modifiers:
-            self.bot.player_service.use_modifier(player, HORSE_INSURANCE_MODIFIER)
-
-            if nr_coins_won == 0:
-                nr_coins_won = amount // 2
+        if use_insurance and nr_coins_won == 0:
+            nr_coins_won = amount // 2
 
         # Fetch player info again to avoid race condition
         player = self.bot.player_service.get_player(ctx.author.id)
@@ -161,7 +161,7 @@ def get_race_string(
     return "\n\n".join(lines)
 
 
-def get_gamble_result(standings: List[int], row: int, amount: int) -> int:
+def get_nr_coins_won(standings: List[int], row: int, amount: int) -> int:
     bet_result_index = standings.index(row)
     winnings_table = {0: 2, 1: 1.5, 2: 0.5, 3: 0}
     return math.floor(winnings_table[bet_result_index] * amount)
