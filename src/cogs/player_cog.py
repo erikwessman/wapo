@@ -4,6 +4,7 @@ from discord.ext import commands
 from schemas.item import Item
 from schemas.player import Player
 from helper import get_embed
+from const import LOCK_MODIFIER, NINJA_LESSON_MODIFIER, SIGNAL_JAMMER_MODIFIER
 
 
 class PlayerCog(commands.Cog):
@@ -287,8 +288,14 @@ class PlayerCog(commands.Cog):
         if item.one_time_use:
             self.bot.player_service.remove_item(player, item)
 
-        elif item.name == "Avatar Case":
+        if item.name == "Avatar Case":
             await self.open_case(ctx, player)
+        elif item.name == "Lock":
+            await self.apply_lock(ctx, player)
+        elif item.name == "Ninja Lesson":
+            await self.apply_ninja_lesson(ctx, player)
+        elif item.name == "Signal Jammer":
+            await self.apply_signal_jammer(ctx, player)
         else:
             raise commands.BadArgument(f"Failed to use {item.name}")
 
@@ -309,3 +316,12 @@ class PlayerCog(commands.Cog):
             name="Congratulations!", value=f"You got a {rarity} {icon}!", inline=False
         )
         await ctx.send(embed=embed)
+
+    async def apply_lock(self, ctx: commands.Context, player: Player):
+        self.bot.player_service.add_modifier(player, LOCK_MODIFIER)
+
+    async def apply_ninja_lesson(self, ctx: commands.Context, player: Player):
+        self.bot.player_service.add_modifier(player, NINJA_LESSON_MODIFIER)
+
+    async def apply_signal_jammer(self, ctx: commands.Context, player: Player):
+        self.bot.player_service.add_modifier(player, SIGNAL_JAMMER_MODIFIER)

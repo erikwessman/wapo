@@ -12,5 +12,26 @@
         "one_time_use": true,
         "price": 10,
         "symbol": "🎁"
+    },
+    {
+        "name": "Lock",
+        "description": "Protect your coins from thieves",
+        "one_time_use": true,
+        "price": 30,
+        "symbol": "🔒"
+    },
+    {
+        "name": "Ninja Lesson",
+        "description": "Gives you slightly better odds when stealing from others",
+        "one_time_use": true,
+        "price": 100,
+        "symbol": "🥷"
+    },
+    {
+        "name": "Signal Jammer",
+        "description": "When stealing from others, give them harder things to type",
+        "one_time_use": true,
+        "price": 1000,
+        "symbol": "📡"
     }
 ]
