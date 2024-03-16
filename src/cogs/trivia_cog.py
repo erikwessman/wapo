@@ -142,8 +142,7 @@ class TriviaCog(commands.Cog):
         if message.channel.id in self.movie_channel_dict:
             movie = self.movie_channel_dict[message.channel.id]
             player = self.bot.player_service.get_player(message.author.id)
-            similarity_score = self.get_similarity_score(
-                message.content, movie.name)
+            similarity_score = self.get_similarity_score(message.content, movie.name)
 
             if similarity_score >= 85:
                 del self.movie_channel_dict[message.channel.id]
@@ -153,8 +152,7 @@ class TriviaCog(commands.Cog):
                     f"Release Date: {movie.date}",
                     0x00FF00,
                 )
-                embed.add_field(
-                    name="Reward", value="You get 10 coins!", inline=False)
+                embed.add_field(name="Reward", value="You get 10 coins!", inline=False)
                 embed.set_image(url=movie.poster_url)
                 await message.channel.send(embed=embed)
 
@@ -163,7 +161,16 @@ class TriviaCog(commands.Cog):
 
 
 class Movie:
-    def __init__(self, name: str, date: int, poster_url: str, backdrop_url: str, overview: str, vote_average: float, genres: list[str]):
+    def __init__(
+        self,
+        name: str,
+        date: int,
+        poster_url: str,
+        backdrop_url: str,
+        overview: str,
+        vote_average: float,
+        genres: list[str],
+    ):
         self.name = name
         self.date = date
         self.poster_url = poster_url
@@ -242,14 +249,19 @@ class MovieDatabaseClient:
         self.genres_cache = {}
         api_url = "https://api.themoviedb.org/3/genre/movie/list?language=en"
 
-        response = requests.get(api_url, headers={
-            "accept": "application/json",
-            "Authorization": f"Bearer {self.api_key}"
-        })
+        response = requests.get(
+            api_url,
+            headers={
+                "accept": "application/json",
+                "Authorization": f"Bearer {self.api_key}",
+            },
+        )
 
         if response.ok:
             genre_data = response.json()
-            self.genres_cache = {genre['id']: genre['name'] for genre in genre_data['genres']}
+            self.genres_cache = {
+                genre["id"]: genre["name"] for genre in genre_data["genres"]
+            }
         else:
             logging.error("Unable to fetch list of genres")
 
@@ -269,7 +281,9 @@ class MovieDatabaseClient:
         combined_movies = self.top_movies_cache + self.popular_movies_cache
         movie_dict = random.choice(combined_movies)
 
-        genre_names = [self.genres_cache.get(id, "Unknown Genre") for id in movie_dict["genre_ids"]]
+        genre_names = [
+            self.genres_cache.get(id, "Unknown Genre") for id in movie_dict["genre_ids"]
+        ]
 
         return Movie(
             name=movie_dict["title"],
@@ -297,7 +311,7 @@ class MovieDatabaseClient:
             "Don't tell anyone I'm making it this easy for you.",
             "If I had a dime for every hint I gave... Well, here's another:",
             "Keep this under your hat, but here's a sneaky clue for you:",
-            "Because who doesn't love a bit of insider information?"
+            "Because who doesn't love a bit of insider information?",
         ]
 
         date_hint = f"Release Year: {str(movie.date)[:4]}"  # Assuming date is in 'YYYY-MM-DD' format
@@ -308,6 +322,7 @@ class MovieDatabaseClient:
         # Choosing a random hint from the prepared options
         hint = random.choice([date_hint, vote_average_hint, genres_hint, overview_hint])
         return f"{random.choice(snarky_hints)}\n{hint}"
+
 
 def decode_html_entities(obj):
     if isinstance(obj, str):

@@ -1,0 +1,78 @@
+{
+    "nouns": [
+        "cat",
+        "robot",
+        "teacher",
+        "rain",
+        "apple",
+        "dog",
+        "book",
+        "city",
+        "dream",
+        "music",
+        "phone"
+    ],
+    "verbs": [
+        "jumps",
+        "calculates",
+        "explains",
+        "falls",
+        "grows",
+        "hypothecates",
+        "discombobulates",
+        "runs",
+        "sings",
+        "rings",
+        "dances",
+        "listens",
+        "reads"
+    ],
+    "adverbs": [
+        "quickly",
+        "meticulously",
+        "warmly",
+        "softly",
+        "vigorously",
+        "perplexingly",
+        "unquestionably",
+        "slowly",
+        "eagerly",
+        "happily"
+    ],
+    "adjectives": [
+        "red",
+        "old",
+        "happy",
+        "wet",
+        "ripe",
+        "obstreperous",
+        "sesquipedalian",
+        "blue",
+        "young",
+        "excited"
+    ],
+    "prepositional_phrases": [
+        "on the roof",
+        "in the lab",
+        "at the school",
+        "under the tree",
+        "by the river",
+        "within the confines of quantum mechanics",
+        "beneath the unyielding cosmos",
+        "across the street",
+        "in the ocean",
+        "by the fire"
+    ],
+    "direct_objects": [
+        "the fence",
+        "the problem",
+        "the lesson",
+        "the puddle",
+        "the seed",
+        "the concept of infinity",
+        "the essence of curiosity",
+        "the story",
+        "the melody",
+        "the light"
+    ]
+}

@@ -8,12 +8,7 @@ from discord.ext import commands
 
 from schemas.player import Player
 from helper import get_embed
-from const import (
-    EMOJI_ROCKET,
-    EMOJI_BABY,
-    EMOJI_TROLLEY,
-    EMOJI_RABBIT
-)
+from const import EMOJI_ROCKET, EMOJI_BABY, EMOJI_TROLLEY, EMOJI_RABBIT
 
 
 class GambleCog(commands.Cog):
@@ -29,7 +24,9 @@ class GambleCog(commands.Cog):
         description="Invest your well earned coins in a horse race, kiddo",
     )
     @commands.cooldown(1, 30, commands.BucketType.user)
-    async def gamble(self, ctx: commands.Context, row: int, amount: int, use_insurance: bool = False):
+    async def gamble(
+        self, ctx: commands.Context, row: int, amount: int, use_insurance: bool = False
+    ):
         if not 1 <= row <= 4:
             raise commands.BadArgument("You must gamble on rows 1-4")
 
