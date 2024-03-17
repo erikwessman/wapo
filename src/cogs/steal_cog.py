@@ -3,12 +3,18 @@ import math
 import random
 import discord
 import asyncio
+import numpy as np
 from discord.ext import commands
 from discord.ext.commands import BadArgument, Context, CommandError
 from typing import Dict, List
 
 from helper import get_embed
-from const import LOCK_MODIFIER, NINJA_LESSON_MODIFIER, SIGNAL_JAMMER_MODIFIER
+from const import (
+    LOCK_MODIFIER,
+    NINJA_LESSON_MODIFIER,
+    SIGNAL_JAMMER_MODIFIER,
+    EMOJI_MONEY_WITH_WINGS,
+)
 
 
 class Challenge:
@@ -28,18 +34,45 @@ class ChallengeManager:
         self.challenges = []
 
     def add_challenge(self, challenge: Challenge) -> None:
+        """
+        Add a challenge to the active challenges.
+
+        Parameters:
+        - challenge (Challenge): The challenge to add.
+        """
         self.challenges.append(challenge)
 
     def remove_challenge(self, challenge: Challenge) -> None:
+        """
+        Remove a challenge from the active challenges.
+
+        Parameters:
+        - challenge (Challenge): The challenge to remove.
+        """
         self.challenges.remove(challenge)
 
-    def get_player_challenge(self, player_id) -> Challenge:
-        for challenge in self.challenges:
-            if player_id == challenge.challengee:
-                return challenge
-        return None
+    def get_player_challenges(self, player_id) -> List[Challenge]:
+        """
+        Get all the challenges in which a player is being challenged.
+
+        Parameters:
+        - player_id (int): The Discord ID of the player.
+
+        Returns:
+        - List[Challenge]: All the players challenges.
+        """
+        return [challenge for challenge in self.challenges if player_id == challenge.challengee]
 
     def player_has_challenge(self, player_id) -> bool:
+        """
+        Returns True if the player has an active challenge.
+
+        Parameters:
+        - player_id (int): The Discord ID of the player.
+
+        Returns:
+        - bool: True if the player has a challenge.
+        """
         return any(player_id == challenge.challengee for challenge in self.challenges)
 
 
@@ -70,15 +103,9 @@ class StealCog(commands.Cog):
         if target_player.id == self.bot.user.id:
             raise commands.BadArgument("You cannot steal from me!")
 
-        if self.challenge_manager.player_has_challenge(player.id):
-            raise commands.BadArgument(
-                "You cannot steal from more than one player at the same time"
-            )
-
         if LOCK_MODIFIER in target_player.modifiers:
             # Lock gets used, remove it
             self.bot.player_service.use_modifier(target_player, LOCK_MODIFIER)
-
             await self.handle_steal_fail(
                 ctx,
                 player.id,
@@ -97,31 +124,16 @@ class StealCog(commands.Cog):
                 )
                 return
 
-            # Construct challenge to send to other player
-            nouns = self.words["nouns"]
-            verbs = self.words["verbs"]
-            adverbs = self.words["adverbs"]
-            adjectives = self.words["adjectives"]
-            prepositional_phrases = self.words["prepositional_phrases"]
-            direct_objects = self.words["direct_objects"]
             use_hard_words = SIGNAL_JAMMER_MODIFIER in player.modifiers
+            prepared_words = prepare_words(self.words, use_hard_words)
+            message = generate_message(**prepared_words)
 
-            message = generate_message(
-                nouns,
-                verbs,
-                adverbs,
-                adjectives,
-                prepositional_phrases,
-                direct_objects,
-                use_hard_words,
-            )
-
-            # Insert non-breaking space to prevent copy-pasting
+            # Prevent copy-pasting
             modified_message = insert_nbsp(message)
 
             steal_embed = get_embed(
-                f"{ctx.author.name} is stealing from {user.name}!",
-                f"{user.mention}, type the following sentence in the next 30 seconds to prevent them from stealing!",
+                f"{EMOJI_MONEY_WITH_WINGS} {ctx.author.name} is stealing from {user.name}! {EMOJI_MONEY_WITH_WINGS}",
+                f"{user.mention}, type the following sentence in the next 45 seconds to prevent them from stealing!",
                 0xFFA600,
             )
             steal_embed.add_field(
@@ -133,18 +145,14 @@ class StealCog(commands.Cog):
             challenge = Challenge(player.id, target_player.id, message)
             self.challenge_manager.add_challenge(challenge)
 
-            await asyncio.sleep(30)
+            await asyncio.sleep(45)
 
-            if challenge.is_complete:
-                await ctx.send(
-                    content=f"{user.name} managed to get away with all their coins!"
-                )
-            else:
+            if not challenge.is_complete:
                 # Get player objects again to prevent race condition
                 player = self.bot.player_service.get_player(ctx.author.id)
                 target_player = self.bot.player_service.get_player(user.id)
 
-                coins_stolen = int(random.random() * target_player.coins / 2)
+                coins_stolen = get_norm(target_player.coins, 30, 25)
                 self.bot.player_service.add_coins(player, coins_stolen)
                 self.bot.player_service.remove_coins(target_player, coins_stolen)
                 await ctx.send(
@@ -163,62 +171,76 @@ class StealCog(commands.Cog):
         if not self.challenge_manager.player_has_challenge(message.author.id):
             return
 
-        challenge = self.challenge_manager.get_player_challenge(message.author.id)
+        challenges = self.challenge_manager.get_player_challenges(message.author.id)
 
-        if challenge.message == message.content:
-            challenge.is_complete = True
+        for challenge in challenges:
+            if challenge.message == message.content:
+                challenge.is_complete = True
+                await message.channel.send(
+                    content=f"{message.author.name} managed to get away with all their coins!"
+                )
 
-    async def handle_steal_fail(self, ctx: Context, player_id, message):
-        """Remove random amount of coins from player who tried to steal"""
+    async def handle_steal_fail(
+        self, ctx: Context, player_id: int, message: str
+    ) -> None:
+        """
+        Handles the case when a player fails to steal from another player.
+        Removes a random amount of coins from the player and sends a message.
+
+        Parameters:
+        - ctx (discord.Context): Message context.
+        - player_id (int): ID of the player that attempted to steal.
+        - message (str): Message to send.
+        """
         # Get player again to prevent any race conditions
-        player = self.bot.player_service.get_player(ctx.author.id)
+        player = self.bot.player_service.get_player(player_id)
 
-        coins_lost = int(random.random() * player.coins / 4)
+        coins_lost = get_norm(player.coins, 20, 15)
         self.bot.player_service.remove_coins(player, coins_lost)
         await ctx.send(content=f"{message}. You lost {coins_lost} coins.")
 
 
+def prepare_words(word_dict: Dict[str, Dict[str, List[str]]], use_hard=False) -> Dict[str, List[str]]:
+    """
+    Prepares and returns a dictionary of words to be used in generate_message, combining easy and hard words based on use_hard flag.
+
+    Parameters:
+    - word_dict (Dict[str, Dict[str, List[str]]]): Word dictionary.
+    - use_hard (bool): Include hard words in the output.
+
+    Returns:
+    - Dict[str, List[str]]: List of words.
+    """
+    prepared_words = {}
+    for category, lists in word_dict.items():
+        prepared_words[category] = lists['easy'][:]
+        if use_hard:
+            prepared_words[category] += lists['hard']
+    return prepared_words
+
+
 def generate_message(
-    nouns,
-    verbs,
-    adverbs,
-    adjectives,
-    prepositional_phrases,
-    direct_objects,
-    use_hard_words: bool = False,
-):
-    threshold = 10
+    nouns: List[str],
+    verbs: List[str],
+    adverbs: List[str],
+    adjectives: List[str],
+    prepositional_phrases: List[str],
+    direct_objects: List[str],
+) -> str:
+    """
+    Generates a random message based on categories of words.
 
-    # Filter out short words if use_hard_words is False
-    if not use_hard_words:
-        filtered_nouns = [noun for noun in nouns if len(noun) <= threshold]
-        nouns = filtered_nouns if filtered_nouns else nouns
+    Parameters:
+    - nouns (List[str]): List of nouns.
+    - verbs (List[str]): List of verbs.
+    - adverbs (List[str]): List of adverbs.
+    - adjectives (List[str]): List of adjectives.
+    - prepositional_phrases (List[str]): List of prepositional phrases.
+    - direct_objects (List[str]): List of direct objects.
 
-        filtered_verbs = [verb for verb in verbs if len(verb) <= threshold]
-        verbs = filtered_verbs if filtered_verbs else verbs
-
-        filtered_adverbs = [adverb for adverb in adverbs if len(adverb) <= threshold]
-        adverbs = filtered_adverbs if filtered_adverbs else adverbs
-
-        filtered_adjectives = [
-            adjective for adjective in adjectives if len(adjective) <= threshold
-        ]
-        adjectives = filtered_adjectives if filtered_adjectives else adjectives
-
-        filtered_prepositional_phrases = [
-            phrase for phrase in prepositional_phrases if len(phrase) <= threshold
-        ]
-        prepositional_phrases = (
-            filtered_prepositional_phrases
-            if filtered_prepositional_phrases
-            else prepositional_phrases
-        )
-
-        filtered_direct_objects = [do for do in direct_objects if len(do) <= threshold]
-        direct_objects = (
-            filtered_direct_objects if filtered_direct_objects else direct_objects
-        )
-
+    Returns:
+    - str: Generated message.
+    """
     noun = random.choice(nouns)
     verb = random.choice(verbs)
     optional_modifiers = (
@@ -238,12 +260,34 @@ def generate_message(
     return message
 
 
-def insert_nbsp(message: str):
+def insert_nbsp(message: str) -> str:
+    """
+    Inserts a non-breaking-space between every character in the input message.
+
+    Parameters:
+    - message (str): Message to modify.
+
+    Returns:
+    - str: Modified message.
+    """
     nbsp = "\u200b"
     return nbsp.join(message)
 
 
-def weighted_chance(a, b, nr_modifiers=0):
+def weighted_chance(a: int, b: int, nr_modifiers: int = 0) -> bool:
+    """
+    Flips a weighted coin and returns True or False.
+    The odds are 50/50 when A and B are equal but fall off exponentially as the difference between A and B grows.
+    Takes an optional argument nr_modifiers to increase the chance of success.
+
+    Parameters:
+    - a (int): Input A.
+    - b (int): Input B.
+    - nr_modifiers (int, optional): The number of modifiers to increase the odds.
+
+    Returns:
+    - bool: Whether the coin flip succeeded or not.
+    """
     ratio = max(a, b) / min(a, b) if min(a, b) > 0 else max(a, b)
 
     base_value = 0.5
@@ -252,9 +296,10 @@ def weighted_chance(a, b, nr_modifiers=0):
 
     probability = base_value * math.exp(-decay_rate * (ratio - 1))
 
-    if nr_modifiers > 0:
-        modifier_rate = math.pow(base_modifier, nr_modifiers)
-        probability *= modifier_rate
+    # Diminishing returns by reducing the effectiveness of each modifier
+    for i in range(nr_modifiers):
+        effective_percentage = base_modifier / (i + 1)
+        probability *= 1 + effective_percentage / 100
 
     min_probability = 0.05
     adjusted_probability = max(probability, min_probability)
@@ -262,5 +307,23 @@ def weighted_chance(a, b, nr_modifiers=0):
     return random.random() < adjusted_probability
 
 
+def get_norm(value: int, mean: int = 50, std: int = 15) -> int:
+    """
+    Samples a random integer value between 0 and the input based on a Gaussian distribution.
+
+    Parameters:
+    - value (int): The max value to draw from.
+    - mean (int, optional): The mean of the Gaussian distribution.
+    - std (int, optional): The standard deviation of the Gaussian distribution.
+
+    Returns:
+    - int: A random value from the Gaussian distribution.
+    """
+    norm = np.random.normal(mean, std)
+    norm_clamped = max(min(norm, 100), 0)
+    output_value = value * (norm_clamped / 100)
+    return round(output_value)
+
+
 class StealError(CommandError):
-    """Exception raised when interacting with the store"""
+    """Exception raised when initializing the StealCog"""
