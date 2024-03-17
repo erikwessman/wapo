@@ -115,7 +115,7 @@ class StealCog(commands.Cog):
         else:
             # Make stealing harder, especially from the rich
             # But increase the odds for each ninja lesson modifier
-            nr_ninja_modifiers = player.modifiers.count(NINJA_LESSON_MODIFIER)
+            nr_ninja_modifiers = player.modifiers.get(NINJA_LESSON_MODIFIER, 0)
             if not weighted_chance(
                 player.coins, target_player.coins, nr_ninja_modifiers
             ):
