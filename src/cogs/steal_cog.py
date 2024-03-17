@@ -291,18 +291,17 @@ def weighted_chance(a: int, b: int, nr_modifiers: int = 0) -> bool:
     ratio = max(a, b) / min(a, b) if min(a, b) > 0 else max(a, b)
 
     base_value = 0.5
-    decay_rate = 0.075
-    base_modifier = 1.05
+    decay_rate = 0.05
+    modifier_effect = 0.03
 
     probability = base_value * math.exp(-decay_rate * (ratio - 1))
 
-    # Diminishing returns by reducing the effectiveness of each modifier
     for i in range(nr_modifiers):
-        effective_percentage = base_modifier / (i + 1)
-        probability *= 1 + effective_percentage / 100
+        probability += modifier_effect
 
     min_probability = 0.05
-    adjusted_probability = max(probability, min_probability)
+    max_probability = 0.95
+    adjusted_probability = min(max(probability, min_probability), max_probability)
 
     return random.random() < adjusted_probability
 
