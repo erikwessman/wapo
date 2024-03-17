@@ -90,14 +90,17 @@ class PlayerService:
         self.db.update_player(player)
 
     def add_modifier(self, player: Player, modifier_name: str):
-        player.modifiers.append(modifier_name)
+        if modifier_name in player.modifiers:
+            player.modifiers[modifier_name] += 1
+        else:
+            player.modifiers[modifier_name] = 1
         self.db.update_player(player)
 
     def use_modifier(self, player: Player, modifier_name: str):
-        if modifier_name not in player.modifiers:
+        if modifier_name not in player.modifiers or player.modifiers[modifier_name] < 1:
             raise BadArgument("You don't have this modifier")
 
-        player.modifiers.remove(modifier_name)
+        player.modifiers[modifier_name] -= 1
         self.db.update_player(player)
 
     def update_avatar(self, player: Player, icon: str):

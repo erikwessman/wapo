@@ -3,8 +3,7 @@ from mongoengine import (
     EmbeddedDocumentField,
     IntField,
     StringField,
-    MapField,
-    ListField,
+    MapField
 )
 from schemas.holding import Holding
 from schemas.avatar import Avatar
@@ -18,7 +17,7 @@ class Player(Document):
     id = IntField(primary_key=True)
     inventory = MapField(field=IntField(), default=lambda: {})
     coins = IntField(default=0)
-    modifiers = ListField(StringField(), default=list)
+    modifiers = MapField(field=IntField(), default=lambda: {})
     active_avatar = StringField(default="")
     avatars = MapField(EmbeddedDocumentField(Avatar), default=lambda: {})
     holdings = MapField(EmbeddedDocumentField(Holding), default=lambda: {})
