@@ -103,6 +103,9 @@ class PlayerService:
         player.modifiers[modifier_name] -= 1
         self.db.update_player(player)
 
+    def has_modifier(self, player: Player, modifier_name: str):
+        return modifier_name in player.modifiers and player.modifiers[modifier_name] > 0
+
     def update_avatar(self, player: Player, icon: str):
         if icon not in player.avatars:
             raise BadArgument("You don't have this avatar")

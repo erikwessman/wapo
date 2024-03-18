@@ -103,7 +103,7 @@ class StealCog(commands.Cog):
         if target_player.id == self.bot.user.id:
             raise commands.BadArgument("You cannot steal from me!")
 
-        if LOCK_MODIFIER in target_player.modifiers:
+        if self.bot.player_service.has_modifier(target_player, LOCK_MODIFIER):
             # Lock gets used, remove it
             self.bot.player_service.use_modifier(target_player, LOCK_MODIFIER)
             await self.handle_steal_fail(
@@ -124,7 +124,7 @@ class StealCog(commands.Cog):
                 )
                 return
 
-            use_hard_words = SIGNAL_JAMMER_MODIFIER in player.modifiers
+            use_hard_words = self.bot.player_service.has_modifier(player, SIGNAL_JAMMER_MODIFIER)
             prepared_words = prepare_words(self.words, use_hard_words)
             message = generate_message(**prepared_words)
 
