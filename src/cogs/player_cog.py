@@ -1,7 +1,9 @@
+from typing import List
 import discord
 from discord.ext import commands
 
 from schemas.item import Item
+from schemas.avatar import Avatar
 from schemas.player import Player
 from helper import get_embed
 from const import LOCK_MODIFIER, NINJA_LESSON_MODIFIER, SIGNAL_JAMMER_MODIFIER
@@ -222,7 +224,7 @@ class PlayerCog(commands.Cog):
         embed = get_embed(f"{ctx.author.name} Avatars", "", discord.Color.blue())
 
         if player.avatars:
-            for avatar in player.avatars.values():
+            for avatar in sort_avatars_by_rarity(player.avatars.values()):
                 embed.add_field(
                     name=f"{avatar.icon} - {avatar.rarity} (x{avatar.count})",
                     value="",
@@ -325,3 +327,8 @@ class PlayerCog(commands.Cog):
 
     async def apply_signal_jammer(self, ctx: commands.Context, player: Player):
         self.bot.player_service.add_modifier(player, SIGNAL_JAMMER_MODIFIER)
+
+
+def sort_avatars_by_rarity(avatars: List[Avatar], default_order=999):
+    rarity_order = {'Common': 1, 'Rare': 2, 'Epic': 3, 'Legendary': 4}
+    return sorted(avatars, key=lambda avatar: (rarity_order.get(avatar.rarity, default_order), avatar.icon))
