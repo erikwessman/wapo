@@ -3,21 +3,17 @@
         "easy": [
             "cat",
             "robot",
-            "teacher",
             "rain",
             "apple",
             "dog",
             "book",
-            "city",
-            "dream",
-            "music",
             "phone"
         ],
         "hard": [
             "metamorphosis",
             "kaleidoscope",
-            "quasar",
-            "nebula",
+            "handkerchief",
+            "sacrilegious",
             "zeitgeist",
             "sesquipedalian"
         ]
@@ -25,15 +21,11 @@
     "verbs": {
         "easy": [
             "jumps",
-            "calculates",
-            "explains",
             "falls",
             "grows",
             "runs",
             "sings",
             "rings",
-            "dances",
-            "listens",
             "reads"
         ],
         "hard": [
@@ -58,7 +50,7 @@
             "meticulously",
             "sporadically",
             "vehemently",
-            "adamantly",
+            "conscientiously",
             "eclectically",
             "unscrupulously"
         ]
@@ -71,11 +63,10 @@
             "wet",
             "ripe",
             "blue",
-            "young",
-            "excited"
+            "young"
         ],
         "hard": [
-            "arcane",
+            "irresistible",
             "benevolent",
             "esoteric",
             "gregarious",
@@ -88,9 +79,7 @@
             "on the roof",
             "in the lab",
             "at the school",
-            "under the tree",
             "by the river",
-            "across the street",
             "in the ocean",
             "by the fire"
         ],
@@ -110,8 +99,6 @@
             "the lesson",
             "the puddle",
             "the seed",
-            "the story",
-            "the melody",
             "the light"
         ],
         "hard": [
