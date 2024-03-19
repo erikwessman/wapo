@@ -124,16 +124,18 @@ class StealCog(commands.Cog):
                 )
                 return
 
-            use_hard_words = self.bot.player_service.has_modifier(player, SIGNAL_JAMMER_MODIFIER)
-            prepared_words = prepare_words(self.words, use_hard_words)
+            has_signal_jammer = self.bot.player_service.has_modifier(player, SIGNAL_JAMMER_MODIFIER)
+            prepared_words = prepare_words(self.words, has_signal_jammer)
             message = generate_message(**prepared_words)
+
+            time_to_steal = 45 if not has_signal_jammer else 30
 
             # Prevent copy-pasting
             modified_message = insert_nbsp(message)
 
             steal_embed = get_embed(
                 f"{EMOJI_MONEY_WITH_WINGS} {ctx.author.name} is stealing from {user.name}! {EMOJI_MONEY_WITH_WINGS}",
-                f"{user.mention}, type the following sentence in the next 45 seconds to prevent them from stealing!",
+                f"{user.mention}, type the following sentence in the next {time_to_steal} seconds to prevent them from stealing!",
                 0xFFA600,
             )
             steal_embed.add_field(
@@ -145,7 +147,7 @@ class StealCog(commands.Cog):
             challenge = Challenge(player.id, target_player.id, message)
             self.challenge_manager.add_challenge(challenge)
 
-            await asyncio.sleep(45)
+            await asyncio.sleep(time_to_steal)
 
             if not challenge.is_complete:
                 # Get player objects again to prevent race condition
