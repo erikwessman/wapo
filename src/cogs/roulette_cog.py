@@ -138,13 +138,6 @@ class RouletteCog(commands.Cog):
         }
         self.bot.roulette_service.add_roulette(datetime.today(), player_dict, winner.id)
 
-    async def handle_case_drop(self, ctx: commands.Context, player: Player):
-        # 10% chance to drop a case
-        if random.random() < 0.1:
-            item = self.bot.store.get_item("Avatar Case")
-            self.bot.player_service.add_item(player, item)
-            await ctx.send(content=f"🍀 {ctx.author.mention} got a case in a drop! 🍀")
-
 
 async def handle_roulette_countdown(seconds: int, ctx: commands.Context):
     message = await ctx.send(f"Roulette ending in {seconds} seconds")

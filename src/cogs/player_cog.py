@@ -103,7 +103,7 @@ class PlayerCog(commands.Cog):
 
         if inventory:
             for item_name, quantity in inventory.items():
-                item = self.bot.store.get_item(item_name)
+                item = self.bot.store.get_item(item_name, False)
                 embed.add_field(
                     name=f"{item.name} {item.symbol}",
                     value=f"x{quantity}",

@@ -24,13 +24,20 @@ class Store:
         except json.JSONDecodeError:
             raise StoreError(f"Could not decode the contents of '{file_path}'")
 
-    def get_item(self, item_name: str) -> Item:
+    def get_item(self, item_name: str, fuzzy_match: bool = True) -> Item:
         """
-        Get an item from the store
-        Use fuzzy matching to match with the item that has the closest name
+        Get an Item from the store. Use fuzzy matching to match with the Item that has the closest name.
+
+        Parameters:
+        - item_name (str): The name of the item.
+        - fuzzy_match (bool, optional): Use fuzzy matching to get the item.
+
+        Returns:
+        - Item: An item.
         """
-        all_item_names = [i.name for i in self.get_items()]
-        item_name = helper.closest_match(item_name, all_item_names)
+        if fuzzy_match:
+            all_item_names = [i.name for i in self.get_items()]
+            item_name = helper.closest_match(item_name, all_item_names)
 
         if item_name not in self._items:
             raise StoreError(f"Item {item_name} does not exist")
