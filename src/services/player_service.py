@@ -1,8 +1,10 @@
 from typing import List
+from datetime import datetime
 from discord.ext.commands import BadArgument
 
 from db import DB
 from schemas.player import Player
+from schemas.modifier import Modifier
 from schemas.item import Item
 from schemas.holding import Holding
 from schemas.avatar import Avatar
@@ -91,20 +93,26 @@ class PlayerService:
 
     def add_modifier(self, player: Player, modifier_name: str):
         if modifier_name in player.modifiers:
-            player.modifiers[modifier_name] += 1
+            player.modifiers[modifier_name].amount += 1
         else:
-            player.modifiers[modifier_name] = 1
+            player.modifiers[modifier_name] = Modifier(name=modifier_name, amount=1)
+
+        player.modifiers[modifier_name].last_used = datetime.utcnow()
         self.db.update_player(player)
 
-    def use_modifier(self, player: Player, modifier_name: str):
-        if modifier_name not in player.modifiers or player.modifiers[modifier_name] < 1:
+    def remove_modifier(self, player: Player, modifier_name: str):
+        if modifier_name not in player.modifiers or player.modifiers[modifier_name].count < 1:
             raise BadArgument("You don't have this modifier")
 
-        player.modifiers[modifier_name] -= 1
+        player.modifiers[modifier_name].amount -= 1
+
+        if player.modifiers[modifier_name].amount < 1:
+            del player.modifiers[modifier_name]
+
         self.db.update_player(player)
 
     def has_modifier(self, player: Player, modifier_name: str):
-        return modifier_name in player.modifiers and player.modifiers[modifier_name] > 0
+        return modifier_name in player.modifiers and player.modifiers[modifier_name].count > 0
 
     def update_avatar(self, player: Player, icon: str):
         if icon not in player.avatars:

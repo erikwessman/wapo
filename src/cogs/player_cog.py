@@ -1,4 +1,5 @@
 from typing import List
+from datetime import datetime
 import discord
 from discord.ext import commands
 
@@ -238,6 +239,25 @@ class PlayerCog(commands.Cog):
     async def avatars_error(self, ctx, error):
         if isinstance(error, commands.BadArgument):
             await ctx.send(content=f"`avatars` error: {error}")
+
+    @commands.hybrid_command(name="modifiers", description="See all your modifiers")
+    async def modifiers(self, ctx: commands.Context):
+        player = self.bot.player_service.get_player(ctx.author.id)
+        embed = get_embed(f"{ctx.author.name} Modifiers", "", discord.Color.blue())
+
+        now = datetime.utcnow()
+
+        if player.modifiers:
+            for modifier in player.modifiers.values():
+                hours_difference = (now - modifier.last_used).total_seconds() / 3600
+        else:
+            embed.add_field(name="No modifiers", value="You have no modifiers.")
+        await ctx.send(embed=embed)
+
+    @modifiers.error
+    async def modifiers_error(self, ctx, error):
+        if isinstance(error, commands.BadArgument):
+            await ctx.send(content=f"`modifiers` error: {error}")
 
     # --- Helpers ---
 

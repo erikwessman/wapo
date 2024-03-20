@@ -105,7 +105,7 @@ class StealCog(commands.Cog):
 
         if self.bot.player_service.has_modifier(target_player, LOCK_MODIFIER):
             # Lock gets used, remove it
-            self.bot.player_service.use_modifier(target_player, LOCK_MODIFIER)
+            self.bot.player_service.remove_modifier(target_player, LOCK_MODIFIER)
             await self.handle_steal_fail(
                 ctx,
                 player.id,
