@@ -5,9 +5,17 @@ import validators
 from fuzzywuzzy import process
 from urllib.parse import urlparse, parse_qs
 from datetime import datetime
+from datetime import timedelta
 from typing import List
 
-from const import GITHUB_REPOSITORY, GITHUB_ICON, DAY_SCORE_TABLE, TIME_MULTIPLIER_TABLE
+from schemas.modifier import Modifier
+from const import (
+    GITHUB_REPOSITORY,
+    GITHUB_ICON,
+    DAY_SCORE_TABLE,
+    TIME_MULTIPLIER_TABLE,
+    MODIFIER_TIME,
+)
 
 
 def calculate_new_average_price(
@@ -110,3 +118,31 @@ def format_seconds(seconds):
     minutes = seconds // 60
     seconds_remainder = seconds % 60
     return f"{minutes}m {seconds_remainder}s"
+
+
+def is_modifier_active(modifier: Modifier) -> bool:
+    now = datetime.utcnow()
+    time_since_used = now - modifier.last_used
+    hours_timedelta = timedelta(hours=MODIFIER_TIME[modifier.name])
+
+    return time_since_used < hours_timedelta
+
+
+def get_modifier_time_left(modifier: Modifier) -> str:
+    now = datetime.utcnow()
+    time_since_used = now - modifier.last_used
+
+    hours_timedelta = timedelta(hours=MODIFIER_TIME[modifier.name])
+    time_left = hours_timedelta - time_since_used
+
+    return format_time_delta(time_left)
+
+
+def format_time_delta(time_diff):
+    total_seconds = int(time_diff.total_seconds())
+
+    hours = total_seconds // 3600
+    minutes = (total_seconds % 3600) // 60
+    seconds = total_seconds % 60
+
+    return f"{hours}h {minutes}m {seconds}s"

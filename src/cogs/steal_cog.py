@@ -8,7 +8,7 @@ from discord.ext import commands
 from discord.ext.commands import BadArgument, Context, CommandError
 from typing import Dict, List
 
-from helper import get_embed
+from helper import get_embed, is_modifier_active, get_modifier_time_left
 from const import (
     LOCK_MODIFIER,
     NINJA_LESSON_MODIFIER,
@@ -61,7 +61,11 @@ class ChallengeManager:
         Returns:
         - List[Challenge]: All the players challenges.
         """
-        return [challenge for challenge in self.challenges if player_id == challenge.challengee]
+        return [
+            challenge
+            for challenge in self.challenges
+            if player_id == challenge.challengee
+        ]
 
     def player_has_challenge(self, player_id) -> bool:
         """
@@ -92,76 +96,76 @@ class StealCog(commands.Cog):
             raise StealError(f"Could not decode the contents of '{file_path}'")
 
     @commands.hybrid_command(name="steal", description="Steal coins from a user")
-    @commands.cooldown(1, 86400, commands.BucketType.user)
+    @commands.cooldown(1, 1, commands.BucketType.user)
     async def steal(self, ctx: commands.Context, user: discord.User):
         player = self.bot.player_service.get_player(ctx.author.id)
         target_player = self.bot.player_service.get_player(user.id)
 
-        if player.id == target_player.id:
-            raise commands.BadArgument("You cannot steal from yourself")
+        #if player.id == target_player.id:
+            #raise commands.BadArgument("You cannot steal from yourself")
 
         if target_player.id == self.bot.user.id:
             raise commands.BadArgument("You cannot steal from me!")
 
         if self.bot.player_service.has_modifier(target_player, LOCK_MODIFIER):
-            # Lock gets used, remove it
-            self.bot.player_service.remove_modifier(target_player, LOCK_MODIFIER)
-            await self.handle_steal_fail(
-                ctx,
-                player.id,
-                "The other player had a lock that prevented you from stealing",
-            )
-            return
-        else:
-            # Make stealing harder, especially from the rich
-            # But increase the odds for each ninja lesson modifier
-            nr_ninja_modifiers = player.modifiers.get(NINJA_LESSON_MODIFIER, 0)
-            if not weighted_chance(
-                player.coins, target_player.coins, nr_ninja_modifiers
-            ):
+            target_player_lock = target_player.modifiers[LOCK_MODIFIER]
+
+            if is_modifier_active(target_player_lock):
+                time_left = get_modifier_time_left(target_player_lock)
                 await self.handle_steal_fail(
-                    ctx, player.id, "You did not succeed in stealing"
+                    ctx,
+                    player.id,
+                    f"The other player had a lock that prevented you from stealing ({time_left})",
                 )
                 return
 
-            has_signal_jammer = self.bot.player_service.has_modifier(player, SIGNAL_JAMMER_MODIFIER)
-            prepared_words = prepare_words(self.words, has_signal_jammer)
-            message = generate_message(**prepared_words)
+        # Make stealing harder, but increase the odds for each ninja lesson modifier
+        nr_ninja_modifiers = 0
+        if NINJA_LESSON_MODIFIER in player.modifiers:
+            nr_ninja_modifiers = player.modifiers[NINJA_LESSON_MODIFIER].amount
 
-            time_to_steal = 45 if not has_signal_jammer else 30
+        if not weighted_chance(player.coins, target_player.coins, nr_ninja_modifiers):
+            await self.handle_steal_fail(ctx, player.id, "You did not succeed in stealing")
+            return
 
-            # Prevent copy-pasting
-            modified_message = insert_nbsp(message)
+        has_signal_jammer = self.bot.player_service.has_modifier(player, SIGNAL_JAMMER_MODIFIER)
+        prepared_words = prepare_words(self.words, has_signal_jammer)
+        message = generate_message(**prepared_words)
 
-            steal_embed = get_embed(
-                f"{EMOJI_MONEY_WITH_WINGS} {ctx.author.name} is stealing from {user.name}! {EMOJI_MONEY_WITH_WINGS}",
-                f"{user.mention}, type the following sentence in the next {time_to_steal} seconds to prevent them from stealing!",
-                0xFFA600,
+        time_to_steal = 45 if not has_signal_jammer else 30
+
+        # Prevent copy-pasting
+        modified_message = insert_nbsp(message)
+
+        steal_embed = get_embed(
+            f"{EMOJI_MONEY_WITH_WINGS} {ctx.author.name} is stealing from {user.name}! {EMOJI_MONEY_WITH_WINGS}",
+            f"{user.mention}, type the following sentence in the next {time_to_steal} seconds to prevent them from stealing!",
+            0xFFA600,
+        )
+        steal_embed.add_field(
+            name="Type:", value=f"```{modified_message}```", inline=False
+        )
+
+        await ctx.send(embed=steal_embed)
+
+        challenge = Challenge(player.id, target_player.id, message)
+        self.challenge_manager.add_challenge(challenge)
+
+        await asyncio.sleep(time_to_steal)
+
+        if not challenge.is_complete:
+            # Get player objects again to prevent race condition
+            player = self.bot.player_service.get_player(ctx.author.id)
+            target_player = self.bot.player_service.get_player(user.id)
+
+            coins_stolen = get_norm(target_player.coins, 30, 25)
+            self.bot.player_service.add_coins(player, coins_stolen)
+            self.bot.player_service.remove_coins(target_player, coins_stolen)
+            await ctx.send(
+                content=f"{ctx.author.name} stole {coins_stolen} coins from {user.name}!"
             )
-            steal_embed.add_field(
-                name="Type:", value=f"```{modified_message}```", inline=False
-            )
 
-            await ctx.send(embed=steal_embed)
-
-            challenge = Challenge(player.id, target_player.id, message)
-            self.challenge_manager.add_challenge(challenge)
-
-            await asyncio.sleep(time_to_steal)
-
-            if not challenge.is_complete:
-                # Get player objects again to prevent race condition
-                player = self.bot.player_service.get_player(ctx.author.id)
-                target_player = self.bot.player_service.get_player(user.id)
-
-                coins_stolen = get_norm(target_player.coins, 30, 25)
-                self.bot.player_service.add_coins(player, coins_stolen)
-                self.bot.player_service.remove_coins(target_player, coins_stolen)
-                await ctx.send(
-                    content=f"{ctx.author.name} stole {coins_stolen} coins from {user.name}!"
-                )
-
-            self.challenge_manager.remove_challenge(challenge)
+        self.challenge_manager.remove_challenge(challenge)
 
     @steal.error
     async def steal_error(self, ctx: Context, error):
@@ -202,7 +206,9 @@ class StealCog(commands.Cog):
         await ctx.send(content=f"{message}. You lost {coins_lost} coins.")
 
 
-def prepare_words(word_dict: Dict[str, Dict[str, List[str]]], use_hard=False) -> Dict[str, List[str]]:
+def prepare_words(
+    word_dict: Dict[str, Dict[str, List[str]]], use_hard=False
+) -> Dict[str, List[str]]:
     """
     Prepares and returns a dictionary of words to be used in generate_message, combining easy and hard words based on use_hard flag.
 
@@ -215,9 +221,9 @@ def prepare_words(word_dict: Dict[str, Dict[str, List[str]]], use_hard=False) ->
     """
     prepared_words = {}
     for category, lists in word_dict.items():
-        prepared_words[category] = lists['easy'][:]
+        prepared_words[category] = lists["easy"][:]
         if use_hard:
-            prepared_words[category] += lists['hard']
+            prepared_words[category] += lists["hard"]
     return prepared_words
 
 
@@ -254,7 +260,7 @@ def generate_message(
 
     if modifier in adjectives:
         message = f"{modifier} {noun} {verb}"
-    elif modifier:
+    if modifier:
         message = f"{noun} {verb} {modifier}"
     else:
         message = f"{noun} {verb}"

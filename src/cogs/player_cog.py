@@ -1,13 +1,17 @@
 from typing import List
-from datetime import datetime
 import discord
 from discord.ext import commands
 
 from schemas.item import Item
 from schemas.avatar import Avatar
 from schemas.player import Player
-from helper import get_embed
-from const import LOCK_MODIFIER, NINJA_LESSON_MODIFIER, SIGNAL_JAMMER_MODIFIER
+from helper import get_embed, is_modifier_active, get_modifier_time_left
+from const import (
+    LOCK_MODIFIER,
+    NINJA_LESSON_MODIFIER,
+    SIGNAL_JAMMER_MODIFIER,
+    MODIFIER_TIME,
+)
 
 
 class PlayerCog(commands.Cog):
@@ -245,11 +249,30 @@ class PlayerCog(commands.Cog):
         player = self.bot.player_service.get_player(ctx.author.id)
         embed = get_embed(f"{ctx.author.name} Modifiers", "", discord.Color.blue())
 
-        now = datetime.utcnow()
-
         if player.modifiers:
             for modifier in player.modifiers.values():
-                hours_difference = (now - modifier.last_used).total_seconds() / 3600
+
+                # For modifiers that have a certain duration, print the time
+                if modifier.name in MODIFIER_TIME:
+                    if not is_modifier_active(modifier):
+                        embed.add_field(
+                            name=f"{modifier.name} {modifier.symbol}",
+                            value="EXPIRED",
+                            inline=False,
+                        )
+                    else:
+                        time_left = get_modifier_time_left(modifier)
+                        embed.add_field(
+                            name=f"{modifier.name} {modifier.symbol}",
+                            value=f"Valid for {time_left}",
+                            inline=False,
+                        )
+                else:
+                    embed.add_field(
+                        name=f"{modifier.name} {modifier.symbol}",
+                        value=f"{modifier.amount}x",
+                        inline=False,
+                    )
         else:
             embed.add_field(name="No modifiers", value="You have no modifiers.")
         await ctx.send(embed=embed)
@@ -313,11 +336,11 @@ class PlayerCog(commands.Cog):
         if item.name == "Avatar Case":
             await self.open_case(ctx, player)
         elif item.name == "Lock":
-            await self.apply_lock(ctx, player)
+            await self.apply_lock(ctx, player, item.symbol)
         elif item.name == "Ninja Lesson":
-            await self.apply_ninja_lesson(ctx, player)
+            await self.apply_ninja_lesson(ctx, player, item.symbol)
         elif item.name == "Signal Jammer":
-            await self.apply_signal_jammer(ctx, player)
+            await self.apply_signal_jammer(ctx, player, item.symbol)
         else:
             raise commands.BadArgument(f"Failed to use {item.name}")
 
@@ -339,16 +362,26 @@ class PlayerCog(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    async def apply_lock(self, ctx: commands.Context, player: Player):
-        self.bot.player_service.add_modifier(player, LOCK_MODIFIER)
+    async def apply_lock(self, ctx: commands.Context, player: Player, symbol: str):
+        self.bot.player_service.add_modifier(player, LOCK_MODIFIER, symbol)
 
-    async def apply_ninja_lesson(self, ctx: commands.Context, player: Player):
-        self.bot.player_service.add_modifier(player, NINJA_LESSON_MODIFIER)
+    async def apply_ninja_lesson(
+        self, ctx: commands.Context, player: Player, symbol: str
+    ):
+        self.bot.player_service.add_modifier(player, NINJA_LESSON_MODIFIER, symbol)
 
-    async def apply_signal_jammer(self, ctx: commands.Context, player: Player):
-        self.bot.player_service.add_modifier(player, SIGNAL_JAMMER_MODIFIER)
+    async def apply_signal_jammer(
+        self, ctx: commands.Context, player: Player, symbol: str
+    ):
+        self.bot.player_service.add_modifier(player, SIGNAL_JAMMER_MODIFIER, symbol)
 
 
 def sort_avatars_by_rarity(avatars: List[Avatar], default_order=999):
-    rarity_order = {'Common': 1, 'Rare': 2, 'Epic': 3, 'Legendary': 4}
-    return sorted(avatars, key=lambda avatar: (rarity_order.get(avatar.rarity, default_order), avatar.icon))
+    rarity_order = {"Common": 1, "Rare": 2, "Epic": 3, "Legendary": 4}
+    return sorted(
+        avatars,
+        key=lambda avatar: (
+            rarity_order.get(avatar.rarity, default_order),
+            avatar.icon,
+        ),
+    )

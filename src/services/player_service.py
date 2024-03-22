@@ -9,6 +9,7 @@ from schemas.item import Item
 from schemas.holding import Holding
 from schemas.avatar import Avatar
 from helper import calculate_new_average_price
+from const import MODIFIER_TIME
 
 
 class PlayerService:
@@ -91,17 +92,27 @@ class PlayerService:
 
         self.db.update_player(player)
 
-    def add_modifier(self, player: Player, modifier_name: str):
+    def add_modifier(
+        self, player: Player, modifier_name: str, modifier_symbol: str = ""
+    ):
         if modifier_name in player.modifiers:
             player.modifiers[modifier_name].amount += 1
         else:
-            player.modifiers[modifier_name] = Modifier(name=modifier_name, amount=1)
+            player.modifiers[modifier_name] = Modifier(
+                name=modifier_name,
+                symbol=modifier_symbol,
+                amount=1,
+                last_used=datetime.utcfromtimestamp(0),
+            )
 
         player.modifiers[modifier_name].last_used = datetime.utcnow()
         self.db.update_player(player)
 
     def remove_modifier(self, player: Player, modifier_name: str):
-        if modifier_name not in player.modifiers or player.modifiers[modifier_name].count < 1:
+        if (
+            modifier_name not in player.modifiers
+            or player.modifiers[modifier_name].amount < 1
+        ):
             raise BadArgument("You don't have this modifier")
 
         player.modifiers[modifier_name].amount -= 1
@@ -112,7 +123,10 @@ class PlayerService:
         self.db.update_player(player)
 
     def has_modifier(self, player: Player, modifier_name: str):
-        return modifier_name in player.modifiers and player.modifiers[modifier_name].count > 0
+        return (
+            modifier_name in player.modifiers
+            and player.modifiers[modifier_name].amount > 0
+        )
 
     def update_avatar(self, player: Player, icon: str):
         if icon not in player.avatars:
@@ -123,7 +137,7 @@ class PlayerService:
 
     def add_avatar(self, player: Player, icon: str, rarity: str):
         if icon in player.avatars:
-            player.avatars[icon].count += 1
+            player.avatars[icon].amount += 1
         else:
             player.avatars[icon] = Avatar(icon=icon, rarity=rarity, count=1)
 

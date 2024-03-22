@@ -1,10 +1,4 @@
-from mongoengine import (
-    Document,
-    EmbeddedDocumentField,
-    IntField,
-    StringField,
-    MapField
-)
+from mongoengine import Document, EmbeddedDocumentField, IntField, StringField, MapField
 from schemas.modifier import Modifier
 from schemas.holding import Holding
 from schemas.avatar import Avatar

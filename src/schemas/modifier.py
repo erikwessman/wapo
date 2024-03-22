@@ -7,5 +7,6 @@ class Modifier(EmbeddedDocument):
     """
 
     name = StringField(required=True)
+    symbol = StringField(required=True)
     amount = IntField(required=True)
-    last_used = DateTimeField()
+    last_used = DateTimeField(required=True)
