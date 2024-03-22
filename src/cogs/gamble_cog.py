@@ -39,7 +39,7 @@ class GambleCog(commands.Cog):
         player_avatar = player.active_avatar
 
         if use_insurance:
-            insurance_cost = max(1, amount * 0.15)
+            insurance_cost = max(1, int(amount * 0.15))
             self.bot.player_service.remove_coins(player, amount + insurance_cost)
         else:
             self.bot.player_service.remove_coins(player, amount)
