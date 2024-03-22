@@ -21,7 +21,7 @@ class GambleCog(commands.Cog):
 
     @commands.hybrid_command(
         name="gamble",
-        description="Invest your well earned coins in a horse race, kiddo",
+        description="Gamble on a horse race. Optionally add insurance for 15% of the total bet.",
     )
     @commands.cooldown(1, 30, commands.BucketType.user)
     async def gamble(
@@ -39,7 +39,7 @@ class GambleCog(commands.Cog):
         player_avatar = player.active_avatar
 
         if use_insurance:
-            insurance_cost = max(1, amount // 10)
+            insurance_cost = max(1, amount * 0.15)
             self.bot.player_service.remove_coins(player, amount + insurance_cost)
         else:
             self.bot.player_service.remove_coins(player, amount)
