@@ -30,21 +30,15 @@ class StockCog(commands.Cog):
     async def stock_list(self, ctx):
         stocks = self.bot.stock_service.get_all_stocks()
 
-        embed = get_embed(
-            "Stock List", "Here are the available stocks:", discord.Color.orange()
-        )
+        embed = get_embed("Stock List", "Here are the available stocks:", discord.Color.orange())
 
         date_24_hrs = datetime.now() - timedelta(days=1)
         date_1_week = datetime.now() - timedelta(days=7)
 
         for stock in stocks:
             curr_price = self.bot.stock_service.get_current_stock_price(stock)
-            price_24_hrs = self.bot.stock_service.get_stock_price_by_date(
-                stock, date_24_hrs
-            )
-            price_1_week = self.bot.stock_service.get_stock_price_by_date(
-                stock, date_1_week
-            )
+            price_24_hrs = self.bot.stock_service.get_stock_price_by_date(stock, date_24_hrs)
+            price_1_week = self.bot.stock_service.get_stock_price_by_date(stock, date_1_week)
 
             change_24_hrs = (
                 ((curr_price - price_24_hrs) / price_24_hrs) * 100
@@ -128,12 +122,21 @@ class StockCog(commands.Cog):
         player = self.bot.player_service.get_player(ctx.author.id)
         stock = self.bot.stock_service.get_stock(ticker)
         stock_price = self.bot.stock_service.get_current_stock_price(stock)
+        total_cost = stock_price * quantity
 
-        total = stock_price * quantity
+        if quantity < 1:
+            raise commands.BadArgument("Must buy at least one share")
 
-        self.bot.player_service.buy_stock(player, stock.ticker, stock_price, quantity)
+        if stock_price < 1:
+            raise commands.BadArgument("Can't buy a stock for less than 1 coin")
 
-        await ctx.send(f"Bought {quantity} shares of {ticker} for {total} coins")
+        if player.get_coins() < total_cost:
+            raise commands.BadArgument("Not enough coins")
+
+        player.add_holding(ticker, quantity, stock_price)
+        player.remove_coins(total_cost)
+
+        await ctx.send(f"Bought {quantity} shares of {ticker} for {total_cost} coins")
 
     @stock_buy.error
     async def stock_buy_error(self, ctx: commands.Context, error):
@@ -145,12 +148,24 @@ class StockCog(commands.Cog):
         player = self.bot.player_service.get_player(ctx.author.id)
         stock = self.bot.stock_service.get_stock(ticker)
         stock_price = self.bot.stock_service.get_current_stock_price(stock)
+        total_cost = stock_price * quantity
 
-        total = stock_price * quantity
+        if quantity < 1:
+            raise commands.BadArgument("Must sell at least one share")
 
-        self.bot.player_service.sell_stock(player, stock.ticker, stock_price, quantity)
+        if stock_price < 1:
+            raise commands.BadArgument("Can't sell a stock for less than 1 coin")
 
-        await ctx.send(f"Sold {quantity} shares of {ticker} for {total} coins")
+        if not player.has_holding(ticker):
+            raise commands.BadArgument(f"You do not own any shares of ${ticker}")
+
+        if player.get_holding(ticker).shares < quantity:
+            raise commands.BadArgument("Not enough shares")
+
+        player.remove_holding(ticker, quantity)
+        player.add_coins(total_cost)
+
+        await ctx.send(f"Sold {quantity} shares of {ticker} for {total_cost} coins")
 
     @stock_sell.error
     async def stock_sell_error(self, ctx: commands.Context, error):

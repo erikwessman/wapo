@@ -5,6 +5,7 @@ from schemas.player_avatar import PlayerAvatar
 from schemas.player_holding import PlayerHolding
 
 from typing import Dict
+from helper import calculate_new_average_price
 
 
 class Player(Document):
@@ -12,13 +13,13 @@ class Player(Document):
     Represents a player/user in the Discord server
     """
 
-    _id = IntField(primary_key=True)
-    _coins = IntField(default=10)  # Players start with 10 coins
-    _active_avatar = StringField(default="")
-    _inventory = MapField(EmbeddedDocumentField(PlayerItem), default=lambda: {})
-    _modifiers = MapField(EmbeddedDocumentField(PlayerModifier), default=lambda: {})
-    _avatars = MapField(EmbeddedDocumentField(PlayerAvatar), default=lambda: {})
-    _holdings = MapField(EmbeddedDocumentField(PlayerHolding), default=lambda: {})
+    id = IntField(primary_key=True)
+    coins = IntField(default=10)  # Players start with 10 coins
+    active_avatar = StringField(default="")
+    inventory = MapField(EmbeddedDocumentField(PlayerItem), default=lambda: {})
+    modifiers = MapField(EmbeddedDocumentField(PlayerModifier), default=lambda: {})
+    avatars = MapField(EmbeddedDocumentField(PlayerAvatar), default=lambda: {})
+    holdings = MapField(EmbeddedDocumentField(PlayerHolding), default=lambda: {})
 
     meta = {"collection": "players"}
 
@@ -52,30 +53,30 @@ class Player(Document):
         self._coins = amount
         self.save()
 
-    def get_item(self, item_id: str) -> PlayerItem:
-        if item_id not in self._inventory:
+    def get_item(self, itemid: str) -> PlayerItem:
+        if itemid not in self.inventory:
             raise ValueError("Player does not have this item")
 
-        return self._inventory[item_id]
+        return self.inventory[itemid]
 
     def get_items(self) -> Dict[str, PlayerItem]:
-        return self._inventory
+        return self.inventory
 
-    def has_item(self, item_id: str) -> bool:
-        return item_id in self._inventory
+    def has_item(self, itemid: str) -> bool:
+        return itemid in self.inventory
 
-    def add_item(self, item_id: str, amount: int = 1):
-        if item_id in self._inventory:
-            self._inventory[item_id].amount += amount
+    def add_item(self, itemid: str, amount: int = 1):
+        if itemid in self.inventory:
+            self.inventory[itemid].amount += amount
         else:
-            self._inventory[item_id] = PlayerItem(id=item_id, amount=amount)
+            self.inventory[itemid] = PlayerItem(id=itemid, amount=amount)
         self.save()
 
-    def remove_item(self, item_id: str, amount: int = 1):
-        if item_id not in self._inventory:
+    def remove_item(self, itemid: str, amount: int = 1):
+        if itemid not in self.inventory:
             raise ValueError("Player does not have this item")
 
-        player_item = self._inventory[item_id]
+        player_item = self.inventory[itemid]
 
         if player_item.amount < amount:
             raise ValueError("Player does not have enough items to remove")
@@ -83,83 +84,89 @@ class Player(Document):
         player_item.amount -= amount
 
         if player_item.amount < 1:
-            del self._inventory[item_id]
+            del self.inventory[itemid]
 
         self.save()
 
-    def get_modifier(self, modifier_id: str) -> PlayerModifier:
-        if modifier_id not in self._modifiers:
+    def get_modifier(self, modifierid: str) -> PlayerModifier:
+        if modifierid not in self.modifiers:
             raise ValueError("Player does not have this modifier")
 
-        return self._modifiers[modifier_id]
+        return self.modifiers[modifierid]
 
     def get_modifiers(self) -> Dict[str, PlayerModifier]:
-        return self._modifiers
+        return self.modifiers
 
-    def has_modifier(self, modifier_id: str) -> bool:
-        return modifier_id in self._modifiers
+    def has_modifier(self, modifierid: str) -> bool:
+        return modifierid in self.modifiers
 
-    def add_modifier(self, modifier_id: str, stacks: int = 1):
-        if modifier_id in self._modifiers:
-            self._modifiers[modifier_id].stacks += stacks
+    def add_modifier(self, modifierid: str, stacks: int = 1):
+        if modifierid in self.modifiers:
+            self.modifiers[modifierid].stacks += stacks
         else:
-            self._modifiers[modifier_id] = PlayerModifier(id=modifier_id, stacks=stacks)
+            self.modifiers[modifierid] = PlayerModifier(id=modifierid, stacks=stacks)
         self.save()
 
-    def remove_modifier(self, modifier_id: str):
-        if modifier_id in self._modifiers:
-            del self._modifiers[modifier_id]
+    def remove_modifier(self, modifierid: str):
+        if modifierid in self.modifiers:
+            del self.modifiers[modifierid]
             self.save()
 
     def get_avatar(self, avatar: str) -> PlayerAvatar:
-        if avatar not in self._avatars:
+        if avatar not in self.avatars:
             raise ValueError("Player does not have this avatar")
 
-        return self._avatars[avatar]
+        return self.avatars[avatar]
 
     def get_avatars(self) -> Dict[str, PlayerAvatar]:
-        return self._avatars
+        return self.avatars
 
     def has_avatar(self, avatar: str) -> bool:
-        return avatar in self._avatars
+        return avatar in self.avatars
 
     def add_avatar(self, avatar: str, rarity: str, count: int = 1):
-        if avatar in self._avatars:
-            self._avatars[avatar].count += count
+        if avatar in self.avatars:
+            self.avatars[avatar].count += count
         else:
-            self._avatars[avatar] = PlayerAvatar(icon=avatar, rarity=rarity, count=count)
+            self.avatars[avatar] = PlayerAvatar(icon=avatar, rarity=rarity, count=count)
         self.save()
 
-    def remove_avatar(self, avatar_id: str):
-        if avatar_id in self._avatars:
-            del self._avatars[avatar_id]
+    def remove_avatar(self, avatarid: str):
+        if avatarid in self.avatars:
+            del self.avatars[avatarid]
             self.save()
 
     def get_holding(self, ticker) -> PlayerHolding:
-        if ticker not in self._holdings:
+        if ticker not in self.holdings:
             raise ValueError("Player does not have this holding")
 
-        return self._holdings[ticker]
+        return self.holdings[ticker]
 
     def get_holdings(self) -> Dict[str, PlayerHolding]:
-        return self._holdings
+        return self.holdings
 
     def has_holding(self, ticker: str) -> bool:
-        return ticker in self._holdings
+        return ticker in self.holdings
 
-    def add_holding(self, ticker: str, shares: int, average_price: int):
-        if ticker in self._holdings:
-            self._holdings[ticker].shares += shares
-            self._holdings[ticker].average_price += average_price
+    def add_holding(self, ticker: str, shares: int, price: int):
+        if ticker in self.holdings:
+            # Calculate the new average price before updating the shares
+            initial_shares = self.holdings[ticker].shares
+            initial_price = self.holdings[ticker].average_price
+
+            new_avg = calculate_new_average_price(initial_shares, initial_price, shares, price)
+
+            self.holdings[ticker].shares += shares
+            self.holdings[ticker].average_price = new_avg
         else:
-            self._holdings[ticker] = PlayerHolding(ticker=ticker, shares=shares, average_price=average_price)
+            self.holdings[ticker] = PlayerHolding(ticker=ticker, shares=shares, average_price=price)
         self.save()
 
     def remove_holding(self, ticker: str, shares: int = 1):
-        if ticker not in self._holdings:
+        if ticker not in self.holdings:
             raise ValueError("Player does not have this holding")
 
-        player_holding = self._holdings[ticker]
+        player_holding = self.holdings[ticker]
 
         if player_holding.shares < shares:
             raise ValueError("Player does not have enough holdings to remove")
@@ -167,6 +174,6 @@ class Player(Document):
         player_holding.shares -= shares
 
         if player_holding.shares < 1:
-            del self._holdings[ticker]
+            del self.holdings[ticker]
 
         self.save()

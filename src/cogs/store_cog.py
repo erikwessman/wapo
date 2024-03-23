@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from helper import get_embed
+from helper import get_embed, closest_match
 
 
 class StoreCog(commands.Cog):
@@ -58,17 +58,40 @@ class StoreCog(commands.Cog):
         if isinstance(error, commands.BadArgument):
             await ctx.send(content=f"`cases` error: {error}")
 
-    @commands.hybrid_command(name="buy", description="Buy an item from the store")
+    @commands.hybrid_command(name="buy", description="Buy an item or modifier from the store")
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def buy(self, ctx: commands.Context, item_name: str, quantity: int = 1):
         if quantity < 1:
             raise commands.BadArgument("Must buy at least 1 item")
 
-        player = self.bot.player_service.get_player(ctx.author.id)
-        item = self.bot.store.get_item(item_name)
-        self.bot.player_service.buy_item(player, item, quantity)
+        items = self.bot.item_service.get_items()
+        modifiers = self.bot.modifier_service.get_modifiers()
 
-        await ctx.send(content=f"Bought {quantity} {item.name}(s)")
+        # Look at both items and modifiers and get the closest match
+        item_names = [i.name for i in items]
+        modifier_names = [m.name for m in modifiers]
+        product_name = closest_match(item_name, [item_names + modifier_names])
+
+        player = self.bot.player_service.get_player(ctx.author.id)
+
+        if product_name in item_names:
+            item = self.bot.item_service.get_item_by_name(product_name)
+
+            if player.get_coins() < item.price * quantity:
+                raise commands.BadArgument("Not enough coins")
+
+            player.add_item(item.id, quantity)
+            player.remove_coins(item * quantity)
+            await ctx.send(content=f"Bought {quantity} {item.name}(s)")
+        else:
+            modifier = self.bot.modifier_service.get_modifier_by_name(product_name)
+
+            if player.get_coins() < modifier.price * quantity:
+                raise commands.BadArgument("Not enough coins")
+
+            player.add_modifier(modifier.id, quantity)
+            player.remove_coins(modifier * quantity)
+            await ctx.send(content=f"Bought {quantity} {modifier.name}(s)")
 
     @buy.error
     async def buy_error(self, ctx: commands.Context, error):

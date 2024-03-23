@@ -11,16 +11,17 @@ class ItemService:
     Service layer for interacting with and getting items from the database
     """
 
-    def __init__(self, db: DB):
+    def __init__(self, db: DB, items_path: str):
         self.db = db
         self.delete_items()
-        self._load_items()
+        self._load_items(items_path)
 
     def _load_items(self, items_path: str):
         try:
             with open(items_path, "r") as file:
                 raw_data = json.load(file)
-                self.add_item(raw_data)
+                for item_dict in raw_data:
+                    self.add_item(item_dict)
         except FileNotFoundError:
             raise ValueError(f"The file '{items_path}' was not found.")
         except json.JSONDecodeError:
@@ -44,14 +45,13 @@ class ItemService:
         if self.db.has_item(item.id):
             raise ValueError("Item already exists")
 
-        item = StoreItem()
         self.db.add_item(item)
 
     def delete_item(self, item_id: str):
         self.db.delete_item(item_id)
 
     def delete_items(self):
-        self.db.delete_items()
+        self.db.delete_all_items()
 
     def get_item_by_name(self, item_name: str, fuzzy_match: bool = True) -> StoreItem:
         if fuzzy_match:

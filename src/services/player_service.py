@@ -32,5 +32,5 @@ class PlayerService:
         self.db.add_player(player)
         return player
 
-    def remove_player(self, player_id: int):
-        self.db.remove_player(player_id)
+    def delete_player(self, player_id: int):
+        self.db.delete_player(player_id)

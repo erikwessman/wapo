@@ -7,7 +7,7 @@ from discord.ext.commands import BadArgument
 from db import DB
 from schemas.stock import Stock
 from schemas.stock_price import StockPrice
-from stock_sim import StockSim
+from classes.stock_sim import StockSim
 
 
 class StockService:

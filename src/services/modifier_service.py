@@ -1,6 +1,7 @@
 from typing import List
 import json
 
+from helper import closest_match
 from db import DB
 from schemas.store_modifier import StoreModifier
 
@@ -10,16 +11,17 @@ class ModifierService:
     Service layer for interacting with and getting modifiers from the database
     """
 
-    def __init__(self, db: DB):
+    def __init__(self, db: DB, modifiers_path: str):
         self.db = db
         self.delete_modifiers()
-        self._load_items()
+        self._load_modifiers(modifiers_path)
 
     def _load_modifiers(self, modifiers_path: str):
         try:
             with open(modifiers_path, "r") as file:
                 raw_data = json.load(file)
-                self.add_modifier(raw_data)
+                for modifier_dict in raw_data:
+                    self.add_modifier(modifier_dict)
         except FileNotFoundError:
             raise ValueError(f"The file '{modifiers_path}' was not found.")
         except json.JSONDecodeError:
@@ -43,11 +45,21 @@ class ModifierService:
         if self.db.has_modifier(modifier.id):
             raise ValueError("Modifier already exists")
 
-        modifier = StoreModifier()
         self.db.add_modifier(modifier)
 
     def delete_modifier(self, modifier_id: str):
         self.db.delete_modifier(modifier_id)
 
     def delete_modifiers(self):
-        self.db.delete_modifiers()
+        self.db.delete_all_modifiers()
+
+    def get_modifier_by_name(self, modifier_name: str, fuzzy_match: bool = True) -> StoreModifier:
+        if fuzzy_match:
+            all_modifier_names = [i.name for i in self.get_modifiers()]
+            modifier_name = closest_match(modifier_name, all_modifier_names)
+
+        for modifier in self.get_modifiers():
+            if modifier.name == modifier_name:
+                return modifier
+
+        raise ValueError("Modifier not found")

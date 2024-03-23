@@ -10,7 +10,7 @@ import discord
 from discord.ui import Button
 from discord.ext import commands
 
-from custom_view import CustomView
+from classes.custom_view import CustomView
 from helper import get_embed, shuffle_choices
 
 
