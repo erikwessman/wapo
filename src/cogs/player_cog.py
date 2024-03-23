@@ -5,7 +5,7 @@ from discord.ext import commands
 from schemas.store_item import StoreItem
 from schemas.player import Player
 from schemas.player_avatar import PlayerAvatar
-from helper import get_embed, is_modifier_active, get_modifier_time_left
+from helper import get_embed, is_modifier_active, get_modifier_time_left, closest_match
 
 
 class PlayerCog(commands.Cog):
@@ -27,8 +27,8 @@ class PlayerCog(commands.Cog):
         avatar = player.get_active_avatar() or "No avatar"
         inventory = player.get_items()
         coins = player.get_coins()
-        horse_race_stats = self.bot.horse_race_service.get_horse_race_stats(player_id)
-        roulette_stats = self.bot.roulette_service.get_roulette_stats(player_id)
+        horse_race_stats = self.bot.horse_race_service.get_horse_race_stats_by_player(player_id)
+        roulette_stats = self.bot.roulette_service.get_roulette_stats_by_player(player_id)
 
         embed = get_embed(
             f"Profile: {name}",
@@ -77,13 +77,15 @@ class PlayerCog(commands.Cog):
     async def holdings(self, ctx: commands.Context):
         player = self.bot.player_service.get_player(ctx.author.id)
 
-        embed = get_embed("Player Holdings", "The stocks you own", discord.Color.blue())
+        embed = get_embed("Player Holdings", "The stocks you own", discord.Color.purple())
 
-        for holding in player.get_holdings():
+        for ticker, holding in player.get_holdings().items():
+            curr_price = self.bot.stock_service.get_current_stock_price(ticker)
             embed.add_field(
                 name=f"${holding.ticker}",
                 value=f"Shares: {holding.shares}\n"
-                f"Average Price: ${holding.average_price:.2f}",
+                f"Average price: ${holding.average_price:.2f}\n"
+                f"Price change: {round(holding.average_price - curr_price, 2)}\n",
                 inline=False,
             )
 
@@ -148,7 +150,7 @@ class PlayerCog(commands.Cog):
                         time_left = get_modifier_time_left(player_modifier, modifier.duration)
                         embed.add_field(
                             name=f"{modifier.name} {modifier.symbol}",
-                            value=f"Valid for {time_left}",
+                            value=f"Valid for: {time_left}",
                             inline=False,
                         )
                 elif modifier.stacking:
@@ -173,14 +175,10 @@ class PlayerCog(commands.Cog):
         player = self.bot.player_service.get_player(ctx.author.id)
         store_item = self.bot.item_service.get_item_by_name(item_name)
 
-        # TODO maybe just fuzzy match over the players items, instead of all
         if not player.has_item(store_item.id):
-            raise commands.BadArgument("You do not have this item")
+            raise commands.BadArgument(f"{store_item.name} not in inventory")
 
-        player_item = player.get_item(store_item.id)
-
-        await self.use_item(ctx, player, store_item, player_item)
-        await ctx.send(content=f"Used {store_item.name}", ephemeral=True)
+        await self.use_item(ctx, player, store_item)
 
     @use.error
     async def use_error(self, ctx: commands.Context, error):
@@ -301,14 +299,8 @@ class PlayerCog(commands.Cog):
 
         if store_item.id == "avatar_case":
             await self.open_case(ctx, player)
-        elif store_item.id == "lock":
-            await self.apply_lock(ctx, player)
-        elif store_item.id == "ninja_lesson":
-            await self.apply_ninja_lesson(ctx, player)
-        elif store_item.id == "signal_jammer":
-            await self.apply_signal_jammer(ctx, player)
         else:
-            raise commands.BadArgument(f"Failed to use {store_item.name} {store_item.symbol}")
+            raise commands.BadArgument(f"Failed to use {store_item.name}")
 
     async def open_case(self, ctx: commands.Context, player: Player):
         rarity, icon = self.bot.case_api.get_case_item()
@@ -325,15 +317,6 @@ class PlayerCog(commands.Cog):
         embed = get_embed("Case Opened!", "", rarity_colors.get(rarity, 0xFFFFFF))
         embed.add_field(name="Congratulations!", value=f"You got a {rarity} {icon}!", inline=False)
         await ctx.send(embed=embed)
-
-    async def apply_lock(self, ctx: commands.Context, player: Player):
-        player.add_modifier("lock")
-
-    async def apply_ninja_lesson(self, ctx: commands.Context, player: Player):
-        player.add_modifier("ninja_lesson")
-
-    async def apply_signal_jammer(self, ctx: commands.Context, player: Player):
-        player.add_modifier("signal_jammer")
 
 
 def sort_avatars_by_rarity(avatars: List[PlayerAvatar]):

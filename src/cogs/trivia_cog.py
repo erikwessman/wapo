@@ -28,7 +28,7 @@ class TriviaCog(commands.Cog):
         if player.get_coins() < 5:
             raise commands.BadArgument("Not enough coins")
 
-        player.remove_coins(player, 5)
+        player.remove_coins(5)
 
         trivia = get_trivia()
         question = trivia["question"]

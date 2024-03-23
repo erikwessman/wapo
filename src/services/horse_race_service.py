@@ -22,7 +22,7 @@ class HorseRaceService:
         horse_race = HorseRace(date=date, player=player, bet=bet, win=win)
         self.db.add_horse_race(horse_race)
 
-    def get_horse_race_stats(self, player_id: int) -> str:
+    def get_horse_race_stats_by_player(self, player_id: int) -> str:
         horse_races = self.get_player_horse_races(player_id)
         if horse_races:
             total_bet = sum(h.bet for h in horse_races)

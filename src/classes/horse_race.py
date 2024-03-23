@@ -1,6 +1,5 @@
 import random
 import math
-from typing import List
 
 from const import GAMBLE_EMOJIS
 
@@ -8,6 +7,7 @@ from const import GAMBLE_EMOJIS
 class HorseRace:
     def __init__(self, bet_amount: int, row: int, avatar: str, length=20):
         self.values = [0, 0, 0, 0]
+        self.row = row
         self.length = length
         self.bet_amount = bet_amount
         self.symbols = GAMBLE_EMOJIS.copy()
@@ -46,7 +46,7 @@ class HorseRace:
     def get_results(self):
         pass
 
-    def get_nr_coins_won(self, standings: List[int], row: int, amount: int) -> int:
-        bet_result_index = standings.index(row)
+    def get_nr_coins_won(self) -> int:
+        bet_result_index = self.standings.index(self.row)
         winnings_table = {0: 2, 1: 1.5, 2: 0.5, 3: 0}
-        return math.floor(winnings_table[bet_result_index] * amount)
+        return math.floor(winnings_table[bet_result_index] * self.bet_amount)

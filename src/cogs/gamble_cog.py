@@ -1,4 +1,5 @@
 import random
+import asyncio
 from datetime import datetime
 import discord
 from discord.ext import commands
@@ -39,20 +40,19 @@ class GambleCog(commands.Cog):
         if player.get_coins() < bet_cost:
             raise commands.BadArgument("You do not have enough coins")
 
-        # Start horse race
-        horse_race = HorseRace(row - 1, player_avatar)
+        horse_race = HorseRace(amount, row - 1, player_avatar)
 
         embed = get_embed("Horse Race", horse_race.get_race_string(), discord.Color.purple())
         message = await ctx.send(embed=embed)
 
-        for cur_values, cur_standings in horse_race.simulate_race():
+        for _ in horse_race.simulate_race():
             updated_message = embed.copy()
             updated_message.description = horse_race.get_race_string()
             await message.edit(embed=updated_message)
 
             embed = updated_message
+            await asyncio.sleep(0.1)
 
-        results = horse_race.get_results()
         nr_coins_won = horse_race.get_nr_coins_won()
 
         if use_insurance and nr_coins_won == 0:

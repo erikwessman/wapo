@@ -4,6 +4,7 @@ from schemas.player_modifier import PlayerModifier
 from schemas.player_avatar import PlayerAvatar
 from schemas.player_holding import PlayerHolding
 
+from datetime import datetime
 from typing import Dict
 from helper import calculate_new_average_price
 
@@ -24,33 +25,34 @@ class Player(Document):
     meta = {"collection": "players"}
 
     def get_active_avatar(self) -> str:
-        return self._active_avatar
+        return self.active_avatar
 
     def set_active_avatar(self, avatar: str):
-        self._active_avatar = avatar
+        self.active_avatar = avatar
+        self.save()
 
     def get_coins(self) -> int:
-        return self._coins
+        return self.coins
 
     def add_coins(self, amount: int):
         if amount < 1:
             raise ValueError("Must add at least 1 coin")
 
-        self._coins += amount
-        self._save()
+        self.coins += amount
+        self.save()
 
     def remove_coins(self, amount: int):
         if amount < 1:
             raise ValueError("Must remove at least 1 coin")
 
-        if self._coins < amount:
+        if self.coins < amount:
             raise ValueError("Not enough coins")
 
-        self._coins -= amount
-        self._save()
+        self.coins -= amount
+        self.save()
 
     def set_coins(self, amount: int):
-        self._coins = amount
+        self.coins = amount
         self.save()
 
     def get_item(self, itemid: str) -> PlayerItem:
@@ -88,23 +90,24 @@ class Player(Document):
 
         self.save()
 
-    def get_modifier(self, modifierid: str) -> PlayerModifier:
-        if modifierid not in self.modifiers:
+    def get_modifier(self, modifier_id: str) -> PlayerModifier:
+        if modifier_id not in self.modifiers:
             raise ValueError("Player does not have this modifier")
 
-        return self.modifiers[modifierid]
+        return self.modifiers[modifier_id]
 
     def get_modifiers(self) -> Dict[str, PlayerModifier]:
         return self.modifiers
 
-    def has_modifier(self, modifierid: str) -> bool:
-        return modifierid in self.modifiers
+    def has_modifier(self, modifier_id: str) -> bool:
+        return modifier_id in self.modifiers
 
-    def add_modifier(self, modifierid: str, stacks: int = 1):
-        if modifierid in self.modifiers:
-            self.modifiers[modifierid].stacks += stacks
+    def add_modifier(self, modifier_id: str, stacks: int = 1):
+        if modifier_id in self.modifiers:
+            self.modifiers[modifier_id].stacks += stacks
+            self.modifiers[modifier_id].last_used = datetime.utcnow()
         else:
-            self.modifiers[modifierid] = PlayerModifier(id=modifierid, stacks=stacks)
+            self.modifiers[modifier_id] = PlayerModifier(id=modifier_id, stacks=stacks, last_used=datetime.utcnow())
         self.save()
 
     def remove_modifier(self, modifierid: str):
