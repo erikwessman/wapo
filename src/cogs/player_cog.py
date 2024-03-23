@@ -2,8 +2,8 @@ from typing import List
 import discord
 from discord.ext import commands
 
+from schemas.store_item import StoreItem
 from schemas.player import Player
-from schemas.player_item import PlayerItem
 from schemas.player_avatar import PlayerAvatar
 from helper import get_embed, is_modifier_active, get_modifier_time_left
 
@@ -171,12 +171,16 @@ class PlayerCog(commands.Cog):
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def use(self, ctx: commands.Context, item_name: str):
         player = self.bot.player_service.get_player(ctx.author.id)
-        item = self.bot.item_service.get_item_by_name(item_name)
+        store_item = self.bot.item_service.get_item_by_name(item_name)
 
-        if not player.
+        # TODO maybe just fuzzy match over the players items, instead of all
+        if not player.has_item(store_item.id):
+            raise commands.BadArgument("You do not have this item")
 
-        await self.use_item(ctx, player, item)
-        await ctx.send(content=f"Used {item.name}", ephemeral=True)
+        player_item = player.get_item(store_item.id)
+
+        await self.use_item(ctx, player, store_item, player_item)
+        await ctx.send(content=f"Used {store_item.name}", ephemeral=True)
 
     @use.error
     async def use_error(self, ctx: commands.Context, error):
@@ -291,25 +295,25 @@ class PlayerCog(commands.Cog):
 
     # --- Helpers ---
 
-    async def use_item(self, ctx: commands.Context, player: Player, item: Item):
-        if item.one_time_use:
-            self.bot.player_service.remove_item(player, item)
+    async def use_item(self, ctx: commands.Context, player: Player, store_item: StoreItem):
+        if store_item.one_time_use:
+            player.remove_item(store_item.id)
 
-        if item.name == "Avatar Case":
+        if store_item.id == "avatar_case":
             await self.open_case(ctx, player)
-        elif item.name == "Lock":
-            await self.apply_lock(ctx, player, item.symbol)
-        elif item.name == "Ninja Lesson":
-            await self.apply_ninja_lesson(ctx, player, item.symbol)
-        elif item.name == "Signal Jammer":
-            await self.apply_signal_jammer(ctx, player, item.symbol)
+        elif store_item.id == "lock":
+            await self.apply_lock(ctx, player)
+        elif store_item.id == "ninja_lesson":
+            await self.apply_ninja_lesson(ctx, player)
+        elif store_item.id == "signal_jammer":
+            await self.apply_signal_jammer(ctx, player)
         else:
-            raise commands.BadArgument(f"Failed to use {item.name}")
+            raise commands.BadArgument(f"Failed to use {store_item.name} {store_item.symbol}")
 
     async def open_case(self, ctx: commands.Context, player: Player):
         rarity, icon = self.bot.case_api.get_case_item()
 
-        self.bot.player_service.add_avatar(player, icon, rarity)
+        player.add_avatar(icon, rarity)
 
         rarity_colors = {
             "Common": 0xFFFFFF,
@@ -319,31 +323,25 @@ class PlayerCog(commands.Cog):
         }
 
         embed = get_embed("Case Opened!", "", rarity_colors.get(rarity, 0xFFFFFF))
-        embed.add_field(
-            name="Congratulations!", value=f"You got a {rarity} {icon}!", inline=False
-        )
+        embed.add_field(name="Congratulations!", value=f"You got a {rarity} {icon}!", inline=False)
         await ctx.send(embed=embed)
 
-    async def apply_lock(self, ctx: commands.Context, player: Player, symbol: str):
-        self.bot.player_service.add_modifier(player, LOCK_MODIFIER, symbol)
+    async def apply_lock(self, ctx: commands.Context, player: Player):
+        player.add_modifier("lock")
 
-    async def apply_ninja_lesson(
-        self, ctx: commands.Context, player: Player, symbol: str
-    ):
-        self.bot.player_service.add_modifier(player, NINJA_LESSON_MODIFIER, symbol)
+    async def apply_ninja_lesson(self, ctx: commands.Context, player: Player):
+        player.add_modifier("ninja_lesson")
 
-    async def apply_signal_jammer(
-        self, ctx: commands.Context, player: Player, symbol: str
-    ):
-        self.bot.player_service.add_modifier(player, SIGNAL_JAMMER_MODIFIER, symbol)
+    async def apply_signal_jammer(self, ctx: commands.Context, player: Player):
+        player.add_modifier("signal_jammer")
 
 
-def sort_avatars_by_rarity(avatars: List[Avatar], default_order=999):
+def sort_avatars_by_rarity(avatars: List[PlayerAvatar]):
     rarity_order = {"Common": 1, "Rare": 2, "Epic": 3, "Legendary": 4}
     return sorted(
         avatars,
         key=lambda avatar: (
-            rarity_order.get(avatar.rarity, default_order),
+            rarity_order.get(avatar.rarity, 999),
             avatar.icon,
         ),
     )

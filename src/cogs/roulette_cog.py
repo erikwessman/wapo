@@ -29,7 +29,10 @@ class RouletteCog(commands.Cog):
     async def roulette(self, ctx: commands.Context, amount: int):
         player = self.bot.player_service.get_player(ctx.author.id)
 
-        self.bot.player_service.remove_coins(player, amount)
+        if player.get_coins() > amount:
+            raise commands.BadArgument("Not enough coins")
+
+        player.remove_coins(amount)
 
         if player.id in self.roulette_event.participants:
             self.roulette_event.participants[player.id]["coins"] += amount
@@ -65,9 +68,7 @@ class RouletteCog(commands.Cog):
             return
 
         total_players = len(self.roulette_event.participants)
-        total_coins = sum(
-            player["coins"] for player in self.roulette_event.participants.values()
-        )
+        total_coins = sum(player["coins"] for player in self.roulette_event.participants.values())
 
         odds_table = get_odds_table(self.roulette_event.participants)
 
@@ -92,16 +93,11 @@ class RouletteCog(commands.Cog):
         participants = self.roulette_event.participants
 
         if len(participants) < 2:
-            # Refund player coins
             for player_id in participants:
                 player = self.bot.player_service.get_player(player_id)
-                self.bot.player_service.add_coins(
-                    player, participants[player_id]["coins"]
-                )
+                player.add_coins(participants[player_id]["coins"])
 
-            await ctx.send(
-                content="Not enough participants for roulette to start. Refunding coins."
-            )
+            await ctx.send(content="Not enough participants for roulette to start. Refunding coins.")
             return
 
         users = [user_info["user"] for user_info in participants.values()]
@@ -111,7 +107,7 @@ class RouletteCog(commands.Cog):
         winner_player = self.bot.player_service.get_player(winner.id)
         win_amount = sum(user_coins)
 
-        self.bot.player_service.add_coins(winner_player, win_amount)
+        winner_player.add_coins(win_amount)
 
         odds_table = get_odds_table(participants)
         embed = get_embed(
@@ -132,9 +128,7 @@ class RouletteCog(commands.Cog):
         await ctx.send(embed=embed)
 
         # Save roulette information
-        player_dict = {
-            str(player_id): data["coins"] for player_id, data in participants.items()
-        }
+        player_dict = {str(player_id): data["coins"] for player_id, data in participants.items() }
         self.bot.roulette_service.add_roulette(datetime.today(), player_dict, winner.id)
 
 

@@ -2,7 +2,7 @@ import asyncio
 import discord
 from discord.ext import commands
 
-from duel.duel import Duel, Duelist, DuelState
+from classes.duel import Duel, Duelist, DuelState
 from helper import get_embed
 from schemas.player import Player
 

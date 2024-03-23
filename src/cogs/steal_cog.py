@@ -8,76 +8,9 @@ from discord.ext import commands
 from discord.ext.commands import BadArgument, Context, CommandError
 from typing import Dict, List
 
+from classes.challenge import ChallengeManager, Challenge
 from helper import get_embed, is_modifier_active, get_modifier_time_left
-from const import (
-    LOCK_MODIFIER,
-    NINJA_LESSON_MODIFIER,
-    SIGNAL_JAMMER_MODIFIER,
-    EMOJI_MONEY_WITH_WINGS,
-)
-
-
-class Challenge:
-    """Represents a challenge a player has to complete"""
-
-    def __init__(self, challenger, challengee, message: str):
-        self.challenger = challenger
-        self.challengee = challengee
-        self.message = message
-        self.is_complete = False
-
-
-class ChallengeManager:
-    """Tracks challenges and provides helper methods for challenges"""
-
-    def __init__(self):
-        self.challenges = []
-
-    def add_challenge(self, challenge: Challenge) -> None:
-        """
-        Add a challenge to the active challenges.
-
-        Parameters:
-        - challenge (Challenge): The challenge to add.
-        """
-        self.challenges.append(challenge)
-
-    def remove_challenge(self, challenge: Challenge) -> None:
-        """
-        Remove a challenge from the active challenges.
-
-        Parameters:
-        - challenge (Challenge): The challenge to remove.
-        """
-        self.challenges.remove(challenge)
-
-    def get_player_challenges(self, player_id) -> List[Challenge]:
-        """
-        Get all the challenges in which a player is being challenged.
-
-        Parameters:
-        - player_id (int): The Discord ID of the player.
-
-        Returns:
-        - List[Challenge]: All the players challenges.
-        """
-        return [
-            challenge
-            for challenge in self.challenges
-            if player_id == challenge.challengee
-        ]
-
-    def player_has_challenge(self, player_id) -> bool:
-        """
-        Returns True if the player has an active challenge.
-
-        Parameters:
-        - player_id (int): The Discord ID of the player.
-
-        Returns:
-        - bool: True if the player has a challenge.
-        """
-        return any(player_id == challenge.challengee for challenge in self.challenges)
+from const import EMOJI_MONEY_WITH_WINGS
 
 
 class StealCog(commands.Cog):
@@ -96,46 +29,47 @@ class StealCog(commands.Cog):
             raise StealError(f"Could not decode the contents of '{file_path}'")
 
     @commands.hybrid_command(name="steal", description="Steal coins from a user")
-    @commands.cooldown(1, 1, commands.BucketType.user)
+    @commands.cooldown(1, 28800, commands.BucketType.user)
     async def steal(self, ctx: commands.Context, user: discord.User):
         player = self.bot.player_service.get_player(ctx.author.id)
         target_player = self.bot.player_service.get_player(user.id)
 
-        #if player.id == target_player.id:
-            #raise commands.BadArgument("You cannot steal from yourself")
+        if player.id == target_player.id:
+            raise commands.BadArgument("You cannot steal from yourself")
 
         if target_player.id == self.bot.user.id:
             raise commands.BadArgument("You cannot steal from me!")
 
-        if self.bot.player_service.has_modifier(target_player, LOCK_MODIFIER):
-            target_player_lock = target_player.modifiers[LOCK_MODIFIER]
+        if target_player.has_modifier("lock"):
+            lock_modifier = self.bot.modifier_service.get_modifier("lock")
+            target_player_lock = target_player.get_modifier("lock")
 
-            if is_modifier_active(target_player_lock):
-                time_left = get_modifier_time_left(target_player_lock)
+            if is_modifier_active(target_player_lock, lock_modifier.duration):
+                time_left = get_modifier_time_left(target_player_lock, lock_modifier.duration)
                 await self.handle_steal_fail(
                     ctx,
                     player.id,
-                    f"The other player had a lock that prevented you from stealing ({time_left})",
+                    f"The other player had a {lock_modifier.name} {lock_modifier.symbol} [{time_left}] that prevented you from stealing",
                 )
                 return
 
         # Make stealing harder, but increase the odds for each ninja lesson modifier
         nr_ninja_modifiers = 0
-        if NINJA_LESSON_MODIFIER in player.modifiers:
-            nr_ninja_modifiers = player.modifiers[NINJA_LESSON_MODIFIER].amount
+        if player.has_modifier("ninja_lesson"):
+            nr_ninja_modifiers = player.get_modifier("ninja_lesson").stacks
 
-        if not weighted_chance(player.coins, target_player.coins, nr_ninja_modifiers):
+        if not weighted_chance(player.get_coins(), target_player.get_coins(), nr_ninja_modifiers):
             await self.handle_steal_fail(ctx, player.id, "You did not succeed in stealing")
             return
 
-        has_signal_jammer = self.bot.player_service.has_modifier(player, SIGNAL_JAMMER_MODIFIER)
+        has_signal_jammer = player.has_modifier("signal_jammer")
         prepared_words = prepare_words(self.words, has_signal_jammer)
         message = generate_message(**prepared_words)
 
-        time_to_steal = 45 if not has_signal_jammer else 30
-
         # Prevent copy-pasting
-        modified_message = insert_nbsp(message)
+        modified_message = insert_zero_width_spaces(message)
+
+        time_to_steal = 45 if not has_signal_jammer else 30
 
         steal_embed = get_embed(
             f"{EMOJI_MONEY_WITH_WINGS} {ctx.author.name} is stealing from {user.name}! {EMOJI_MONEY_WITH_WINGS}",
@@ -158,12 +92,10 @@ class StealCog(commands.Cog):
             player = self.bot.player_service.get_player(ctx.author.id)
             target_player = self.bot.player_service.get_player(user.id)
 
-            coins_stolen = get_norm(target_player.coins, 30, 25)
-            self.bot.player_service.add_coins(player, coins_stolen)
-            self.bot.player_service.remove_coins(target_player, coins_stolen)
-            await ctx.send(
-                content=f"{ctx.author.name} stole {coins_stolen} coins from {user.name}!"
-            )
+            coins_stolen = get_norm(target_player.get_coins(), 30, 25)
+            player.add_coins(coins_stolen)
+            target_player.remove_coins(coins_stolen)
+            await ctx.send(content=f"{ctx.author.name} stole {coins_stolen} coins from {user.name}!")
 
         self.challenge_manager.remove_challenge(challenge)
 
@@ -201,7 +133,7 @@ class StealCog(commands.Cog):
         # Get player again to prevent any race conditions
         player = self.bot.player_service.get_player(player_id)
 
-        coins_lost = get_norm(player.coins, 20, 15)
+        coins_lost = get_norm(player.get_coins(), 20, 15)
         self.bot.player_service.remove_coins(player, coins_lost)
         await ctx.send(content=f"{message}. You lost {coins_lost} coins.")
 
@@ -268,9 +200,9 @@ def generate_message(
     return message
 
 
-def insert_nbsp(message: str) -> str:
+def insert_zero_width_spaces(message: str) -> str:
     """
-    Inserts a non-breaking-space between every character in the input message.
+    Inserts a zero-width space between every character in the input message.
 
     Parameters:
     - message (str): Message to modify.

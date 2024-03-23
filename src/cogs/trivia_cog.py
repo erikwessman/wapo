@@ -20,18 +20,17 @@ class TriviaCog(commands.Cog):
         self.movie_client = MovieDatabaseClient()
         self.movie_channel_dict = {}  # Maps a channel id to a movie
 
-    @commands.hybrid_command(
-        name="trivia",
-        description="Get a trivia question for 5 coins, answer correctly and win.",
-    )
+    @commands.hybrid_command(name="trivia", description="Get a trivia question for 5 coins, answer correctly and win.",)
     @commands.cooldown(1, 3600, commands.BucketType.user)
     async def trivia(self, ctx: commands.Context):
         player = self.bot.player_service.get_player(ctx.author.id)
-        self.bot.player_service.remove_coins(player, 5)
+
+        if player.get_coins() < 5:
+            raise commands.BadArgument("Not enough coins")
+
+        player.remove_coins(player, 5)
 
         trivia = get_trivia()
-
-        time_to_complete = 30
         question = trivia["question"]
         incorrect_answers = trivia["incorrect_answers"]
         correct_answer = trivia["correct_answer"]
@@ -49,6 +48,8 @@ class TriviaCog(commands.Cog):
         answers = shuffle_choices(incorrect_answers + [correct_answer])
         answers_numbered = [f"{i+1}. {a}" for i, a in enumerate(answers)]
         answers_string = "\n".join(answers_numbered)
+
+        time_to_complete = 30
 
         embed = get_embed(
             question,
@@ -79,7 +80,7 @@ class TriviaCog(commands.Cog):
 
                 nr_coins = difficulty_coins_map.get(difficulty, 0)
                 response = f"Correct! You get {nr_coins} coins"
-                self.bot.player_service.add_coins(player, nr_coins)
+                player.add_coins(nr_coins)
 
             else:
                 for button in view.children:
@@ -146,7 +147,7 @@ class TriviaCog(commands.Cog):
 
             if similarity_score >= 85:
                 del self.movie_channel_dict[message.channel.id]
-                self.bot.player_service.add_coins(player, 10)
+                player.add_coins(10)
                 embed = get_embed(
                     f"Correct! The movie was {movie.name}",
                     f"Release Date: {movie.date}",
