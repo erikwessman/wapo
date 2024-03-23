@@ -1,0 +1,35 @@
+[
+    {
+        "id": "lock",
+        "name": "Lock",
+        "description": "Protect your coins from thieves",
+        "symbol": "🔒",
+        "price": 30,
+        "stacking": false,
+        "timed": true,
+        "duration": 6,
+        "max_stacks": 1
+    },
+    {
+        "id": "ninja_lessson",
+        "name": "Ninja Lesson",
+        "description": "Gives you slightly better odds when stealing from others",
+        "symbol": "🥷",
+        "price": 100,
+        "stacking": true,
+        "timed": false,
+        "duration": 0,
+        "max_stacks": 10
+    },
+    {
+        "id": "signal_jammer",
+        "name": "Signal Jammer",
+        "description": "When stealing from others, give them harder things to type",
+        "symbol": "📡",
+        "price": 1000,
+        "stacking": true,
+        "timed": false,
+        "duration": 0,
+        "max_stacks": 1
+    }
+]

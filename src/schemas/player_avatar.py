@@ -1,11 +1,11 @@
 from mongoengine import EmbeddedDocument, StringField, IntField
 
 
-class Avatar(EmbeddedDocument):
+class PlayerAvatar(EmbeddedDocument):
     """
     Represents a player's avatar
     """
 
     icon = StringField(required=True)
     rarity = StringField(required=True)
-    count = IntField(required=True)
+    count = IntField(default=1)

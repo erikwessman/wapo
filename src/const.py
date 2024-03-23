@@ -24,12 +24,3 @@ DAY_SCORE_TABLE = {
     "Sunday": 50,
 }
 TIME_MULTIPLIER_TABLE = {7 * 60: 10, 10 * 60: 6, 15 * 60: 4, 20 * 60: 2}
-
-# Modifiers
-LOCK_MODIFIER = "lock"
-NINJA_LESSON_MODIFIER = "ninja_lesson"
-SIGNAL_JAMMER_MODIFIER = "signal_jammer"
-
-# Modifiers and how long they are valid
-
-MODIFIER_TIME = {LOCK_MODIFIER: 6}

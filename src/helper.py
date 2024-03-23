@@ -8,13 +8,12 @@ from datetime import datetime
 from datetime import timedelta
 from typing import List
 
-from schemas.modifier import Modifier
+from schemas.player_modifier import PlayerModifier
 from const import (
     GITHUB_REPOSITORY,
     GITHUB_ICON,
     DAY_SCORE_TABLE,
     TIME_MULTIPLIER_TABLE,
-    MODIFIER_TIME,
 )
 
 
@@ -120,19 +119,19 @@ def format_seconds(seconds):
     return f"{minutes}m {seconds_remainder}s"
 
 
-def is_modifier_active(modifier: Modifier) -> bool:
+def is_modifier_active(modifier: PlayerModifier, duration: int) -> bool:
     now = datetime.utcnow()
     time_since_used = now - modifier.last_used
-    hours_timedelta = timedelta(hours=MODIFIER_TIME[modifier.name])
+    hours_timedelta = timedelta(hours=duration)
 
     return time_since_used < hours_timedelta
 
 
-def get_modifier_time_left(modifier: Modifier) -> str:
+def get_modifier_time_left(modifier: PlayerModifier, duration: int) -> str:
     now = datetime.utcnow()
     time_since_used = now - modifier.last_used
 
-    hours_timedelta = timedelta(hours=MODIFIER_TIME[modifier.name])
+    hours_timedelta = timedelta(hours=duration)
     time_left = hours_timedelta - time_since_used
 
     return format_time_delta(time_left)

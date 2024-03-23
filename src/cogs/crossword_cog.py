@@ -14,9 +14,7 @@ class CrosswordCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
-    @commands.hybrid_command(
-        name="wapo", description="Fetch the URL for today's daily crossword puzzle"
-    )
+    @commands.hybrid_command(name="wapo", description="Fetch the URL for today's daily crossword puzzle")
     @commands.cooldown(1, 60, commands.BucketType.default)
     async def wapo(self, ctx: commands.Context):
         embed_loading = get_embed(
@@ -101,7 +99,7 @@ class CrosswordCog(commands.Cog):
         players = self.bot.player_service.get_players()
 
         for player in players:
-            self.bot.player_service.add_coins(player, puzzle_reward)
+            player.add_coins(puzzle_reward)
 
         embed_success = get_embed(
             "Crossword Checker",

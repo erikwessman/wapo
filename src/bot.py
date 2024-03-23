@@ -22,7 +22,8 @@ from services.crossword_service import CrosswordService
 from services.roulette_service import RouletteService
 from services.horse_race_service import HorseRaceService
 from services.stock_service import StockService
-from store import Store
+from services.item_service import ItemService
+from services.modifier_service import ModifierService
 from case_api import CaseAPI
 from log import set_up_logger
 
@@ -35,7 +36,8 @@ class WaPoBot(commands.Bot):
         self.roulette_service = RouletteService(db)
         self.horse_race_service = HorseRaceService(db)
         self.stock_service = StockService(db)
-        self.store = Store("data/items.json")
+        self.item_service = ItemService(db, "data/items.json")
+        self.modifier_service = ModifierService(db, "data/modifiers.json")
         self.case_api = CaseAPI("data/cases.json")
 
     async def on_ready(self):

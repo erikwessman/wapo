@@ -6,7 +6,6 @@ from discord.ext import commands
 from typing import Any, Dict
 from tabulate import tabulate
 
-from schemas.player import Player
 from helper import get_embed
 from const import ROULETTE_ICON
 
