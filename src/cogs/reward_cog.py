@@ -11,7 +11,7 @@ class RewardCog(commands.Cog):
     @commands.cooldown(1, 86400, commands.BucketType.user)
     async def daily(self, ctx: commands.Context):
         player = self.bot.player_service.get_player(ctx.author.id)
-        self.bot.player_service.add_coins(player, DAILY_REWARD)
+        player.add_coins(DAILY_REWARD)
         await ctx.send(content=f"Received {DAILY_REWARD} coins", ephemeral=True)
 
     @daily.error
@@ -23,7 +23,7 @@ class RewardCog(commands.Cog):
     @commands.cooldown(1, 86400 * 7, commands.BucketType.user)
     async def weekly(self, ctx: commands.Context):
         player = self.bot.player_service.get_player(ctx.author.id)
-        self.bot.player_service.add_coins(player, WEEKLY_REWARD)
+        player.add_coins(WEEKLY_REWARD)
         await ctx.send(content=f"Received {WEEKLY_REWARD} coins", ephemeral=True)
 
     @weekly.error

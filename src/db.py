@@ -11,6 +11,8 @@ from schemas.roulette import Roulette
 from schemas.horse_race import HorseRace
 from schemas.stock import Stock
 from schemas.stock_price import StockPrice
+from schemas.store_item import StoreItem
+from schemas.store_modifier import StoreModifier
 
 
 class DB:
@@ -49,11 +51,6 @@ class DB:
         player.save()
         return str(player.id)
 
-    def update_player(self, player: Player):
-        update_data = player.to_mongo().to_dict()
-        update_data.pop("_id", None)
-        Player.objects(id=player.id).update_one(**update_data)
-
     def has_player(self, player_id: int) -> bool:
         return Player.objects(id=player_id).count() > 0
 
@@ -62,6 +59,48 @@ class DB:
 
     def delete_all_players(self):
         Player.objects.delete()
+
+    # --- Item helper methods ---
+
+    def get_item(self, item_id: str) -> StoreItem:
+        return StoreItem.objects(id=item_id).first()
+
+    def get_items(self, skip: int = 0, limit: int = 0) -> List[StoreItem]:
+        return list(StoreItem.objects.skip(skip).limit(limit))
+
+    def add_item(self, item: StoreItem) -> str:
+        item.save()
+        return str(item.id)
+
+    def has_item(self, item_id: str) -> bool:
+        return StoreItem.objects(id=item_id).count() > 0
+
+    def delete_item(self, item_id: str) -> None:
+        StoreItem.objects(id=item_id).delete()
+
+    def delete_all_items(self):
+        StoreItem.objects.delete()
+
+    # --- Modifier helper methods ---
+
+    def get_modifier(self, modifier_id: str) -> StoreModifier:
+        return StoreModifier.objects(id=modifier_id).first()
+
+    def get_modifiers(self, skip: int = 0, limit: int = 0) -> List[StoreModifier]:
+        return list(StoreModifier.objects.skip(skip).limit(limit))
+
+    def add_modifier(self, modifier: StoreModifier) -> str:
+        modifier.save()
+        return str(modifier.id)
+
+    def has_modifier(self, modifier_id: str) -> bool:
+        return StoreModifier.objects(id=modifier_id).count() > 0
+
+    def delete_modifier(self, modifier_id: str) -> None:
+        StoreModifier.objects(id=modifier_id).delete()
+
+    def delete_all_modifiers(self):
+        StoreModifier.objects.delete()
 
     # --- Crossword helper methods ---
 
@@ -74,9 +113,6 @@ class DB:
     def add_crossword(self, crossword: Crossword) -> str:
         crossword.save()
         return str(crossword.id)
-
-    def update_crossword(self, crossword: Crossword) -> None:
-        Crossword.objects(date=crossword.date).update_one(**crossword.to_mongo())
 
     def has_crossword(self, crossword_date: str) -> bool:
         return Crossword.objects(date=crossword_date).count() > 0

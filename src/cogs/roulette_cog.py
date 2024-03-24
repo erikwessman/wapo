@@ -1,12 +1,11 @@
 import random
 import asyncio
 from datetime import datetime
+from typing import Any, Dict
 import discord
 from discord.ext import commands
-from typing import Any, Dict
 from tabulate import tabulate
 
-from schemas.player import Player
 from helper import get_embed
 from const import ROULETTE_ICON
 
@@ -30,7 +29,10 @@ class RouletteCog(commands.Cog):
     async def roulette(self, ctx: commands.Context, amount: int):
         player = self.bot.player_service.get_player(ctx.author.id)
 
-        self.bot.player_service.remove_coins(player, amount)
+        if player.get_coins() < amount:
+            raise commands.BadArgument("Not enough coins")
+
+        player.remove_coins(amount)
 
         if player.id in self.roulette_event.participants:
             self.roulette_event.participants[player.id]["coins"] += amount
@@ -93,12 +95,9 @@ class RouletteCog(commands.Cog):
         participants = self.roulette_event.participants
 
         if len(participants) < 2:
-            # Refund player coins
-            for player_id in participants:
+            for player_id, participant in participants.items():
                 player = self.bot.player_service.get_player(player_id)
-                self.bot.player_service.add_coins(
-                    player, participants[player_id]["coins"]
-                )
+                player.add_coins(participant["coins"])
 
             await ctx.send(
                 content="Not enough participants for roulette to start. Refunding coins."
@@ -112,7 +111,7 @@ class RouletteCog(commands.Cog):
         winner_player = self.bot.player_service.get_player(winner.id)
         win_amount = sum(user_coins)
 
-        self.bot.player_service.add_coins(winner_player, win_amount)
+        winner_player.add_coins(win_amount)
 
         odds_table = get_odds_table(participants)
         embed = get_embed(

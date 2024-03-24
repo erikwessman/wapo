@@ -2,15 +2,15 @@ import os
 import random
 import json
 import html
-import requests
 import logging
 import asyncio
+import requests
 from fuzzywuzzy import fuzz
 import discord
 from discord.ui import Button
 from discord.ext import commands
 
-from custom_view import CustomView
+from classes.custom_view import CustomView
 from helper import get_embed, shuffle_choices
 
 
@@ -24,14 +24,16 @@ class TriviaCog(commands.Cog):
         name="trivia",
         description="Get a trivia question for 5 coins, answer correctly and win.",
     )
-    @commands.cooldown(1, 3600, commands.BucketType.user)
+    @commands.cooldown(1, 60, commands.BucketType.user)
     async def trivia(self, ctx: commands.Context):
         player = self.bot.player_service.get_player(ctx.author.id)
-        self.bot.player_service.remove_coins(player, 5)
+
+        if player.get_coins() < 5:
+            raise commands.BadArgument("Not enough coins")
+
+        player.remove_coins(5)
 
         trivia = get_trivia()
-
-        time_to_complete = 30
         question = trivia["question"]
         incorrect_answers = trivia["incorrect_answers"]
         correct_answer = trivia["correct_answer"]
@@ -49,6 +51,8 @@ class TriviaCog(commands.Cog):
         answers = shuffle_choices(incorrect_answers + [correct_answer])
         answers_numbered = [f"{i+1}. {a}" for i, a in enumerate(answers)]
         answers_string = "\n".join(answers_numbered)
+
+        time_to_complete = 30
 
         embed = get_embed(
             question,
@@ -79,7 +83,7 @@ class TriviaCog(commands.Cog):
 
                 nr_coins = difficulty_coins_map.get(difficulty, 0)
                 response = f"Correct! You get {nr_coins} coins"
-                self.bot.player_service.add_coins(player, nr_coins)
+                player.add_coins(nr_coins)
 
             else:
                 for button in view.children:
@@ -146,7 +150,7 @@ class TriviaCog(commands.Cog):
 
             if similarity_score >= 85:
                 del self.movie_channel_dict[message.channel.id]
-                self.bot.player_service.add_coins(player, 10)
+                player.add_coins(10)
                 embed = get_embed(
                     f"Correct! The movie was {movie.name}",
                     f"Release Date: {movie.date}",
@@ -275,8 +279,8 @@ class MovieDatabaseClient:
             # issue with popular movies, temporarily disabled
             # self.fetch_popular_movies()
 
-        if self.genres_cache == None:
-            self.genres_cache = self.fetch_genres()
+        if self.genres_cache is None:
+            self.fetch_genres()
 
         combined_movies = self.top_movies_cache + self.popular_movies_cache
         movie_dict = random.choice(combined_movies)
@@ -327,12 +331,11 @@ class MovieDatabaseClient:
 def decode_html_entities(obj):
     if isinstance(obj, str):
         return html.unescape(obj)
-    elif isinstance(obj, dict):
+    if isinstance(obj, dict):
         return {key: decode_html_entities(value) for key, value in obj.items()}
-    elif isinstance(obj, list):
+    if isinstance(obj, list):
         return [decode_html_entities(element) for element in obj]
-    else:
-        return obj
+    return obj
 
 
 def get_trivia():

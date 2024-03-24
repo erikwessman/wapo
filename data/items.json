@@ -1,37 +1,18 @@
 [
     {
+        "id": "cricket",
         "name": "Cricket",
         "description": "Does nothing",
-        "one_time_use": false,
+        "symbol": "🦗",
         "price": 5,
-        "symbol": "🦗"
+        "one_time_use": false
     },
     {
+        "id": "avatar_case",
         "name": "Avatar Case",
         "description": "Contains 1 avatar",
-        "one_time_use": true,
+        "symbol": "🎁",
         "price": 10,
-        "symbol": "🎁"
-    },
-    {
-        "name": "Lock",
-        "description": "Protect your coins from thieves",
-        "one_time_use": true,
-        "price": 30,
-        "symbol": "🔒"
-    },
-    {
-        "name": "Ninja Lesson",
-        "description": "Gives you slightly better odds when stealing from others",
-        "one_time_use": true,
-        "price": 100,
-        "symbol": "🥷"
-    },
-    {
-        "name": "Signal Jammer",
-        "description": "When stealing from others, give them harder things to type",
-        "one_time_use": true,
-        "price": 1000,
-        "symbol": "📡"
+        "one_time_use": true
     }
 ]

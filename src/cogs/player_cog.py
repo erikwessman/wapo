@@ -2,11 +2,10 @@ from typing import List
 import discord
 from discord.ext import commands
 
-from schemas.item import Item
-from schemas.avatar import Avatar
+from schemas.store_item import StoreItem
 from schemas.player import Player
-from helper import get_embed
-from const import LOCK_MODIFIER, NINJA_LESSON_MODIFIER, SIGNAL_JAMMER_MODIFIER
+from schemas.player_avatar import PlayerAvatar
+from helper import get_embed, is_modifier_active, get_modifier_time_left
 
 
 class PlayerCog(commands.Cog):
@@ -20,13 +19,20 @@ class PlayerCog(commands.Cog):
     @commands.hybrid_command(name="profile", description="View your profile")
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def profile(self, ctx: commands.Context):
-        player = self.bot.player_service.get_player(ctx.author.id)
+        player_id = ctx.author.id
+        player = self.bot.player_service.get_player(player_id)
+
+        # Compile player information
         name = ctx.author.name
-        avatar = player.active_avatar or "No avatar"
-        inventory = player.inventory
-        coins = player.coins
-        horse_race_stats = self.get_horse_race_stats(player.id)
-        roulette_stats = self.get_roulette_stats(player.id)
+        avatar = player.get_active_avatar() or "No avatar"
+        inventory = player.get_items()
+        coins = player.get_coins()
+        horse_race_stats = self.bot.horse_race_service.get_horse_race_stats_by_player(
+            player_id
+        )
+        roulette_stats = self.bot.roulette_service.get_roulette_stats_by_player(
+            player_id
+        )
 
         embed = get_embed(
             f"Profile: {name}",
@@ -34,7 +40,6 @@ class PlayerCog(commands.Cog):
             discord.Color.green(),
         )
         embed.set_thumbnail(url=ctx.author.avatar.url)
-
         embed.add_field(name="Avatar", value=avatar, inline=False)
         embed.add_field(
             name="Inventory",
@@ -63,7 +68,8 @@ class PlayerCog(commands.Cog):
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def coins(self, ctx: commands.Context):
         player = self.bot.player_service.get_player(ctx.author.id)
-        await ctx.send(content=f"You have {player.coins} coins", ephemeral=True)
+        coins = player.get_coins()
+        await ctx.send(content=f"You have {coins} coins", ephemeral=True)
 
     @coins.error
     async def coins_error(self, ctx: commands.Context, error):
@@ -75,13 +81,26 @@ class PlayerCog(commands.Cog):
     async def holdings(self, ctx: commands.Context):
         player = self.bot.player_service.get_player(ctx.author.id)
 
-        embed = get_embed("Player Holdings", "", discord.Color.blue())
+        embed = get_embed(
+            "Player Holdings", "The stocks you own", discord.Color.purple()
+        )
 
-        for holding in player.holdings.values():
+        holdings = player.get_holdings()
+
+        if holdings:
+            for ticker, holding in player.get_holdings().items():
+                curr_price = self.bot.stock_service.get_current_stock_price(ticker)
+                embed.add_field(
+                    name=f"${holding.ticker}",
+                    value=f"Shares: {holding.shares}\n"
+                    f"Average price: {holding.average_price:.2f}\n"
+                    f"Price change: {round(holding.average_price - curr_price, 2)}\n",
+                    inline=False,
+                )
+        else:
             embed.add_field(
-                name=f"${holding.ticker}",
-                value=f"Shares: {holding.shares}\n"
-                f"Average Price: ${holding.average_price:.2f}",
+                name="You have no shares",
+                value="",
                 inline=False,
             )
 
@@ -98,17 +117,18 @@ class PlayerCog(commands.Cog):
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def inventory(self, ctx: commands.Context):
         player = self.bot.player_service.get_player(ctx.author.id)
-        inventory = player.inventory
+        items = player.get_items()
 
         embed = get_embed(f"{ctx.author.name}'s Inventory", "", discord.Color.orange())
         embed.set_thumbnail(url=ctx.author.avatar.url)
 
-        if inventory:
-            for item_name, quantity in inventory.items():
-                item = self.bot.store.get_item(item_name, False)
+        if items:
+            for item_id, player_item in items.items():
+                # Get the information about the item from the DB
+                item = self.bot.item_service.get_item(item_id)
                 embed.add_field(
                     name=f"{item.name} {item.symbol}",
-                    value=f"x{quantity}",
+                    value=f"x{player_item.amount}",
                     inline=False,
                 )
         else:
@@ -123,14 +143,61 @@ class PlayerCog(commands.Cog):
         if isinstance(error, commands.BadArgument):
             await ctx.send(content=f"`inventory` error: {error}")
 
+    @commands.hybrid_command(name="modifiers", description="See all your modifiers")
+    async def modifiers(self, ctx: commands.Context):
+        player = self.bot.player_service.get_player(ctx.author.id)
+        modifiers = player.get_modifiers()
+
+        embed = get_embed(f"{ctx.author.name} Modifiers", "", discord.Color.blue())
+        embed.set_thumbnail(url=ctx.author.avatar.url)
+
+        if modifiers:
+            for modifier_id, player_modifier in modifiers.items():
+                # Get the information about the modifier from the DB
+                modifier = self.bot.modifier_service.get_modifier(modifier_id)
+
+                if modifier.timed:
+                    if not is_modifier_active(player_modifier, modifier.duration):
+                        embed.add_field(
+                            name=f"{modifier.name} {modifier.symbol}",
+                            value="EXPIRED",
+                            inline=False,
+                        )
+                    else:
+                        time_left = get_modifier_time_left(
+                            player_modifier, modifier.duration
+                        )
+                        embed.add_field(
+                            name=f"{modifier.name} {modifier.symbol}",
+                            value=f"Valid for: {time_left}",
+                            inline=False,
+                        )
+                elif modifier.stacking:
+                    embed.add_field(
+                        name=f"{modifier.name} {modifier.symbol}",
+                        value=f"Stacks: {player_modifier.stacks}",
+                        inline=False,
+                    )
+        else:
+            embed.add_field(name="No modifiers", value="You have no modifiers.")
+
+        await ctx.send(embed=embed)
+
+    @modifiers.error
+    async def modifiers_error(self, ctx, error):
+        if isinstance(error, commands.BadArgument):
+            await ctx.send(content=f"`modifiers` error: {error}")
+
     @commands.hybrid_command(name="use", description="Use an item")
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def use(self, ctx: commands.Context, item_name: str):
         player = self.bot.player_service.get_player(ctx.author.id)
-        item = self.bot.store.get_item(item_name)
+        store_item = self.bot.item_service.get_item_by_name(item_name)
 
-        await self.use_item(ctx, player, item)
-        await ctx.send(content=f"Used {item.name}", ephemeral=True)
+        if not player.has_item(store_item.id):
+            raise commands.BadArgument(f"{store_item.name} not in inventory")
+
+        await self.use_item(ctx, player, store_item)
 
     @use.error
     async def use_error(self, ctx: commands.Context, error):
@@ -151,8 +218,8 @@ class PlayerCog(commands.Cog):
         sender = self.bot.player_service.get_player(ctx.author.id)
         receiver = self.bot.player_service.get_player(user.id)
 
-        self.bot.player_service.remove_coins(sender, amount)
-        self.bot.player_service.add_coins(receiver, amount)
+        sender.remove_coins(amount)
+        receiver.add_coins(amount)
 
         await ctx.send(content=f"Gave {user.name} {amount} coin(s)")
 
@@ -165,10 +232,10 @@ class PlayerCog(commands.Cog):
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def flex(self, ctx):
         player = self.bot.player_service.get_player(ctx.author.id)
-        player_balance = player.coins
+        player_balance = player.get_coins()
         message = ""
 
-        if player_balance >= 250:
+        if player_balance >= 1000:
             ascii_art = """```
                  ________________________
                 |.----------------------.|
@@ -193,9 +260,9 @@ class PlayerCog(commands.Cog):
                 '------------------------'
             ```"""
             message = f"<@{ctx.author.id}> is so rich they can afford the Mona Lisa!\n{ascii_art}"
-        elif player_balance >= 100:
+        elif player_balance >= 500:
             message = f"<@{ctx.author.id}> is the coolest mofo in the world!! 😎😎😎"
-        elif player_balance >= 50:
+        elif player_balance >= 100:
             message = f"Mmkay, <@{ctx.author.id}> has some serious balance! #FTG 💪"
         else:
             message = f"Wow <@{ctx.author.id}>... you're trying to flex with this amount of money? 😬"
@@ -210,7 +277,11 @@ class PlayerCog(commands.Cog):
     @commands.hybrid_command(name="avatar", description="Change your current avatar")
     async def avatar(self, ctx: commands.Context, avatar: str):
         player = self.bot.player_service.get_player(ctx.author.id)
-        self.bot.player_service.update_avatar(player, avatar)
+
+        if not player.has_avatar(avatar):
+            raise commands.BadArgument("You do not have this avatar")
+
+        player.set_active_avatar(avatar)
         await ctx.send(content="Updated avatar", ephemeral=True)
 
     @avatar.error
@@ -221,9 +292,11 @@ class PlayerCog(commands.Cog):
     @commands.hybrid_command(name="avatars", description="See all your avatars")
     async def avatars(self, ctx: commands.Context):
         player = self.bot.player_service.get_player(ctx.author.id)
+        avatars = player.get_avatars()
+
         embed = get_embed(f"{ctx.author.name} Avatars", "", discord.Color.blue())
 
-        if player.avatars:
+        if avatars:
             for avatar in sort_avatars_by_rarity(player.avatars.values()):
                 embed.add_field(
                     name=f"{avatar.icon} - {avatar.rarity} (x{avatar.count})",
@@ -241,70 +314,21 @@ class PlayerCog(commands.Cog):
 
     # --- Helpers ---
 
-    def get_horse_race_stats(self, player_id: int) -> str:
-        horse_races = self.bot.horse_race_service.get_player_horse_races(player_id)
-        if horse_races:
-            total_bet = sum(h.bet for h in horse_races)
-            total_win = sum(h.win for h in horse_races)
-            max_win = max(max((h.win - h.bet) for h in horse_races), 0)
-            max_loss = max(max((h.bet - h.win) for h in horse_races), 0)
+    async def use_item(
+        self, ctx: commands.Context, player: Player, store_item: StoreItem
+    ):
+        if store_item.one_time_use:
+            player.remove_item(store_item.id)
 
-            return (
-                f"Total bet: {total_bet}\n"
-                f"Total win: {total_win}\n"
-                f"Biggest win: {max_win}\n"
-                f"Biggest loss: {max_loss}"
-            )
-        else:
-            return "No Horse Race data"
-
-    def get_roulette_stats(self, player_id: int) -> str:
-        roulettes = self.bot.roulette_service.get_roulettes_by_player(player_id)
-        total_bet = 0
-        total_win = 0
-        max_win = 0
-        max_loss = 0
-
-        if not roulettes:
-            return "No Roulette data"
-
-        for roulette in roulettes:
-            player_bet = roulette.players.get(str(player_id), 0)
-            total_bet += player_bet
-
-            if roulette.winner == player_id:
-                total_pool = sum(roulette.players.values()) - player_bet
-                total_win += total_pool
-                max_win = max(max_win, total_pool)
-            else:
-                max_loss = max(max_loss, player_bet)
-
-        return (
-            f"Total bet: {total_bet}\n"
-            f"Total win: {total_win}\n"
-            f"Biggest win: {max_win}\n"
-            f"Biggest loss: {max_loss}"
-        )
-
-    async def use_item(self, ctx: commands.Context, player: Player, item: Item):
-        if item.one_time_use:
-            self.bot.player_service.remove_item(player, item)
-
-        if item.name == "Avatar Case":
+        if store_item.id == "avatar_case":
             await self.open_case(ctx, player)
-        elif item.name == "Lock":
-            await self.apply_lock(ctx, player)
-        elif item.name == "Ninja Lesson":
-            await self.apply_ninja_lesson(ctx, player)
-        elif item.name == "Signal Jammer":
-            await self.apply_signal_jammer(ctx, player)
         else:
-            raise commands.BadArgument(f"Failed to use {item.name}")
+            raise commands.BadArgument(f"Failed to use {store_item.name}")
 
     async def open_case(self, ctx: commands.Context, player: Player):
         rarity, icon = self.bot.case_api.get_case_item()
 
-        self.bot.player_service.add_avatar(player, icon, rarity)
+        player.add_avatar(icon, rarity)
 
         rarity_colors = {
             "Common": 0xFFFFFF,
@@ -319,16 +343,13 @@ class PlayerCog(commands.Cog):
         )
         await ctx.send(embed=embed)
 
-    async def apply_lock(self, ctx: commands.Context, player: Player):
-        self.bot.player_service.add_modifier(player, LOCK_MODIFIER)
 
-    async def apply_ninja_lesson(self, ctx: commands.Context, player: Player):
-        self.bot.player_service.add_modifier(player, NINJA_LESSON_MODIFIER)
-
-    async def apply_signal_jammer(self, ctx: commands.Context, player: Player):
-        self.bot.player_service.add_modifier(player, SIGNAL_JAMMER_MODIFIER)
-
-
-def sort_avatars_by_rarity(avatars: List[Avatar], default_order=999):
-    rarity_order = {'Common': 1, 'Rare': 2, 'Epic': 3, 'Legendary': 4}
-    return sorted(avatars, key=lambda avatar: (rarity_order.get(avatar.rarity, default_order), avatar.icon))
+def sort_avatars_by_rarity(avatars: List[PlayerAvatar]):
+    rarity_order = {"Common": 1, "Rare": 2, "Epic": 3, "Legendary": 4}
+    return sorted(
+        avatars,
+        key=lambda avatar: (
+            rarity_order.get(avatar.rarity, 999),
+            avatar.icon,
+        ),
+    )

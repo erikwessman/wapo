@@ -1,7 +1,7 @@
 from mongoengine import EmbeddedDocument, StringField, IntField, FloatField
 
 
-class Holding(EmbeddedDocument):
+class PlayerHolding(EmbeddedDocument):
     """
     Represents a player's holding
     """
