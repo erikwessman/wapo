@@ -60,9 +60,7 @@ class StealCog(commands.Cog):
         if player.has_modifier("ninja_lesson"):
             nr_ninja_modifiers = player.get_modifier("ninja_lesson").stacks
 
-        if not weighted_chance(
-            player.get_coins(), target_player.get_coins(), nr_ninja_modifiers
-        ):
+        if not check_steal_success(nr_ninja_modifiers):
             await self.handle_steal_fail(
                 ctx, player.id, "You did not succeed in stealing"
             )
@@ -222,30 +220,21 @@ def insert_zero_width_spaces(message: str) -> str:
     return nbsp.join(message)
 
 
-def weighted_chance(a: int, b: int, nr_modifiers: int = 0) -> bool:
+def check_steal_success(nr_modifiers: int = 0) -> bool:
     """
-    Flips a weighted coin and returns True or False.
-    The odds are 50/50 when A and B are equal but fall off exponentially as the difference between A and B grows.
+    Flips a coin and returns True or False.
     Takes an optional argument nr_modifiers to increase the chance of success.
 
     Parameters:
-    - a (int): Input A.
-    - b (int): Input B.
-    - nr_modifiers (int, optional): The number of modifiers to increase the odds.
+    - nr_modifiers (int, optional): Number of modifiers to increase the odds.
 
     Returns:
     - bool: Whether the coin flip succeeded or not.
     """
-    ratio = max(a, b) / min(a, b) if min(a, b) > 0 else max(a, b)
+    probability = 0.5
+    modifier_effect = 0.05
 
-    base_value = 0.5
-    decay_rate = 0.05
-    modifier_effect = 0.03
-
-    probability = base_value * math.exp(-decay_rate * (ratio - 1))
-
-    for _ in range(nr_modifiers):
-        probability += modifier_effect
+    probability += nr_modifiers * modifier_effect
 
     min_probability = 0.05
     max_probability = 0.95
