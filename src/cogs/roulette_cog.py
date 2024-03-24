@@ -1,9 +1,9 @@
 import random
 import asyncio
 from datetime import datetime
+from typing import Any, Dict
 import discord
 from discord.ext import commands
-from typing import Any, Dict
 from tabulate import tabulate
 
 from helper import get_embed
@@ -68,7 +68,9 @@ class RouletteCog(commands.Cog):
             return
 
         total_players = len(self.roulette_event.participants)
-        total_coins = sum(player["coins"] for player in self.roulette_event.participants.values())
+        total_coins = sum(
+            player["coins"] for player in self.roulette_event.participants.values()
+        )
 
         odds_table = get_odds_table(self.roulette_event.participants)
 
@@ -93,11 +95,13 @@ class RouletteCog(commands.Cog):
         participants = self.roulette_event.participants
 
         if len(participants) < 2:
-            for player_id in participants:
+            for player_id, participant in participants.items():
                 player = self.bot.player_service.get_player(player_id)
-                player.add_coins(participants[player_id]["coins"])
+                player.add_coins(participant["coins"])
 
-            await ctx.send(content="Not enough participants for roulette to start. Refunding coins.")
+            await ctx.send(
+                content="Not enough participants for roulette to start. Refunding coins."
+            )
             return
 
         users = [user_info["user"] for user_info in participants.values()]
@@ -128,7 +132,9 @@ class RouletteCog(commands.Cog):
         await ctx.send(embed=embed)
 
         # Save roulette information
-        player_dict = {str(player_id): data["coins"] for player_id, data in participants.items() }
+        player_dict = {
+            str(player_id): data["coins"] for player_id, data in participants.items()
+        }
         self.bot.roulette_service.add_roulette(datetime.today(), player_dict, winner.id)
 
 

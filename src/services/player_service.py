@@ -14,7 +14,7 @@ class PlayerService:
 
     def get_player(self, player_id: int) -> Player:
         if not self.db.has_player(player_id):
-            return self.add_player(player_id)
+            self.add_player(player_id)
 
         return self.db.get_player(player_id)
 
@@ -30,7 +30,6 @@ class PlayerService:
 
         player = Player(id=player_id)
         self.db.add_player(player)
-        return player
 
     def delete_player(self, player_id: int):
         self.db.delete_player(player_id)

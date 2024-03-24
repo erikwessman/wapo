@@ -12,4 +12,4 @@ class StoreModifier(Document):
     duration = IntField(required=True)
     max_stacks = IntField(required=True)
 
-    meta = {'collection': 'modifiers'}
+    meta = {"collection": "modifiers"}

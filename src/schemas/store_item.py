@@ -10,4 +10,4 @@ class StoreItem(Document):
     one_time_use = BooleanField(required=True, default=True)
     on_sale = BooleanField(default=False)
 
-    meta = {'collection': 'items'}
+    meta = {"collection": "items"}

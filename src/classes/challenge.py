@@ -62,4 +62,3 @@ class ChallengeManager:
         - bool: True if the player has a challenge.
         """
         return any(player_id == challenge.challengee for challenge in self.challenges)
-

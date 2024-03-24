@@ -2,9 +2,9 @@ import os
 import random
 import json
 import html
-import requests
 import logging
 import asyncio
+import requests
 from fuzzywuzzy import fuzz
 import discord
 from discord.ui import Button
@@ -20,8 +20,11 @@ class TriviaCog(commands.Cog):
         self.movie_client = MovieDatabaseClient()
         self.movie_channel_dict = {}  # Maps a channel id to a movie
 
-    @commands.hybrid_command(name="trivia", description="Get a trivia question for 5 coins, answer correctly and win.",)
-    @commands.cooldown(1, 3600, commands.BucketType.user)
+    @commands.hybrid_command(
+        name="trivia",
+        description="Get a trivia question for 5 coins, answer correctly and win.",
+    )
+    @commands.cooldown(1, 60, commands.BucketType.user)
     async def trivia(self, ctx: commands.Context):
         player = self.bot.player_service.get_player(ctx.author.id)
 
@@ -276,8 +279,8 @@ class MovieDatabaseClient:
             # issue with popular movies, temporarily disabled
             # self.fetch_popular_movies()
 
-        if self.genres_cache == None:
-            self.genres_cache = self.fetch_genres()
+        if self.genres_cache is None:
+            self.fetch_genres()
 
         combined_movies = self.top_movies_cache + self.popular_movies_cache
         movie_dict = random.choice(combined_movies)
@@ -328,12 +331,11 @@ class MovieDatabaseClient:
 def decode_html_entities(obj):
     if isinstance(obj, str):
         return html.unescape(obj)
-    elif isinstance(obj, dict):
+    if isinstance(obj, dict):
         return {key: decode_html_entities(value) for key, value in obj.items()}
-    elif isinstance(obj, list):
+    if isinstance(obj, list):
         return [decode_html_entities(element) for element in obj]
-    else:
-        return obj
+    return obj
 
 
 def get_trivia():

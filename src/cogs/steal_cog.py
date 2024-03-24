@@ -1,12 +1,12 @@
 import json
 import math
 import random
-import discord
+from typing import Dict, List
 import asyncio
+import discord
 import numpy as np
 from discord.ext import commands
 from discord.ext.commands import BadArgument, Context, CommandError
-from typing import Dict, List
 
 from classes.challenge import ChallengeManager, Challenge
 from helper import get_embed, is_modifier_active, get_modifier_time_left
@@ -45,7 +45,9 @@ class StealCog(commands.Cog):
             target_player_lock = target_player.get_modifier("lock")
 
             if is_modifier_active(target_player_lock, lock_modifier.duration):
-                time_left = get_modifier_time_left(target_player_lock, lock_modifier.duration)
+                time_left = get_modifier_time_left(
+                    target_player_lock, lock_modifier.duration
+                )
                 await self.handle_steal_fail(
                     ctx,
                     player.id,
@@ -58,8 +60,12 @@ class StealCog(commands.Cog):
         if player.has_modifier("ninja_lesson"):
             nr_ninja_modifiers = player.get_modifier("ninja_lesson").stacks
 
-        if not weighted_chance(player.get_coins(), target_player.get_coins(), nr_ninja_modifiers):
-            await self.handle_steal_fail(ctx, player.id, "You did not succeed in stealing")
+        if not weighted_chance(
+            player.get_coins(), target_player.get_coins(), nr_ninja_modifiers
+        ):
+            await self.handle_steal_fail(
+                ctx, player.id, "You did not succeed in stealing"
+            )
             return
 
         has_signal_jammer = player.has_modifier("signal_jammer")
@@ -95,7 +101,9 @@ class StealCog(commands.Cog):
             coins_stolen = get_norm(target_player.get_coins(), 30, 25)
             player.add_coins(coins_stolen)
             target_player.remove_coins(coins_stolen)
-            await ctx.send(content=f"{ctx.author.name} stole {coins_stolen} coins from {user.name}!")
+            await ctx.send(
+                content=f"{ctx.author.name} stole {coins_stolen} coins from {user.name}!"
+            )
 
         self.challenge_manager.remove_challenge(challenge)
 
@@ -134,7 +142,7 @@ class StealCog(commands.Cog):
         player = self.bot.player_service.get_player(player_id)
 
         coins_lost = get_norm(player.get_coins(), 20, 15)
-        self.bot.player_service.remove_coins(player, coins_lost)
+        player.remove_coins(coins_lost)
         await ctx.send(content=f"{message}. You lost {coins_lost} coins.")
 
 
@@ -236,7 +244,7 @@ def weighted_chance(a: int, b: int, nr_modifiers: int = 0) -> bool:
 
     probability = base_value * math.exp(-decay_rate * (ratio - 1))
 
-    for i in range(nr_modifiers):
+    for _ in range(nr_modifiers):
         probability += modifier_effect
 
     min_probability = 0.05

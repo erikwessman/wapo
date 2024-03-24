@@ -1,11 +1,11 @@
+from datetime import datetime
+from typing import Dict
 from mongoengine import Document, EmbeddedDocumentField, IntField, StringField, MapField
 from schemas.player_item import PlayerItem
 from schemas.player_modifier import PlayerModifier
 from schemas.player_avatar import PlayerAvatar
 from schemas.player_holding import PlayerHolding
 
-from datetime import datetime
-from typing import Dict
 from helper import calculate_new_average_price
 
 
@@ -107,7 +107,9 @@ class Player(Document):
             self.modifiers[modifier_id].stacks += stacks
             self.modifiers[modifier_id].last_used = datetime.utcnow()
         else:
-            self.modifiers[modifier_id] = PlayerModifier(id=modifier_id, stacks=stacks, last_used=datetime.utcnow())
+            self.modifiers[modifier_id] = PlayerModifier(
+                id=modifier_id, stacks=stacks, last_used=datetime.utcnow()
+            )
         self.save()
 
     def remove_modifier(self, modifierid: str):
@@ -157,12 +159,16 @@ class Player(Document):
             initial_shares = self.holdings[ticker].shares
             initial_price = self.holdings[ticker].average_price
 
-            new_avg = calculate_new_average_price(initial_shares, initial_price, shares, price)
+            new_avg = calculate_new_average_price(
+                initial_shares, initial_price, shares, price
+            )
 
             self.holdings[ticker].shares += shares
             self.holdings[ticker].average_price = new_avg
         else:
-            self.holdings[ticker] = PlayerHolding(ticker=ticker, shares=shares, average_price=price)
+            self.holdings[ticker] = PlayerHolding(
+                ticker=ticker, shares=shares, average_price=price
+            )
         self.save()
 
     def remove_holding(self, ticker: str, shares: int = 1):

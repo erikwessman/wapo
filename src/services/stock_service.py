@@ -2,7 +2,6 @@ import json
 import datetime
 import logging
 from typing import List
-from discord.ext.commands import BadArgument
 
 from db import DB
 from schemas.stock import Stock
@@ -38,12 +37,14 @@ class StockService:
                 real_ticker = stock_dict["real_ticker"]
 
                 if not self.has_stock(ticker):
-                    logging.debug(f"Adding stock information for {company}")
+                    logging.debug("Adding stock information for %s", company)
                     self.add_stock(ticker, company)
 
                 if not self.has_stock_price(ticker):
                     logging.info(
-                        f"Adding initial batch of stock prices for {company} using real ticker {real_ticker}"
+                        f"Adding initial batch of stock prices for %s using real ticker %s",
+                        company,
+                        ticker,
                     )
                     stock_prices_df = self.stock_sim.simulate_initial_stock_prices(
                         real_ticker
@@ -56,19 +57,19 @@ class StockService:
 
     def add_stock(self, ticker: str, company: str):
         if self.db.has_stock(ticker):
-            raise BadArgument("Stock with this ticker already exists")
+            raise ValueError("Stock with this ticker already exists")
 
         stock = Stock(ticker=ticker, company=company)
         self.db.add_stock(stock)
 
     def get_stock_price_plot(self, stock: Stock, stock_prices: List[StockPrice]):
         if not stock_prices:
-            raise BadArgument(f"No data to plot for ${stock.ticker}")
+            raise ValueError(f"No data to plot for ${stock.ticker}")
 
         return self.stock_sim.plot_stock_prices(stock, stock_prices)
 
     def simulate_next_stock_prices(self, stock: Stock):
-        curr_stock_prices = self.get_stock_prices(stock)
+        curr_stock_prices = self.get_stock_prices(stock.ticker)
         curr_stock_prices_df = self.stock_sim.stock_prices_to_dataframe(
             curr_stock_prices
         )
@@ -85,7 +86,7 @@ class StockService:
 
     def get_stock(self, ticker) -> Stock:
         if not self.db.has_stock(ticker):
-            raise BadArgument(f"Stock with ticker {ticker} does not exist")
+            raise ValueError(f"Stock with ticker {ticker} does not exist")
 
         return self.db.get_stock(ticker)
 
@@ -95,19 +96,19 @@ class StockService:
     def get_all_stocks(self) -> List[Stock]:
         return self.db.get_stocks()
 
-    def get_current_stock_price(self, stock: Stock) -> float:
-        return self.db.get_current_stock_price(stock.ticker).price
+    def get_current_stock_price(self, ticker: str) -> float:
+        return self.db.get_current_stock_price(ticker).price
 
-    def get_stock_price_by_date(self, stock: Stock, date: datetime) -> float:
-        return self.db.get_stock_price_by_date(stock.ticker, date).price
+    def get_stock_price_by_date(self, ticker: str, date: datetime) -> float:
+        return self.db.get_stock_price_by_date(ticker, date).price
 
     def get_stock_price_in_date_range(
-        self, stock: Stock, start_date: datetime, end_date: datetime
+        self, ticker: str, start_date: datetime, end_date: datetime
     ) -> List[StockPrice]:
-        return self.db.get_stock_price_in_date_range(stock.ticker, start_date, end_date)
+        return self.db.get_stock_price_in_date_range(ticker, start_date, end_date)
 
-    def get_stock_prices(self, stock: Stock) -> List[StockPrice]:
-        return self.db.get_stock_price_history(stock.ticker)
+    def get_stock_prices(self, ticker: str) -> List[StockPrice]:
+        return self.db.get_stock_price_history(ticker)
 
     def has_stock_price(self, ticker: str) -> bool:
         return self.db.has_stock_price(ticker)

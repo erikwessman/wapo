@@ -1,5 +1,5 @@
-from mongoengine import EmbeddedDocument, StringField, IntField, DateTimeField
 from datetime import datetime
+from mongoengine import EmbeddedDocument, StringField, IntField, DateTimeField
 
 
 class PlayerModifier(EmbeddedDocument):

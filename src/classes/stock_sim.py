@@ -1,9 +1,9 @@
 import io
+from datetime import datetime, timedelta
+from typing import List
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-from datetime import datetime, timedelta
-from typing import List
 import yfinance as yf
 
 from schemas.stock import Stock

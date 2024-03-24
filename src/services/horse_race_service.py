@@ -36,5 +36,4 @@ class HorseRaceService:
                 f"Biggest win: {max_win}\n"
                 f"Biggest loss: {max_loss}"
             )
-        else:
-            return "No Horse Race data"
+        return "No Horse Race data"

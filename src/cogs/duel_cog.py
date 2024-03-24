@@ -41,7 +41,9 @@ class DuelCog(commands.Cog):
         p2 = self.bot.player_service.get_player(user.id)
 
         if p2.get_coins() < amount:
-            raise commands.BadArgument(f"{user.name} doesn't have enough coins for this duel")
+            raise commands.BadArgument(
+                f"{user.name} doesn't have enough coins for this duel"
+            )
 
         p1.remove_coins(amount)
 

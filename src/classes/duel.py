@@ -31,8 +31,7 @@ class Duelist:
             return
 
         self.health -= amount
-        if self.health < 0:
-            self.health = 0
+        self.health = max(self.health, 0)
 
     def heal(self, amount: int):
         self.health = min(self.max_health, self.health + amount)
@@ -147,7 +146,7 @@ class Duel:
         return self.challenger.is_defeated() or self.challengee.is_defeated()
 
     def has_player(self, player_id: int) -> bool:
-        return self.challenger.id == player_id or self.challengee.id == player_id
+        return player_id in (self.challenger.id, self.challengee.id)
 
     def get_winner(self) -> Duelist:
         if self.challenger.is_defeated():

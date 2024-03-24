@@ -5,7 +5,7 @@ from discord.ext import commands
 from schemas.store_item import StoreItem
 from schemas.player import Player
 from schemas.player_avatar import PlayerAvatar
-from helper import get_embed, is_modifier_active, get_modifier_time_left, closest_match
+from helper import get_embed, is_modifier_active, get_modifier_time_left
 
 
 class PlayerCog(commands.Cog):
@@ -27,8 +27,12 @@ class PlayerCog(commands.Cog):
         avatar = player.get_active_avatar() or "No avatar"
         inventory = player.get_items()
         coins = player.get_coins()
-        horse_race_stats = self.bot.horse_race_service.get_horse_race_stats_by_player(player_id)
-        roulette_stats = self.bot.roulette_service.get_roulette_stats_by_player(player_id)
+        horse_race_stats = self.bot.horse_race_service.get_horse_race_stats_by_player(
+            player_id
+        )
+        roulette_stats = self.bot.roulette_service.get_roulette_stats_by_player(
+            player_id
+        )
 
         embed = get_embed(
             f"Profile: {name}",
@@ -77,15 +81,26 @@ class PlayerCog(commands.Cog):
     async def holdings(self, ctx: commands.Context):
         player = self.bot.player_service.get_player(ctx.author.id)
 
-        embed = get_embed("Player Holdings", "The stocks you own", discord.Color.purple())
+        embed = get_embed(
+            "Player Holdings", "The stocks you own", discord.Color.purple()
+        )
 
-        for ticker, holding in player.get_holdings().items():
-            curr_price = self.bot.stock_service.get_current_stock_price(ticker)
+        holdings = player.get_holdings()
+
+        if holdings:
+            for ticker, holding in player.get_holdings().items():
+                curr_price = self.bot.stock_service.get_current_stock_price(ticker)
+                embed.add_field(
+                    name=f"${holding.ticker}",
+                    value=f"Shares: {holding.shares}\n"
+                    f"Average price: {holding.average_price:.2f}\n"
+                    f"Price change: {round(holding.average_price - curr_price, 2)}\n",
+                    inline=False,
+                )
+        else:
             embed.add_field(
-                name=f"${holding.ticker}",
-                value=f"Shares: {holding.shares}\n"
-                f"Average price: ${holding.average_price:.2f}\n"
-                f"Price change: {round(holding.average_price - curr_price, 2)}\n",
+                name="You have no shares",
+                value="",
                 inline=False,
             )
 
@@ -96,7 +111,9 @@ class PlayerCog(commands.Cog):
         if isinstance(error, commands.BadArgument):
             await ctx.send(content=f"`holdings` error: {error}")
 
-    @commands.hybrid_command(name="inventory", description="See all the items in your inventory")
+    @commands.hybrid_command(
+        name="inventory", description="See all the items in your inventory"
+    )
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def inventory(self, ctx: commands.Context):
         player = self.bot.player_service.get_player(ctx.author.id)
@@ -147,7 +164,9 @@ class PlayerCog(commands.Cog):
                             inline=False,
                         )
                     else:
-                        time_left = get_modifier_time_left(player_modifier, modifier.duration)
+                        time_left = get_modifier_time_left(
+                            player_modifier, modifier.duration
+                        )
                         embed.add_field(
                             name=f"{modifier.name} {modifier.symbol}",
                             value=f"Valid for: {time_left}",
@@ -185,7 +204,9 @@ class PlayerCog(commands.Cog):
         if isinstance(error, commands.BadArgument):
             await ctx.send(content=f"`use` error: {error}")
 
-    @commands.hybrid_command(name="give", description="Send some coin to a fellow in need")
+    @commands.hybrid_command(
+        name="give", description="Send some coin to a fellow in need"
+    )
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def give(self, ctx, user: discord.User, amount: int):
         if ctx.author.id == user.id:
@@ -293,7 +314,9 @@ class PlayerCog(commands.Cog):
 
     # --- Helpers ---
 
-    async def use_item(self, ctx: commands.Context, player: Player, store_item: StoreItem):
+    async def use_item(
+        self, ctx: commands.Context, player: Player, store_item: StoreItem
+    ):
         if store_item.one_time_use:
             player.remove_item(store_item.id)
 
@@ -315,7 +338,9 @@ class PlayerCog(commands.Cog):
         }
 
         embed = get_embed("Case Opened!", "", rarity_colors.get(rarity, 0xFFFFFF))
-        embed.add_field(name="Congratulations!", value=f"You got a {rarity} {icon}!", inline=False)
+        embed.add_field(
+            name="Congratulations!", value=f"You got a {rarity} {icon}!", inline=False
+        )
         await ctx.send(embed=embed)
 
 

@@ -53,7 +53,9 @@ class ModifierService:
     def delete_modifiers(self):
         self.db.delete_all_modifiers()
 
-    def get_modifier_by_name(self, modifier_name: str, fuzzy_match: bool = True) -> StoreModifier:
+    def get_modifier_by_name(
+        self, modifier_name: str, fuzzy_match: bool = True
+    ) -> StoreModifier:
         if fuzzy_match:
             all_modifier_names = [i.name for i in self.get_modifiers()]
             modifier_name = closest_match(modifier_name, all_modifier_names)

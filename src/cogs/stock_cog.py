@@ -1,6 +1,6 @@
 import logging
-import discord
 from datetime import datetime, timedelta
+import discord
 from discord.ext import commands, tasks
 
 from helper import get_embed
@@ -30,15 +30,21 @@ class StockCog(commands.Cog):
     async def stock_list(self, ctx):
         stocks = self.bot.stock_service.get_all_stocks()
 
-        embed = get_embed("Stock List", "Here are the available stocks:", discord.Color.orange())
+        embed = get_embed(
+            "Stock List", "Here are the available stocks:", discord.Color.orange()
+        )
 
         date_24_hrs = datetime.now() - timedelta(days=1)
         date_1_week = datetime.now() - timedelta(days=7)
 
         for stock in stocks:
-            curr_price = self.bot.stock_service.get_current_stock_price(stock)
-            price_24_hrs = self.bot.stock_service.get_stock_price_by_date(stock, date_24_hrs)
-            price_1_week = self.bot.stock_service.get_stock_price_by_date(stock, date_1_week)
+            curr_price = self.bot.stock_service.get_current_stock_price(stock.ticker)
+            price_24_hrs = self.bot.stock_service.get_stock_price_by_date(
+                stock.ticker, date_24_hrs
+            )
+            price_1_week = self.bot.stock_service.get_stock_price_by_date(
+                stock.ticker, date_1_week
+            )
 
             change_24_hrs = (
                 ((curr_price - price_24_hrs) / price_24_hrs) * 100
@@ -74,8 +80,9 @@ class StockCog(commands.Cog):
 
     @stock.command(name="price")
     async def stock_price(self, ctx, ticker: str):
-        stock = self.bot.stock_service.get_stock(ticker)
-        price = self.bot.stock_service.get_current_stock_price(stock)
+        if not self.bot.stock_service.has_stock(ticker):
+            raise commands.BadArgument(f"Stock with ticker {ticker} does not exist")
+        price = self.bot.stock_service.get_current_stock_price(ticker)
         await ctx.send(f"{ticker}: {price} coin(s)")
 
     @stock_price.error
@@ -95,14 +102,14 @@ class StockCog(commands.Cog):
                 start_date = datetime.now() - timedelta(days=days)
                 end_date = datetime.now()
                 stock_prices = self.bot.stock_service.get_stock_price_in_date_range(
-                    stock, start_date, end_date
+                    stock.ticker, start_date, end_date
                 )
             else:
                 raise commands.BadArgument(
                     f"Available date ranges: {' '.join(date_ranges)}"
                 )
         else:
-            stock_prices = self.bot.stock_service.get_stock_prices(stock)
+            stock_prices = self.bot.stock_service.get_stock_prices(stock.ticker)
 
         stock_plot = self.bot.stock_service.get_stock_price_plot(stock, stock_prices)
         file = discord.File(fp=stock_plot, filename="stock_plot.png")
@@ -120,8 +127,11 @@ class StockCog(commands.Cog):
     @stock.command(name="buy")
     async def stock_buy(self, ctx: commands.Context, ticker: str, quantity: int):
         player = self.bot.player_service.get_player(ctx.author.id)
-        stock = self.bot.stock_service.get_stock(ticker)
-        stock_price = self.bot.stock_service.get_current_stock_price(stock)
+
+        if not self.bot.stock_service.has_stock(ticker):
+            raise commands.BadArgument(f"Stock with ticker {ticker} does not exist")
+
+        stock_price = self.bot.stock_service.get_current_stock_price(ticker)
         total_cost = stock_price * quantity
 
         if quantity < 1:
@@ -146,8 +156,11 @@ class StockCog(commands.Cog):
     @stock.command(name="sell")
     async def stock_sell(self, ctx: commands.Context, ticker: str, quantity: int):
         player = self.bot.player_service.get_player(ctx.author.id)
-        stock = self.bot.stock_service.get_stock(ticker)
-        stock_price = self.bot.stock_service.get_current_stock_price(stock)
+
+        if not self.bot.stock_service.has_stock(ticker):
+            raise commands.BadArgument(f"Stock with ticker {ticker} does not exist")
+
+        stock_price = self.bot.stock_service.get_current_stock_price(ticker)
         total_cost = stock_price * quantity
 
         if quantity < 1:
@@ -177,7 +190,7 @@ class StockCog(commands.Cog):
         stocks = self.bot.stock_service.get_all_stocks()
 
         for stock in stocks:
-            logging.debug(f"Updating ${stock.ticker} stock prices...")
+            logging.debug("Updating %s stock prices...", stock.ticker)
             self.bot.stock_service.simulate_next_stock_prices(stock)
 
     @update_stock_price.before_loop

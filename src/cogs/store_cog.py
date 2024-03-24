@@ -20,7 +20,11 @@ class StoreCog(commands.Cog):
 
         embed = get_embed("Store", "Buy cool stuff", discord.Color.pink())
 
-        embed.add_field(name="---Items---", value="Items appear in your inventory and can be used", inline=False)
+        embed.add_field(
+            name="---Items---",
+            value="Items appear in your inventory and can be used",
+            inline=False,
+        )
 
         for item in items:
             item_details = (
@@ -34,7 +38,11 @@ class StoreCog(commands.Cog):
                 inline=False,
             )
 
-        embed.add_field(name="---Modifiers---", value="Modifiers are applied immediately", inline=False)
+        embed.add_field(
+            name="---Modifiers---",
+            value="Modifiers are applied immediately",
+            inline=False,
+        )
 
         for modifier in modifiers:
             modifier_details = (
@@ -79,7 +87,9 @@ class StoreCog(commands.Cog):
         if isinstance(error, commands.BadArgument):
             await ctx.send(content=f"`cases` error: {error}")
 
-    @commands.hybrid_command(name="buy", description="Buy an item or modifier from the store")
+    @commands.hybrid_command(
+        name="buy", description="Buy an item or modifier from the store"
+    )
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def buy(self, ctx: commands.Context, item_name: str, quantity: int = 1):
         if quantity < 1:
@@ -99,16 +109,22 @@ class StoreCog(commands.Cog):
             item = self.bot.item_service.get_item_by_name(product_name, False)
 
             if player.get_coins() < item.price * quantity:
-                raise commands.BadArgument("Not enough coins")
+                raise commands.BadArgument(
+                    f"Not enough coins to buy {quantity}x {item.name}"
+                )
 
             player.add_item(item.id, quantity)
             player.remove_coins(item.price * quantity)
             await ctx.send(content=f"Bought {quantity} {item.name}(s)")
         else:
-            modifier = self.bot.modifier_service.get_modifier_by_name(product_name, False)
+            modifier = self.bot.modifier_service.get_modifier_by_name(
+                product_name, False
+            )
 
             if player.get_coins() < modifier.price * quantity:
-                raise commands.BadArgument("Not enough coins")
+                raise commands.BadArgument(
+                    f"Not enough coins to buy {quantity}x {modifier.name}"
+                )
 
             player.add_modifier(modifier.id, quantity)
             player.remove_coins(modifier.price * quantity)

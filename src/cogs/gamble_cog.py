@@ -19,7 +19,9 @@ class GambleCog(commands.Cog):
 
     @commands.hybrid_command(name="gamble", description="Bet on a horse race")
     @commands.cooldown(1, 30, commands.BucketType.user)
-    async def gamble(self, ctx: commands.Context, row: int, amount: int, use_insurance: bool = False):
+    async def gamble(
+        self, ctx: commands.Context, row: int, amount: int, use_insurance: bool = False
+    ):
         if not 1 <= row <= 4:
             raise commands.BadArgument("You must gamble on rows 1-4")
 
@@ -40,9 +42,11 @@ class GambleCog(commands.Cog):
         if player.get_coins() < bet_cost:
             raise commands.BadArgument("You do not have enough coins")
 
-        horse_race = HorseRace(amount, row - 1, player_avatar)
+        horse_race = HorseRace(row - 1, player_avatar)
 
-        embed = get_embed("Horse Race", horse_race.get_race_string(), discord.Color.purple())
+        embed = get_embed(
+            "Horse Race", horse_race.get_race_string(), discord.Color.purple()
+        )
         message = await ctx.send(embed=embed)
 
         for _ in horse_race.simulate_race():
@@ -53,7 +57,7 @@ class GambleCog(commands.Cog):
             embed = updated_message
             await asyncio.sleep(0.1)
 
-        nr_coins_won = horse_race.get_nr_coins_won()
+        nr_coins_won = horse_race.get_nr_coins_won(amount)
 
         if use_insurance and nr_coins_won == 0:
             nr_coins_won = amount // 2
@@ -62,7 +66,9 @@ class GambleCog(commands.Cog):
         player = self.bot.player_service.get_player(ctx.author.id)
 
         # Save race information
-        self.bot.horse_race_service.add_horse_race(datetime.today, player.id, amount, nr_coins_won)
+        self.bot.horse_race_service.add_horse_race(
+            datetime.today, player.id, amount, nr_coins_won
+        )
 
         player.add_coins(nr_coins_won)
 
@@ -87,4 +93,6 @@ class GambleCog(commands.Cog):
         if random.random() < 0.1:
             item = self.bot.item_service.get_item("avatar_case")
             player.add_item(item.id)
-            await ctx.send(content=f"🍀 {ctx.author.mention} got a {item.name} {item.symbol} in a drop! 🍀")
+            await ctx.send(
+                content=f"🍀 {ctx.author.mention} got a {item.name} {item.symbol} in a drop! 🍀"
+            )

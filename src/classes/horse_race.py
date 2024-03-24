@@ -5,11 +5,10 @@ from const import GAMBLE_EMOJIS
 
 
 class HorseRace:
-    def __init__(self, bet_amount: int, row: int, avatar: str, length=20):
+    def __init__(self, row: int, avatar: str, length=20):
         self.values = [0, 0, 0, 0]
         self.row = row
         self.length = length
-        self.bet_amount = bet_amount
         self.symbols = GAMBLE_EMOJIS.copy()
         if avatar:
             self.symbols[row] = avatar
@@ -43,10 +42,7 @@ class HorseRace:
 
         return "\n\n".join(lines)
 
-    def get_results(self):
-        pass
-
-    def get_nr_coins_won(self) -> int:
+    def get_nr_coins_won(self, bet_amount: int) -> int:
         bet_result_index = self.standings.index(self.row)
         winnings_table = {0: 2, 1: 1.5, 2: 0.5, 3: 0}
-        return math.floor(winnings_table[bet_result_index] * self.bet_amount)
+        return math.floor(winnings_table[bet_result_index] * bet_amount)
