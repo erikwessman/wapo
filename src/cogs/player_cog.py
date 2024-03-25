@@ -94,7 +94,7 @@ class PlayerCog(commands.Cog):
                     name=f"${holding.ticker}",
                     value=f"Shares: {holding.shares}\n"
                     f"Average price: {holding.average_price:.2f}\n"
-                    f"Price change: {round(holding.average_price - curr_price, 2)}\n",
+                    f"Price change: {round(curr_price - holding.average_price, 2)}\n",
                     inline=False,
                 )
         else:
