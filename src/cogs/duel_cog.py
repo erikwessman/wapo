@@ -28,6 +28,9 @@ class DuelCog(commands.Cog):
         if ctx.author.id == user.id:
             raise commands.BadArgument("Can't duel yourself")
 
+        if user.id == self.bot.user.id:
+            raise commands.BadArgument("Can't duel me!")
+
         if amount < 1:
             raise commands.BadArgument("Must wager at least 1 coin")
 
@@ -111,7 +114,7 @@ class DuelCog(commands.Cog):
     async def handle_accept_duel(
         self, player: Player, ctx: commands.Context, duel: Duel
     ):
-        self.bot.player_service.remove_coins(player, duel.wager)
+        player.remove_coins(duel.wager)
         duel.accept()
         await self.simulate_duel(ctx, duel)
 

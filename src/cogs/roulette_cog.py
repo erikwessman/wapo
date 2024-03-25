@@ -29,6 +29,9 @@ class RouletteCog(commands.Cog):
     async def roulette(self, ctx: commands.Context, amount: int):
         player = self.bot.player_service.get_player(ctx.author.id)
 
+        if amount < 1:
+            raise commands.BadArgument("Must wager at least 1 coin")
+
         if player.get_coins() < amount:
             raise commands.BadArgument("Not enough coins")
 

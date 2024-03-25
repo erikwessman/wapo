@@ -117,14 +117,14 @@ class StoreCog(commands.Cog):
             player.remove_coins(item.price * quantity)
             await ctx.send(content=f"Bought {quantity} {item.name}(s)")
         else:
-            modifier = self.bot.modifier_service.get_modifier_by_name(
-                product_name, False
-            )
+            modifier = self.bot.modifier_service.get_modifier_by_name(product_name, False)
+
+            # You should only be able to buy timed modifiers one at a time
+            if modifier.timed:
+                quantity = 1
 
             if player.get_coins() < modifier.price * quantity:
-                raise commands.BadArgument(
-                    f"Not enough coins to buy {quantity}x {modifier.name}"
-                )
+                raise commands.BadArgument(f"Not enough coins to buy {quantity}x {modifier.name}")
 
             player.add_modifier(modifier.id, quantity)
             player.remove_coins(modifier.price * quantity)

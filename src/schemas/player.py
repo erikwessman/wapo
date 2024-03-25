@@ -35,15 +35,15 @@ class Player(Document):
         return self.coins
 
     def add_coins(self, amount: int):
-        if amount < 1:
-            raise ValueError("Must add at least 1 coin")
+        if amount < 0:
+            raise ValueError("Can't add negative coins")
 
         self.coins += amount
         self.save()
 
     def remove_coins(self, amount: int):
         if amount < 1:
-            raise ValueError("Must remove at least 1 coin")
+            raise ValueError("Can't remove negative coins")
 
         if self.coins < amount:
             raise ValueError("Not enough coins")
