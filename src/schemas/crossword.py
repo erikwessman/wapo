@@ -7,6 +7,6 @@ class Crossword(Document):
     """
 
     date = StringField(required=True)
-    score = IntField(required=True)
+    time = IntField(required=True)
 
     meta = {"collection": "crosswords"}

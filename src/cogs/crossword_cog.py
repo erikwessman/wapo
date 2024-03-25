@@ -96,7 +96,7 @@ class CrosswordCog(commands.Cog):
         puzzle_weekday = helper.get_puzzle_weekday(crossword_date)
         puzzle_reward = helper.get_puzzle_reward(puzzle_weekday, puzzle_time)
 
-        self.bot.crossword_service.save_crossword(crossword_date)
+        self.bot.crossword_service.add_crossword(crossword_date, puzzle_time)
 
         players = self.bot.player_service.get_players()
 

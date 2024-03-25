@@ -24,11 +24,11 @@ class CrosswordService:
     def has_crossword(self, crossword_date: str) -> bool:
         return self.db.has_crossword(crossword_date)
 
-    def add_crossword(self, crossword_date: str, score: int):
+    def add_crossword(self, crossword_date: str, time: int):
         if self.db.has_crossword(crossword_date):
             raise ValueError("Crossword already exists")
 
-        crossword = Crossword(date=crossword_date, score=score)
+        crossword = Crossword(date=crossword_date, time=time)
         self.db.add_crossword(crossword)
 
     def delete_crossword(self, crossword_date: str):
