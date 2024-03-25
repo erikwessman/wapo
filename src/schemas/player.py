@@ -42,7 +42,7 @@ class Player(Document):
         self.save()
 
     def remove_coins(self, amount: int):
-        if amount < 1:
+        if amount < 0:
             raise ValueError("Can't remove negative coins")
 
         if self.coins < amount:
