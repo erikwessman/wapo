@@ -29,7 +29,7 @@ class GambleCog(commands.Cog):
             raise commands.BadArgument("You must gamble on rows 1-4")
 
         if amount < 1:
-            raise commands.BadArgument("You must gamble at least 1 coin")
+            raise commands.BadArgument("Must wager at least 1 coin")
 
         # Gather player information
         player = self.bot.player_service.get_player(ctx.author.id)
