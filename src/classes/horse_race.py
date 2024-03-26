@@ -5,9 +5,11 @@ from const import GAMBLE_EMOJIS
 
 
 class HorseRace:
-    def __init__(self, row: int, avatar: str, length=20):
-        self.values = [0, 0, 0, 0]
+    def __init__(self, row: int, avatar: str, length=20, headstart=False):
         self.row = row
+        self.values = [0, 0, 0, 0]
+        #if headstart:
+            #self.values[row] = 1
         self.length = length
         self.symbols = GAMBLE_EMOJIS.copy()
         if avatar:

@@ -5,6 +5,7 @@
         "description": "Does nothing",
         "symbol": "🦗",
         "price": 5,
+        "is_purchasable": true,
         "one_time_use": false
     },
     {
@@ -13,6 +14,25 @@
         "description": "Contains 1 avatar",
         "symbol": "🎁",
         "price": 10,
+        "is_purchasable": true,
+        "one_time_use": true
+    },
+    {
+        "id": "peering_eye",
+        "name": "Peering Eye",
+        "description": "Shows how many coins other players have",
+        "symbol": "👁️",
+        "price": 10,
+        "is_purchasable": true,
+        "one_time_use": true
+    },
+    {
+        "id": "skunk_spray",
+        "name": "Skunk Spray",
+        "description": "Makes another player stinky",
+        "symbol": "🦨",
+        "price": 40,
+        "is_purchasable": true,
         "one_time_use": true
     }
 ]

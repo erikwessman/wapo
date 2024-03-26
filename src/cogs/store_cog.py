@@ -15,8 +15,8 @@ class StoreCog(commands.Cog):
     @commands.hybrid_command(name="store", description="View the item store")
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def store(self, ctx: commands.Context):
-        items = self.bot.item_service.get_items()
-        modifiers = self.bot.modifier_service.get_modifiers()
+        items = self.bot.item_service.get_purchasable_items()
+        modifiers = self.bot.modifier_service.get_purchasable_modifiers()
 
         embed = get_embed("Store", "Buy cool stuff", discord.Color.pink())
 
@@ -95,8 +95,8 @@ class StoreCog(commands.Cog):
         if quantity < 1:
             raise commands.BadArgument("Must buy at least 1 item")
 
-        items = self.bot.item_service.get_items()
-        modifiers = self.bot.modifier_service.get_modifiers()
+        items = self.bot.item_service.get_purchasable_items()
+        modifiers = self.bot.modifier_service.get_purchasable_modifiers()
 
         # Look at both items and modifiers and get the closest match
         item_names = [i.name for i in items]
