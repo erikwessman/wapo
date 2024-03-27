@@ -69,14 +69,17 @@ class StoreCog(commands.Cog):
     @commands.hybrid_command(name="", description="")
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def cases(self, ctx: commands.Context):
+        player = self.bot.player_service.get_player(ctx.author.id)
+        has_clover = player.has_modifier("four_leaf_clover")
+        tiers = self.bot.case_api.get_tiers(has_clover)
+
         embed = get_embed("Case Odds & Items", "", discord.Color.red())
-        tiers = self.bot.case_api.get_tiers()
 
         for tier, tier_info in tiers.items():
             items_string = " ".join(tier_info["items"])
             embed.add_field(
-                name=f"{tier} {tier_info['drop_rate']}%",
-                value=items_string,
+                name=f"{tier} - {tier_info['drop_rate']}%",
+                value=f"```{items_string}```",
                 inline=False,
             )
 

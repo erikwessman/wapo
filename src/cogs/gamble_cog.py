@@ -46,7 +46,7 @@ class GambleCog(commands.Cog):
         player.remove_coins(bet_cost)
         has_horse_steroids = player.has_modifier("horse_steroids")
 
-        horse_race = HorseRace(row - 1, player_avatar, has_horse_steroids)
+        horse_race = HorseRace(row - 1, player_avatar, headstart=has_horse_steroids)
 
         embed = get_embed(
             "Horse Race", horse_race.get_race_string(), discord.Color.purple()
@@ -98,5 +98,5 @@ class GambleCog(commands.Cog):
             item = self.bot.item_service.get_item("avatar_case")
             player.add_item(item.id)
             await ctx.send(
-                content=f"🍀 {ctx.author.mention} got a {item.name} {item.symbol} in a drop! 🍀"
+                content=f"🍀 {ctx.author.mention} got an {item.name} {item.symbol} in a drop! 🍀"
             )

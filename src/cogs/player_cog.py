@@ -323,7 +323,8 @@ class PlayerCog(commands.Cog):
             player.remove_item(store_item.id)
 
     async def open_case(self, ctx: commands.Context, player: Player):
-        rarity, icon = self.bot.case_api.get_case_item()
+        has_clover = player.has_modifier("four_leaf_clover")
+        rarity, icon = self.bot.case_api.get_random_case_item(has_clover)
 
         player.add_avatar(icon, rarity)
 
@@ -332,6 +333,7 @@ class PlayerCog(commands.Cog):
             "Rare": discord.Color.blue(),
             "Epic": discord.Color.purple(),
             "Legendary": discord.Color.orange(),
+            "Mythical": discord.Color.fuchsia(),
         }
 
         embed = get_embed("Case Opened!", "", rarity_colors.get(rarity, 0xFFFFFF))
@@ -349,7 +351,7 @@ class PlayerCog(commands.Cog):
             user_info = await self.bot.fetch_user(player.id)
             embed.add_field(name=user_info.name, value=player.get_coins(), inline=False)
 
-        await ctx.send(embed=embed)
+        await ctx.send(embed=embed, ephemeral=True)
 
     async def apply_skunk_spray(self, ctx: commands.Context, user: discord.User):
         target_player = self.bot.player_service.get_player(user.id)
