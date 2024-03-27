@@ -22,9 +22,7 @@ class GambleCog(commands.Cog):
         description="Gamble on a horse race. Optionally add insurance for 15% of the total bet.",
     )
     @commands.cooldown(1, 30, commands.BucketType.user)
-    async def gamble(
-        self, ctx: commands.Context, row: int, amount: int, use_insurance: bool = False
-    ):
+    async def gamble(self, ctx: commands.Context, row: int, amount: int, use_insurance: bool = False):
         if not 1 <= row <= 4:
             raise commands.BadArgument("You must gamble on rows 1-4")
 
@@ -46,8 +44,9 @@ class GambleCog(commands.Cog):
             raise commands.BadArgument("You do not have enough coins")
 
         player.remove_coins(bet_cost)
+        has_horse_steroids = player.has_modifier("horse_steroids")
 
-        horse_race = HorseRace(row - 1, player_avatar)
+        horse_race = HorseRace(row - 1, player_avatar, headstart=has_horse_steroids)
 
         embed = get_embed(
             "Horse Race", horse_race.get_race_string(), discord.Color.purple()
@@ -99,5 +98,5 @@ class GambleCog(commands.Cog):
             item = self.bot.item_service.get_item("avatar_case")
             player.add_item(item.id)
             await ctx.send(
-                content=f"🍀 {ctx.author.mention} got a {item.name} {item.symbol} in a drop! 🍀"
+                content=f"🍀 {ctx.author.mention} got an {item.name} {item.symbol} in a drop! 🍀"
             )
