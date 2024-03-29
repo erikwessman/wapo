@@ -99,8 +99,13 @@ class CrosswordCog(commands.Cog):
         self.bot.crossword_service.add_crossword(crossword_date, puzzle_time)
 
         players = self.bot.player_service.get_players()
+        crossword_boost_modifier = self.bot.modifier_service.get_modifiers("crossword_booster")
 
         for player in players:
+            # Increase the reward for players with a Crossword Booster
+            if helper.is_modifier_valid(player, crossword_boost_modifier):
+                puzzle_reward = round(puzzle_reward * 1.5)
+
             player.add_coins(puzzle_reward)
 
         embed_success = get_embed(

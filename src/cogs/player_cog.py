@@ -6,6 +6,7 @@ from schemas.item import Item
 from schemas.player import Player
 from schemas.player_avatar import PlayerAvatar
 from helper import get_embed, is_modifier_active, get_modifier_time_left
+import helper
 
 
 class PlayerCog(commands.Cog):
@@ -316,6 +317,8 @@ class PlayerCog(commands.Cog):
             await self.show_players_coins(ctx)
         elif store_item.id == "skunk_spray" and optional_user:
             await self.apply_skunk_spray(ctx, optional_user)
+        elif store_item.id == "wand_of_wealth":
+            await self.apply_crossword_bonus(ctx, player)
         else:
             raise commands.BadArgument(f"Failed to use {store_item.name}")
 
@@ -323,7 +326,9 @@ class PlayerCog(commands.Cog):
             player.remove_item(store_item.id)
 
     async def open_case(self, ctx: commands.Context, player: Player):
-        has_clover = player.has_modifier("four_leaf_clover")
+        four_leaf_clover_modifier = self.bot.modifier_service.get_modifier("four_leaf_clover")
+        has_clover = helper.is_modifier_valid(player, four_leaf_clover_modifier)
+
         rarity, icon = self.bot.case_api.get_random_case_item(has_clover)
 
         player.add_avatar(icon, rarity)
@@ -358,9 +363,14 @@ class PlayerCog(commands.Cog):
         target_player.add_modifier("stinky")
         await ctx.send(content=f"{user.name} is now stinky!")
 
+    async def apply_crossword_bonus(self, ctx: commands.Context, player: Player):
+        modifier = self.bot.modifier_service.get_modifier("crossword_booster")
+        player.add_modifier("crossword_booster")
+        await ctx.send(content=f"Applied {modifier.name} {modifier.symbol}!")
+
 
 def sort_avatars_by_rarity(avatars: List[PlayerAvatar]):
-    rarity_order = {"Common": 1, "Rare": 2, "Epic": 3, "Legendary": 4}
+    rarity_order = {"Common": 1, "Rare": 2, "Epic": 3, "Legendary": 4, "Mythical": 5}
     return sorted(
         avatars,
         key=lambda avatar: (

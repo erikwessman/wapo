@@ -8,6 +8,8 @@ import discord
 import validators
 from fuzzywuzzy import process
 
+from schemas.modifier import Modifier
+from schemas.player import Player
 from schemas.player_modifier import PlayerModifier
 from const import (
     GITHUB_REPOSITORY,
@@ -117,6 +119,24 @@ def format_seconds(seconds):
     minutes = seconds // 60
     seconds_remainder = seconds % 60
     return f"{minutes}m {seconds_remainder}s"
+
+
+def is_modifier_valid(player: Player, modifier: Modifier):
+    """Returns true if the player has the modifier and the modifier is active"""
+
+    if not player.has_modifier(modifier.id):
+        return False
+
+    player_modifier = player.get_modifier(modifier.id)
+
+    if player_modifier.stacks < 1:
+        return False
+
+    # If it's a timed modifier we need to check if its active
+    if modifier.timed:
+        return is_modifier_active(player_modifier, modifier.duration)
+    else:
+        return True
 
 
 def is_modifier_active(modifier: PlayerModifier, duration: int) -> bool:

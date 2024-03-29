@@ -70,5 +70,17 @@
         "timed": true,
         "duration": 24,
         "max_stacks": 1
+    },
+    {
+        "id": "crossword_booster",
+        "name": "Crossword Booster",
+        "description": "Rewards from crosswords are increased by 50%",
+        "symbol": "💰",
+        "price": 0,
+        "is_purchasable": false,
+        "stacking": false,
+        "timed": true,
+        "duration": 72,
+        "max_stacks": 1
     }
 ]

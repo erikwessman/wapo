@@ -112,9 +112,9 @@ class Player(Document):
             )
         self.save()
 
-    def remove_modifier(self, modifierid: str):
-        if modifierid in self.modifiers:
-            del self.modifiers[modifierid]
+    def remove_modifier(self, modifier_id: str):
+        if modifier_id in self.modifiers:
+            del self.modifiers[modifier_id]
             self.save()
 
     def get_avatar(self, avatar: str) -> PlayerAvatar:

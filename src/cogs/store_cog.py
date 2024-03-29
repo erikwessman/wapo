@@ -1,7 +1,8 @@
 import discord
 from discord.ext import commands
 
-from helper import get_embed, closest_match
+from helper import get_embed
+import helper
 
 
 class StoreCog(commands.Cog):
@@ -70,7 +71,8 @@ class StoreCog(commands.Cog):
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def cases(self, ctx: commands.Context):
         player = self.bot.player_service.get_player(ctx.author.id)
-        has_clover = player.has_modifier("four_leaf_clover")
+        four_leaf_clover_modifier = self.bot.modifier_service.get_modifier("four_leaf_clover")
+        has_clover = helper.is_modifier_valid(player, four_leaf_clover_modifier)
         tiers = self.bot.case_api.get_tiers(has_clover)
 
         embed = get_embed("Case Odds & Items", "", discord.Color.red())
@@ -104,7 +106,7 @@ class StoreCog(commands.Cog):
         # Look at both items and modifiers and get the closest match
         item_names = [i.name for i in items]
         modifier_names = [m.name for m in modifiers]
-        product_name = closest_match(item_name, item_names + modifier_names)
+        product_name = helper.closest_match(item_name, item_names + modifier_names)
 
         player = self.bot.player_service.get_player(ctx.author.id)
 
