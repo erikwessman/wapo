@@ -82,5 +82,17 @@
         "is_timed": true,
         "duration": 72,
         "max_stacks": 1
+    },
+    {
+        "id": "happy_hour",
+        "name": "Happy Hour",
+        "description": "Rewards from horse races are increased by 20%",
+        "symbol": "🍻",
+        "price": 0,
+        "is_purchasable": false,
+        "is_stacking": false,
+        "is_timed": true,
+        "duration": 1,
+        "max_stacks": 1
     }
 ]

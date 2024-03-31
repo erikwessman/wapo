@@ -119,3 +119,10 @@ class CrosswordCog(commands.Cog):
         )
 
         await message.edit(embed=embed_success)
+
+        # Start happy hour event if the crossword is complete
+        for player in players:
+            player.add_modifier("happy_hour")
+
+        embed_happy_hour = helper.get_embed("🍻 Happy Hour 🍻", "Happy hour is starting now!", discord.Color.green())
+        message = await reaction.message.channel.send(embed=embed_happy_hour)
