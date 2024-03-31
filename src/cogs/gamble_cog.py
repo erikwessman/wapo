@@ -6,7 +6,6 @@ from discord.ext import commands
 
 from classes.horse_race import HorseRace
 from schemas.player import Player
-from helper import get_embed
 import helper
 
 
@@ -47,11 +46,11 @@ class GambleCog(commands.Cog):
         player.remove_coins(bet_cost)
 
         horse_steroids_modifier = self.bot.modifier_service.get_modifier("horse_steroids")
-        has_horse_steroids = helper.is_modifier_valid(player, horse_steroids_modifier)
+        has_horse_steroids = player.is_modifier_valid(horse_steroids_modifier)
 
         horse_race = HorseRace(row - 1, player_avatar, headstart=has_horse_steroids)
 
-        embed = get_embed(
+        embed = helper.get_embed(
             "Horse Race", horse_race.get_race_string(), discord.Color.purple()
         )
         message = await ctx.send(embed=embed)
@@ -79,15 +78,15 @@ class GambleCog(commands.Cog):
 
         player.add_coins(nr_coins_won)
 
-        result_embed = get_embed(
+        result_embed = helper.get_embed(
             "Horse Race Results",
             f"{player_name} won {nr_coins_won} coin(s)!",
             discord.Color.gold(),
         )
         await ctx.send(embed=result_embed)
 
-        # If player bets at least 10, give 10% chance to drop some reward
-        if amount >= 10 and random.random() < 1:
+        # If player bets at least 10, give 15% chance to drop a reward
+        if amount >= 10 and random.random() < 0.15:
             await self.handle_drop_reward(ctx, player)
 
     @gamble.error

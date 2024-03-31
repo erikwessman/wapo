@@ -5,8 +5,9 @@ from schemas.player_item import PlayerItem
 from schemas.player_modifier import PlayerModifier
 from schemas.player_avatar import PlayerAvatar
 from schemas.player_holding import PlayerHolding
+from schemas.modifier import Modifier
 
-from helper import calculate_new_average_price
+import helper
 
 
 class Player(Document):
@@ -117,6 +118,36 @@ class Player(Document):
             del self.modifiers[modifier_id]
             self.save()
 
+    def is_modifier_valid(self, modifier: Modifier) -> bool:
+        if not self.has_modifier(modifier.id):
+            return False
+
+        player_modifier = self.get_modifier(modifier.id)
+
+        if player_modifier.stacks < 1:
+            return False
+
+        # If it's a timed modifier we need to check if its active
+        if modifier.is_timed:
+            return not helper.has_hours_passed_since(player_modifier.last_used, modifier.duration)
+        else:
+            return True
+
+    def is_modifier_at_max_stacks(self, modifier: Modifier):
+        if not self.has_modifier(modifier.id):
+            return False
+
+        player_modifier = self.get_modifier(modifier.id)
+
+        return player_modifier.stacks >= modifier.max_stacks
+
+    def get_modifier_stacks_string(self, modifier: Modifier):
+        nr_stacks = 0
+        if self.has_modifier(modifier.id):
+            nr_stacks = self.get_modifier(modifier.id).stacks
+
+        return f"[{nr_stacks}/{modifier.max_stacks}]"
+
     def get_avatar(self, avatar: str) -> PlayerAvatar:
         if avatar not in self.avatars:
             raise ValueError("Player does not have this avatar")
@@ -159,7 +190,7 @@ class Player(Document):
             initial_shares = self.holdings[ticker].shares
             initial_price = self.holdings[ticker].average_price
 
-            new_avg = calculate_new_average_price(
+            new_avg = helper.calculate_new_average_price(
                 initial_shares, initial_price, shares, price
             )
 

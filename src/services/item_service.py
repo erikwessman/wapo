@@ -1,9 +1,9 @@
 from typing import List
 import json
 
-from helper import closest_match
 from db import DB
 from schemas.item import Item
+import helper
 
 
 class ItemService:
@@ -59,7 +59,7 @@ class ItemService:
     def get_item_by_name(self, item_name: str, fuzzy_match: bool = True) -> Item:
         if fuzzy_match:
             all_item_names = [i.name for i in self.get_items()]
-            item_name = closest_match(item_name, all_item_names)
+            item_name = helper.closest_match(item_name, all_item_names)
 
         for item in self.get_items():
             if item.name == item_name:

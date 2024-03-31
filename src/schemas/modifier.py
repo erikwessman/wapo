@@ -4,8 +4,8 @@ from schemas.product import Product
 
 
 class Modifier(Product):
-    stacking = BooleanField(required=True)
-    timed = BooleanField(required=True)
+    is_stacking = BooleanField(required=True)
+    is_timed = BooleanField(required=True)
     duration = IntField(required=True)
     max_stacks = IntField(required=True)
 

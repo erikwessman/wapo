@@ -3,7 +3,6 @@ from discord.ext import commands
 
 import wapo_api
 import helper
-from helper import get_embed
 
 
 class CrosswordCog(commands.Cog):
@@ -19,7 +18,7 @@ class CrosswordCog(commands.Cog):
     )
     @commands.cooldown(1, 60, commands.BucketType.default)
     async def wapo(self, ctx: commands.Context):
-        embed_loading = get_embed(
+        embed_loading = helper.get_embed(
             "Washington Post Daily Crossword",
             "Fetching URL...",
             discord.Color.teal(),
@@ -30,7 +29,7 @@ class CrosswordCog(commands.Cog):
         date_str = helper.get_puzzle_date(url)
         weekday_str = helper.get_puzzle_weekday(date_str)
 
-        embed_success = get_embed(
+        embed_success = helper.get_embed(
             "Washington Post Daily Crossword",
             f"URL for {weekday_str} generated! ({date_str})",
             discord.Color.green(),
@@ -41,7 +40,7 @@ class CrosswordCog(commands.Cog):
     @wapo.error
     async def wapo_error(self, ctx: commands.Context, error):
         if hasattr(ctx, "sent_message"):
-            embed_error = get_embed(
+            embed_error = helper.get_embed(
                 "Washington Post Daily Crossword",
                 "Error fetching URL",
                 discord.Color.red(),
@@ -66,7 +65,7 @@ class CrosswordCog(commands.Cog):
         if not helper.is_message_url(crossword_link):
             return
 
-        embed_loading = get_embed(
+        embed_loading = helper.get_embed(
             "Crossword Checker",
             "Checking if crossword is complete...",
             discord.Color.teal(),
@@ -76,7 +75,7 @@ class CrosswordCog(commands.Cog):
         crossword_date = helper.get_puzzle_date(crossword_link)
 
         if self.bot.crossword_service.has_crossword(crossword_date):
-            embed_warning = get_embed(
+            embed_warning = helper.get_embed(
                 "Crossword Checker",
                 "Crossword is already solved",
                 discord.Color.orange(),
@@ -87,7 +86,7 @@ class CrosswordCog(commands.Cog):
         try:
             puzzle_time = wapo_api.get_puzzle_time(crossword_link)
         except Exception:
-            embed_error = get_embed(
+            embed_error = helper.get_embed(
                 "Crossword Checker", "Crossword is not complete", discord.Color.red()
             )
             await message.edit(embed=embed_error)
@@ -103,12 +102,12 @@ class CrosswordCog(commands.Cog):
 
         for player in players:
             # Increase the reward for players with a Crossword Booster
-            if helper.is_modifier_valid(player, crossword_boost_modifier):
+            if player.is_modifier_valid(crossword_boost_modifier):
                 puzzle_reward = round(puzzle_reward * 1.5)
 
             player.add_coins(puzzle_reward)
 
-        embed_success = get_embed(
+        embed_success = helper.get_embed(
             "Crossword Checker",
             (
                 "Crossword complete!"

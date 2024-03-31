@@ -8,9 +8,8 @@ from discord.ext import commands
 from discord.ext.commands import BadArgument, Context, CommandError
 
 from classes.challenge import ChallengeManager, Challenge
-from helper import get_embed, is_modifier_active, get_modifier_time_left
-import helper
 from const import EMOJI_MONEY_WITH_WINGS
+import helper
 
 
 class StealCog(commands.Cog):
@@ -40,16 +39,17 @@ class StealCog(commands.Cog):
         if target_player.id == self.bot.user.id:
             raise commands.BadArgument("You cannot steal from me!")
 
-        lock_modifier = self.bot.modifier_service.get_modifier("lock")
+        lock = self.bot.modifier_service.get_modifier("lock")
 
-        if helper.is_modifier_valid(target_player, lock_modifier):
+        if target_player.is_modifier_valid(lock):
             target_player_lock = target_player.get_modifier("lock")
 
-            time_left = get_modifier_time_left(target_player_lock, lock_modifier.duration)
+            time_left = helper.calculate_time_left(target_player_lock.last_used, lock.duration)
+
             await self.handle_steal_fail(
                 ctx,
                 player.id,
-                f"The other player had a {lock_modifier.name} {lock_modifier.symbol} [{time_left}] that prevented you from stealing",
+                f"The other player had a {lock.name} {lock.symbol} [{time_left}] that prevented you from stealing",
             )
             return
 
@@ -65,7 +65,7 @@ class StealCog(commands.Cog):
             return
 
         signal_jammer_modifier = self.bot.modifier_service.get_modifier("signal_jammer")
-        has_signal_jammer = helper.is_modifier_valid(player, signal_jammer_modifier)
+        has_signal_jammer = player.is_modifier_valid(signal_jammer_modifier)
 
         prepared_words = prepare_words(self.words, has_signal_jammer)
         message = generate_message(**prepared_words)
@@ -73,9 +73,9 @@ class StealCog(commands.Cog):
         # Prevent copy-pasting
         modified_message = insert_zero_width_spaces(message)
 
-        time_to_steal = 45 if not has_signal_jammer else 30
+        time_to_steal = 30 if has_signal_jammer else 45
 
-        steal_embed = get_embed(
+        steal_embed = helper.get_embed(
             f"{EMOJI_MONEY_WITH_WINGS} {ctx.author.name} is stealing from {user.name}! {EMOJI_MONEY_WITH_WINGS}",
             f"{user.mention}, type the following sentence in the next {time_to_steal} seconds to prevent them from stealing!",
             0xFFA600,
@@ -99,9 +99,7 @@ class StealCog(commands.Cog):
             coins_stolen = get_norm(target_player.get_coins(), 30, 25)
             player.add_coins(coins_stolen)
             target_player.remove_coins(coins_stolen)
-            await ctx.send(
-                content=f"{ctx.author.name} stole {coins_stolen} coins from {user.name}!"
-            )
+            await ctx.send(content=f"{ctx.author.name} stole {coins_stolen} coins from {user.name}!")
 
         self.challenge_manager.remove_challenge(challenge)
 
