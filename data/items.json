@@ -34,5 +34,14 @@
         "price": 40,
         "is_purchasable": true,
         "one_time_use": true
+    },
+    {
+        "id": "wand_of_wealth",
+        "name": "Wand of Wealth",
+        "description": "Increases the reward you gain from crosswords by 50% for a limited time",
+        "symbol": "🪄",
+        "price": 0,
+        "is_purchasable": false,
+        "one_time_use": true
     }
 ]

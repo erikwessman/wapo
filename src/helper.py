@@ -8,7 +8,6 @@ import discord
 import validators
 from fuzzywuzzy import process
 
-from schemas.player_modifier import PlayerModifier
 from const import (
     GITHUB_REPOSITORY,
     GITHUB_ICON,
@@ -119,21 +118,22 @@ def format_seconds(seconds):
     return f"{minutes}m {seconds_remainder}s"
 
 
-def is_modifier_active(modifier: PlayerModifier, duration: int) -> bool:
+def has_hours_passed_since(start_time: datetime, hours: int) -> bool:
     now = datetime.utcnow()
-    time_since_used = now - modifier.last_used
-    hours_timedelta = timedelta(hours=duration)
+    time_passed = now - start_time
+    hours_timedelta = timedelta(hours=hours)
 
-    return time_since_used < hours_timedelta
+    return time_passed >= hours_timedelta
 
 
-def get_modifier_time_left(modifier: PlayerModifier, duration: int) -> str:
+def calculate_time_left(start_time: datetime, duration_hours: int) -> str:
     now = datetime.utcnow()
-    time_since_used = now - modifier.last_used
+    time_since_start = now - start_time
 
-    hours_timedelta = timedelta(hours=duration)
-    time_left = hours_timedelta - time_since_used
+    duration_timedelta = timedelta(hours=duration_hours)
+    time_left = duration_timedelta - time_since_start
 
+    # Assuming format_time_delta formats a timedelta to a string
     return format_time_delta(time_left)
 
 

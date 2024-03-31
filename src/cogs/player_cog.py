@@ -5,7 +5,7 @@ from discord.ext import commands
 from schemas.item import Item
 from schemas.player import Player
 from schemas.player_avatar import PlayerAvatar
-from helper import get_embed, is_modifier_active, get_modifier_time_left
+import helper
 
 
 class PlayerCog(commands.Cog):
@@ -34,7 +34,7 @@ class PlayerCog(commands.Cog):
             player_id
         )
 
-        embed = get_embed(
+        embed = helper.get_embed(
             f"Profile: {name}",
             f"Player ID: {player.id}",
             discord.Color.green(),
@@ -81,7 +81,7 @@ class PlayerCog(commands.Cog):
     async def holdings(self, ctx: commands.Context):
         player = self.bot.player_service.get_player(ctx.author.id)
 
-        embed = get_embed(
+        embed = helper.get_embed(
             "Player Holdings", "The stocks you own", discord.Color.purple()
         )
 
@@ -119,12 +119,12 @@ class PlayerCog(commands.Cog):
         player = self.bot.player_service.get_player(ctx.author.id)
         items = player.get_items()
 
-        embed = get_embed(f"{ctx.author.name}'s Inventory", "", discord.Color.orange())
+        embed = helper.get_embed(f"{ctx.author.name}'s Inventory", "", discord.Color.orange())
         embed.set_thumbnail(url=ctx.author.avatar.url)
 
         if items:
             for item_id, player_item in items.items():
-                # Get the information about the item from the DB
+                # Get the item from the DB
                 item = self.bot.item_service.get_item(item_id)
                 embed.add_field(
                     name=f"{item.name} {item.symbol} [x{player_item.amount}]",
@@ -148,33 +148,32 @@ class PlayerCog(commands.Cog):
         player = self.bot.player_service.get_player(ctx.author.id)
         modifiers = player.get_modifiers()
 
-        embed = get_embed(f"{ctx.author.name} Modifiers", "", discord.Color.blue())
+        embed = helper.get_embed(f"{ctx.author.name} Modifiers", "", discord.Color.blue())
         embed.set_thumbnail(url=ctx.author.avatar.url)
 
-        if modifiers:
-            for modifier_id, player_modifier in modifiers.items():
-                # Get the information about the modifier from the DB
-                modifier = self.bot.modifier_service.get_modifier(modifier_id)
+        for modifier_id, player_modifier in modifiers.items():
+            # Get the modifier from the DB
+            modifier = self.bot.modifier_service.get_modifier(modifier_id)
 
-                if modifier.timed:
-                    time_left = "EXPIRED"
+            modifier_info = ""
 
-                    if is_modifier_active(player_modifier, modifier.duration):
-                        time_left = get_modifier_time_left(player_modifier, modifier.duration)
+            if modifier.is_stacking:
+                stacks_string = player.get_modifier_stacks_string(modifier)
+                modifier_info += f"{stacks_string}"
 
-                    embed.add_field(
-                        name=f"{modifier.name} {modifier.symbol} [{time_left}]",
-                        value=modifier.description,
-                        inline=False,
-                    )
-                elif modifier.stacking:
-                    embed.add_field(
-                        name=f"{modifier.name} {modifier.symbol} [x{player_modifier.stacks}]",
-                        value=modifier.description,
-                        inline=False,
-                    )
-        else:
-            embed.add_field(name="No modifiers", value="You have no modifiers.")
+            if modifier.is_timed:
+                if helper.has_hours_passed_since(player_modifier.last_used, modifier.duration):
+                    # The modifier has expired, don't show it
+                    continue
+                else:
+                    time_left = helper.calculate_time_left(player_modifier.last_used, modifier.duration)
+                    modifier_info += f" [{time_left}]"
+
+            embed.add_field(
+                name=f"{modifier.name} {modifier.symbol} {modifier_info}",
+                value=modifier.description,
+                inline=False,
+            )
 
         await ctx.send(embed=embed)
 
@@ -184,7 +183,7 @@ class PlayerCog(commands.Cog):
             await ctx.send(content=f"`modifiers` error: {error}")
 
     @commands.hybrid_command(name="use", description="Use an item")
-    @commands.cooldown(1, 5, commands.BucketType.user)
+    @commands.cooldown(1, 1, commands.BucketType.user)
     async def use(self, ctx: commands.Context, item_name: str, optional_user: discord.User = None):
         player = self.bot.player_service.get_player(ctx.author.id)
         store_item = self.bot.item_service.get_item_by_name(item_name)
@@ -289,7 +288,7 @@ class PlayerCog(commands.Cog):
         player = self.bot.player_service.get_player(ctx.author.id)
         avatars = player.get_avatars()
 
-        embed = get_embed(f"{ctx.author.name} Avatars", "", discord.Color.blue())
+        embed = helper.get_embed(f"{ctx.author.name} Avatars", "", discord.Color.blue())
 
         if avatars:
             for avatar in sort_avatars_by_rarity(player.avatars.values()):
@@ -316,6 +315,8 @@ class PlayerCog(commands.Cog):
             await self.show_players_coins(ctx)
         elif store_item.id == "skunk_spray" and optional_user:
             await self.apply_skunk_spray(ctx, optional_user)
+        elif store_item.id == "wand_of_wealth":
+            await self.apply_crossword_bonus(ctx, player)
         else:
             raise commands.BadArgument(f"Failed to use {store_item.name}")
 
@@ -323,7 +324,9 @@ class PlayerCog(commands.Cog):
             player.remove_item(store_item.id)
 
     async def open_case(self, ctx: commands.Context, player: Player):
-        has_clover = player.has_modifier("four_leaf_clover")
+        four_leaf_clover_modifier = self.bot.modifier_service.get_modifier("four_leaf_clover")
+        has_clover = player.is_modifier_valid(four_leaf_clover_modifier)
+
         rarity, icon = self.bot.case_api.get_random_case_item(has_clover)
 
         player.add_avatar(icon, rarity)
@@ -336,7 +339,7 @@ class PlayerCog(commands.Cog):
             "Mythical": discord.Color.fuchsia(),
         }
 
-        embed = get_embed("Case Opened!", "", rarity_colors.get(rarity, 0xFFFFFF))
+        embed = helper.get_embed("Case Opened!", "", rarity_colors.get(rarity, 0xFFFFFF))
         embed.add_field(
             name="Congratulations!", value=f"You got a {rarity} {icon}!", inline=False
         )
@@ -345,7 +348,7 @@ class PlayerCog(commands.Cog):
     async def show_players_coins(self, ctx: commands.Context):
         players = self.bot.player_service.get_players()
 
-        embed = get_embed("Player coins", "Here are all player coins", discord.Color.orange())
+        embed = helper.get_embed("Player coins", "Here are all player coins", discord.Color.orange())
 
         for player in players:
             user_info = await self.bot.fetch_user(player.id)
@@ -358,9 +361,14 @@ class PlayerCog(commands.Cog):
         target_player.add_modifier("stinky")
         await ctx.send(content=f"{user.name} is now stinky!")
 
+    async def apply_crossword_bonus(self, ctx: commands.Context, player: Player):
+        modifier = self.bot.modifier_service.get_modifier("crossword_booster")
+        player.add_modifier("crossword_booster")
+        await ctx.send(content=f"Applied {modifier.name} {modifier.symbol}!")
+
 
 def sort_avatars_by_rarity(avatars: List[PlayerAvatar]):
-    rarity_order = {"Common": 1, "Rare": 2, "Epic": 3, "Legendary": 4}
+    rarity_order = {"Common": 1, "Rare": 2, "Epic": 3, "Legendary": 4, "Mythical": 5}
     return sorted(
         avatars,
         key=lambda avatar: (

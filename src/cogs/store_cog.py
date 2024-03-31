@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 
-from helper import get_embed, closest_match
+import helper
 
 
 class StoreCog(commands.Cog):
@@ -18,7 +18,7 @@ class StoreCog(commands.Cog):
         items = self.bot.item_service.get_purchasable_items()
         modifiers = self.bot.modifier_service.get_purchasable_modifiers()
 
-        embed = get_embed("Store", "Buy cool stuff", discord.Color.pink())
+        embed = helper.get_embed("Store", "Buy cool stuff", discord.Color.pink())
 
         embed.add_field(
             name="---Items---",
@@ -48,8 +48,8 @@ class StoreCog(commands.Cog):
             modifier_details = (
                 f"**Description:** {modifier.description}\n"
                 f"**Price:** {modifier.price} coins\n"
-                f"**Stacking:** {'Yes' if modifier.stacking else 'No'}\n"
-                f"**Timed:** {'Yes' if modifier.timed else 'No'}\n"
+                f"**Stacking:** {'Yes' if modifier.is_stacking else 'No'}\n"
+                f"**Timed:** {'Yes' if modifier.is_timed else 'No'}\n"
                 f"**Duration:** {modifier.duration} hours\n"
                 f"**Max stacks:** {modifier.max_stacks}x"
             )
@@ -70,10 +70,11 @@ class StoreCog(commands.Cog):
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def cases(self, ctx: commands.Context):
         player = self.bot.player_service.get_player(ctx.author.id)
-        has_clover = player.has_modifier("four_leaf_clover")
+        four_leaf_clover_modifier = self.bot.modifier_service.get_modifier("four_leaf_clover")
+        has_clover = player.is_modifier_valid(four_leaf_clover_modifier)
         tiers = self.bot.case_api.get_tiers(has_clover)
 
-        embed = get_embed("Case Odds & Items", "", discord.Color.red())
+        embed = helper.get_embed("Case Odds & Items", "", discord.Color.red())
 
         for tier, tier_info in tiers.items():
             items_string = " ".join(tier_info["items"])
@@ -90,9 +91,7 @@ class StoreCog(commands.Cog):
         if isinstance(error, commands.BadArgument):
             await ctx.send(content=f"`cases` error: {error}")
 
-    @commands.hybrid_command(
-        name="buy", description="Buy an item or modifier from the store"
-    )
+    @commands.hybrid_command(name="buy", description="Buy an item or modifier from the store")
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def buy(self, ctx: commands.Context, item_name: str, quantity: int = 1):
         if quantity < 1:
@@ -104,11 +103,12 @@ class StoreCog(commands.Cog):
         # Look at both items and modifiers and get the closest match
         item_names = [i.name for i in items]
         modifier_names = [m.name for m in modifiers]
-        product_name = closest_match(item_name, item_names + modifier_names)
+        product_name = helper.closest_match(item_name, item_names + modifier_names)
 
         player = self.bot.player_service.get_player(ctx.author.id)
 
         if product_name in item_names:
+            # Product is an item
             item = self.bot.item_service.get_item_by_name(product_name, False)
 
             if player.get_coins() < item.price * quantity:
@@ -120,11 +120,13 @@ class StoreCog(commands.Cog):
             player.remove_coins(item.price * quantity)
             await ctx.send(content=f"Bought {quantity} {item.name}(s)")
         else:
+            # Product is a modifier
             modifier = self.bot.modifier_service.get_modifier_by_name(product_name, False)
 
-            # You should only be able to buy timed modifiers one at a time
-            if modifier.timed:
-                quantity = 1
+            # You should not be able to buy more than the max stacks
+            if modifier.is_stacking and player.is_modifier_at_max_stacks(modifier):
+                stacks_string = player.get_modifier_stacks_string(modifier)
+                raise commands.BadArgument(f"You are at max stacks for {modifier.name} {stacks_string}")
 
             if player.get_coins() < modifier.price * quantity:
                 raise commands.BadArgument(f"Not enough coins to buy {quantity}x {modifier.name}")

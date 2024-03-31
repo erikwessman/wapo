@@ -6,7 +6,7 @@ from discord.ext import commands
 
 from classes.horse_race import HorseRace
 from schemas.player import Player
-from helper import get_embed
+import helper
 
 
 class GambleCog(commands.Cog):
@@ -44,11 +44,13 @@ class GambleCog(commands.Cog):
             raise commands.BadArgument("You do not have enough coins")
 
         player.remove_coins(bet_cost)
-        has_horse_steroids = player.has_modifier("horse_steroids")
+
+        horse_steroids_modifier = self.bot.modifier_service.get_modifier("horse_steroids")
+        has_horse_steroids = player.is_modifier_valid(horse_steroids_modifier)
 
         horse_race = HorseRace(row - 1, player_avatar, headstart=has_horse_steroids)
 
-        embed = get_embed(
+        embed = helper.get_embed(
             "Horse Race", horse_race.get_race_string(), discord.Color.purple()
         )
         message = await ctx.send(embed=embed)
@@ -76,27 +78,24 @@ class GambleCog(commands.Cog):
 
         player.add_coins(nr_coins_won)
 
-        result_embed = get_embed(
+        result_embed = helper.get_embed(
             "Horse Race Results",
             f"{player_name} won {nr_coins_won} coin(s)!",
             discord.Color.gold(),
         )
         await ctx.send(embed=result_embed)
 
-        # If player bets at least 10, give chance to drop case
-        if amount >= 10:
-            await self.handle_case_drop(ctx, player)
+        # If player bets at least 10, give 15% chance to drop a reward
+        if amount >= 10 and random.random() < 0.15:
+            await self.handle_drop_reward(ctx, player)
 
     @gamble.error
     async def gamble_error(self, ctx: commands.Context, error):
         if isinstance(error, commands.BadArgument):
             await ctx.send(content=f"`gamble` error: {error}")
 
-    async def handle_case_drop(self, ctx: commands.Context, player: Player):
-        # 10% chance to drop a case
-        if random.random() < 0.1:
-            item = self.bot.item_service.get_item("avatar_case")
-            player.add_item(item.id)
-            await ctx.send(
-                content=f"🍀 {ctx.author.mention} got an {item.name} {item.symbol} in a drop! 🍀"
-            )
+    async def handle_drop_reward(self, ctx: commands.Context, player: Player):
+        chosen_reward = random.choice(["avatar_case", "wand_of_wealth"])
+        item = self.bot.item_service.get_item(chosen_reward)
+        player.add_item(item.id)
+        await ctx.send(content=f"🍀 {ctx.author.mention} got a {item.name} {item.symbol} in a drop! 🍀")

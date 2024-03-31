@@ -6,7 +6,7 @@ import discord
 from discord.ext import commands
 from tabulate import tabulate
 
-from helper import get_embed
+import helper
 from const import ROULETTE_ICON
 
 
@@ -48,7 +48,7 @@ class RouletteCog(commands.Cog):
             self.roulette_event.event_started = True
             event_time = 5 * 60
 
-            embed = get_embed(
+            embed = helper.get_embed(
                 "🌟 Roulette Event Alert! 🌟",
                 f"Started by {ctx.author.name} with {amount} coin(s)",
                 discord.Color.red(),
@@ -77,7 +77,7 @@ class RouletteCog(commands.Cog):
 
         odds_table = get_odds_table(self.roulette_event.participants)
 
-        embed = get_embed(
+        embed = helper.get_embed(
             f"Roulette Event Joined by {ctx.author.name}",
             (
                 f"🎲 {ctx.author.name} has joined the roulette with {amount} coin(s)!\n\n"
@@ -117,7 +117,7 @@ class RouletteCog(commands.Cog):
         winner_player.add_coins(win_amount)
 
         odds_table = get_odds_table(participants)
-        embed = get_embed(
+        embed = helper.get_embed(
             "🎉 Roulette Winner Announcement 🎉",
             f"Congratulations {winner.mention}!",
             discord.Color.gold(),

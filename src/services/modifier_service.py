@@ -1,7 +1,7 @@
 from typing import List
 import json
 
-from helper import closest_match
+import helper
 from db import DB
 from schemas.modifier import Modifier
 
@@ -61,7 +61,7 @@ class ModifierService:
     ) -> Modifier:
         if fuzzy_match:
             all_modifier_names = [i.name for i in self.get_modifiers()]
-            modifier_name = closest_match(modifier_name, all_modifier_names)
+            modifier_name = helper.closest_match(modifier_name, all_modifier_names)
 
         for modifier in self.get_modifiers():
             if modifier.name == modifier_name:

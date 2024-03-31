@@ -11,7 +11,7 @@ from discord.ui import Button
 from discord.ext import commands
 
 from classes.custom_view import CustomView
-from helper import get_embed, shuffle_choices
+import helper
 
 
 class TriviaCog(commands.Cog):
@@ -48,13 +48,13 @@ class TriviaCog(commands.Cog):
 
         difficulty_coins_map = {"easy": 10, "medium": 15, "hard": 20}
 
-        answers = shuffle_choices(incorrect_answers + [correct_answer])
+        answers = helper.shuffle_choices(incorrect_answers + [correct_answer])
         answers_numbered = [f"{i+1}. {a}" for i, a in enumerate(answers)]
         answers_string = "\n".join(answers_numbered)
 
         time_to_complete = 30
 
-        embed = get_embed(
+        embed = helper.get_embed(
             question,
             (
                 f"Time: {time_to_complete} seconds\n"
@@ -113,7 +113,7 @@ class TriviaCog(commands.Cog):
     async def movie_trivia(self, ctx: commands.Context):
         movie = self.movie_client.get_random_movie()
         self.movie_channel_dict[ctx.channel.id] = movie
-        embed = get_embed(
+        embed = helper.get_embed(
             "Movie Trivia!",
             "Starting in 10 seconds...",
             discord.Color.teal(),
@@ -151,7 +151,7 @@ class TriviaCog(commands.Cog):
             if similarity_score >= 85:
                 del self.movie_channel_dict[message.channel.id]
                 player.add_coins(10)
-                embed = get_embed(
+                embed = helper.get_embed(
                     f"Correct! The movie was {movie.name}",
                     f"Release Date: {movie.date}",
                     0x00FF00,

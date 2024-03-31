@@ -3,8 +3,8 @@ import discord
 from discord.ext import commands
 
 from classes.duel import Duel, Duelist, DuelState
-from helper import get_embed
 from schemas.player import Player
+import helper
 
 
 class DuelCog(commands.Cog):
@@ -55,7 +55,7 @@ class DuelCog(commands.Cog):
         duel = Duel(challenger, challengee, amount)
         self.duels.append(duel)
 
-        embed = get_embed(
+        embed = helper.get_embed(
             "\U0001F4A5 Duel Request \U0001F4A5",
             f"{ctx.author.name} challenged {user.mention} to a duel for {amount} coins!",
             discord.Color.red(),
@@ -119,7 +119,7 @@ class DuelCog(commands.Cog):
         await self.simulate_duel(ctx, duel)
 
     async def simulate_duel(self, ctx: commands.Command, duel: Duel):
-        embed = get_embed(
+        embed = helper.get_embed(
             f"Duel: {duel.challenger.name} vs. {duel.challengee.name}",
             f"```{duel.generate_initial_message()}```",
             discord.Color.red(),

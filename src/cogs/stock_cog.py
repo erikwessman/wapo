@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 import discord
 from discord.ext import commands, tasks
 
-from helper import get_embed
+import helper
 
 
 class StockCog(commands.Cog):
@@ -30,7 +30,7 @@ class StockCog(commands.Cog):
     async def stock_list(self, ctx):
         stocks = self.bot.stock_service.get_all_stocks()
 
-        embed = get_embed(
+        embed = helper.get_embed(
             "Stock List", "Here are the available stocks:", discord.Color.orange()
         )
 
@@ -114,7 +114,7 @@ class StockCog(commands.Cog):
         stock_plot = self.bot.stock_service.get_stock_price_plot(stock, stock_prices)
         file = discord.File(fp=stock_plot, filename="stock_plot.png")
 
-        embed = get_embed(f"${stock.ticker}", "", discord.Color.green())
+        embed = helper.get_embed(f"${stock.ticker}", "", discord.Color.green())
         embed.set_image(url="attachment://stock_plot.png")
 
         await ctx.send(embed=embed, file=file)
