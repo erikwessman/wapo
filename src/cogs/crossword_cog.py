@@ -98,7 +98,7 @@ class CrosswordCog(commands.Cog):
         self.bot.crossword_service.add_crossword(crossword_date, puzzle_time)
 
         players = self.bot.player_service.get_players()
-        crossword_boost_modifier = self.bot.modifier_service.get_modifiers("crossword_booster")
+        crossword_boost_modifier = self.bot.modifier_service.get_modifier("crossword_booster")
 
         for player in players:
             # Increase the reward for players with a Crossword Booster
