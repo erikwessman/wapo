@@ -50,9 +50,7 @@ class GambleCog(commands.Cog):
 
         horse_race = HorseRace(row - 1, player_avatar, headstart=has_horse_steroids)
 
-        embed = helper.get_embed(
-            "Horse Race", horse_race.get_race_string(), discord.Color.purple()
-        )
+        embed = helper.get_embed("Horse Race", horse_race.get_race_string(), discord.Color.purple())
         message = await ctx.send(embed=embed)
 
         for _ in horse_race.simulate_race():
@@ -67,6 +65,10 @@ class GambleCog(commands.Cog):
 
         if use_insurance and nr_coins_won == 0:
             nr_coins_won = amount // 2
+
+        happy_hour_modifier = self.bot.modifier_service.get_modifier("happy_hour")
+        if player.is_modifier_valid(happy_hour_modifier):
+            nr_coins_won = round(nr_coins_won * 1.2)
 
         # Fetch player info again to avoid race condition
         player = self.bot.player_service.get_player(ctx.author.id)
