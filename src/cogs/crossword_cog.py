@@ -103,9 +103,9 @@ class CrosswordCog(commands.Cog):
         for player in players:
             # Increase the reward for players with a Crossword Booster
             if player.is_modifier_valid(crossword_boost_modifier):
-                puzzle_reward = round(puzzle_reward * 1.5)
-
-            player.add_coins(puzzle_reward)
+                player.add_coins(round(puzzle_reward * 1.5))
+            else:
+                player.add_coins(puzzle_reward)
 
         embed_success = helper.get_embed(
             "Crossword Checker",
