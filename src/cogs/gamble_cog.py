@@ -87,8 +87,8 @@ class GambleCog(commands.Cog):
         )
         await ctx.send(embed=result_embed)
 
-        # If player bets at least 10, give 15% chance to drop a reward
-        if amount >= 10 and random.random() < 0.15:
+        # If player bets at least 10, give 10% chance to drop a reward
+        if amount >= 10 and random.random() < 0.1:
             await self.handle_drop_reward(ctx, player)
 
     @gamble.error
