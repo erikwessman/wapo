@@ -38,7 +38,7 @@
     {
         "id": "wand_of_wealth",
         "name": "Wand of Wealth",
-        "description": "Increases the reward you gain from crosswords by 50% for a limited time",
+        "description": "A mysterious wand emanating magic...",
         "symbol": "🪄",
         "price": 0,
         "is_purchasable": false,
