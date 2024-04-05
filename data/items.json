@@ -43,5 +43,14 @@
         "price": 0,
         "is_purchasable": false,
         "one_time_use": true
+    },
+    {
+        "id": "youtube_video",
+        "name": "YouTube video",
+        "description": "Provides a link to a certain YouTube video",
+        "symbol": "📀",
+        "price": 50000,
+        "is_purchasable": true,
+        "one_time_use": true
     }
 ]
