@@ -1,3 +1,4 @@
+import os
 import random
 from typing import List
 import discord
@@ -318,6 +319,8 @@ class PlayerCog(commands.Cog):
             await self.apply_skunk_spray(ctx, optional_user)
         elif item.id == "wand_of_wealth":
             await self.use_wand_of_wealth(ctx, player)
+        elif item.id == "youtube_video":
+            await self.send_special_video(ctx, player)
         else:
             raise commands.BadArgument(f"Failed to use {item.name}")
 
@@ -371,6 +374,10 @@ class PlayerCog(commands.Cog):
             nr_coins = random.randint(30, 200)
             player.add_coins(nr_coins)
             await ctx.send(content=f"You got {nr_coins} coins!")
+
+    async def send_special_video(self, ctx: commands.Context, player: Player):
+        link = os.getenv("SPECIAL_VIDEO") or "You don't have this link..."
+        await ctx.send(content=link, ephemeral=True)
 
 
 def sort_avatars_by_rarity(avatars: List[PlayerAvatar]):
