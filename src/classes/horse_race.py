@@ -39,7 +39,7 @@ class HorseRace:
             lines.append(line)
 
         for i, standing in enumerate(self.standings):
-            lines[standing + 1] += f"({i+1})"
+            lines[standing] += f"({i+1})"
 
         return "\n\n".join(lines)
 
