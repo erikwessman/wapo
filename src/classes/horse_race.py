@@ -30,14 +30,13 @@ class HorseRace:
 
     def get_race_string(self):
         lines = []
-        lines.append("```")
         for i, line_prog in enumerate(self.values):
-            line = ""
+            line = "`"
             line += "#" * line_prog
             line += self.symbols[i]
             line += "." * (self.length - line_prog)
+            line += "`"
             lines.append(line)
-        lines.append("```")
 
         for i, standing in enumerate(self.standings):
             lines[standing + 1] += f"({i+1})"
@@ -48,3 +47,7 @@ class HorseRace:
         bet_result_index = self.standings.index(self.row)
         winnings_table = {0: 2, 1: 1.5, 2: 0.5, 3: 0}
         return math.floor(winnings_table[bet_result_index] * bet_amount)
+
+    def get_placing(self) -> int:
+        bet_result_index = self.standings.index(self.row)
+        return bet_result_index + 1

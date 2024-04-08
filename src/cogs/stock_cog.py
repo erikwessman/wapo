@@ -141,7 +141,7 @@ class StockCog(commands.Cog):
             raise commands.BadArgument("Can't buy a stock for less than 1 coin")
 
         if player.get_coins() < total_cost:
-            raise commands.BadArgument("Not enough coins")
+            raise commands.BadArgument(f"Not enough coins to buy {quantity}x ${ticker}")
 
         player.add_holding(ticker, quantity, stock_price)
         player.remove_coins(total_cost)

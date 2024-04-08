@@ -133,13 +133,11 @@ class Player(Document):
         else:
             return True
 
-    def is_modifier_at_max_stacks(self, modifier: Modifier):
-        if not self.has_modifier(modifier.id):
-            return False
-
-        player_modifier = self.get_modifier(modifier.id)
-
-        return player_modifier.stacks >= modifier.max_stacks
+    def get_modifier_stacks(self, modifier_id: str):
+        if self.has_modifier(modifier_id):
+            return self.get_modifier(modifier_id).stacks
+        else:
+            return 0
 
     def get_modifier_stacks_string(self, modifier: Modifier):
         nr_stacks = 0
