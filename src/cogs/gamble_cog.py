@@ -34,6 +34,7 @@ class GambleCog(commands.Cog):
         player_name = ctx.author.name
         player_avatar = player.active_avatar
 
+        # Increase the cost of the bet if using insurance
         if use_insurance:
             insurance_cost = max(1, int(amount * 0.15))
             bet_cost = amount + insurance_cost
@@ -48,11 +49,14 @@ class GambleCog(commands.Cog):
         horse_steroids_modifier = self.bot.modifier_service.get_modifier("horse_steroids")
         has_horse_steroids = player.is_modifier_valid(horse_steroids_modifier)
 
+        # Start race
         horse_race = HorseRace(row - 1, player_avatar, headstart=has_horse_steroids)
 
+        # Send initial message
         embed = helper.get_embed("Horse Race", horse_race.get_race_string(), discord.Color.purple())
         message = await ctx.send(embed=embed)
 
+        # For each step, get the race track and update the initial message
         for _ in horse_race.simulate_race():
             updated_message = embed.copy()
             updated_message.description = horse_race.get_race_string()
@@ -61,11 +65,14 @@ class GambleCog(commands.Cog):
             embed = updated_message
             await asyncio.sleep(0.1)
 
+        # Get results
+        placing = horse_race.get_placing()
         nr_coins_won = horse_race.get_nr_coins_won(amount)
 
-        if use_insurance and nr_coins_won == 0:
+        if use_insurance and placing == 4:
             nr_coins_won = amount // 2
 
+        # Increase the coins won if Happy Hour is active
         happy_hour_modifier = self.bot.modifier_service.get_modifier("happy_hour")
         if player.is_modifier_valid(happy_hour_modifier):
             nr_coins_won = round(nr_coins_won * 1.2)
@@ -74,20 +81,28 @@ class GambleCog(commands.Cog):
         player = self.bot.player_service.get_player(ctx.author.id)
 
         # Save race information
-        self.bot.horse_race_service.add_horse_race(
-            datetime.today, player.id, amount, nr_coins_won
-        )
+        self.bot.horse_race_service.add_horse_race(datetime.today, player.id, amount, nr_coins_won)
+
+        placing_suffixes = {
+            1: "st",
+            2: "nd",
+            3: "rd",
+            4: "th"
+        }
+
+        placing_str = f"{placing}{placing_suffixes[placing]}"
+        result_str = f"{player_name} got {placing_str} place and won {nr_coins_won} coin(s)!"
 
         player.add_coins(nr_coins_won)
 
         result_embed = helper.get_embed(
             "Horse Race Results",
-            f"{player_name} won {nr_coins_won} coin(s)!",
+            result_str,
             discord.Color.gold(),
         )
         await ctx.send(embed=result_embed)
 
-        # If player bets at least 10, give 10% chance to drop a reward
+        # If player bets at least 10 coins, give 10% chance to drop a reward
         if amount >= 10 and random.random() < 0.1:
             await self.handle_drop_reward(ctx, player)
 

@@ -46,7 +46,7 @@
     },
     {
         "id": "youtube_video",
-        "name": "YouTube video",
+        "name": "YouTube Video",
         "description": "Provides a link to a certain YouTube video",
         "symbol": "📀",
         "price": 50000,

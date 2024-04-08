@@ -124,9 +124,9 @@ class StoreCog(commands.Cog):
             modifier = self.bot.modifier_service.get_modifier_by_name(product_name, False)
 
             # You should not be able to buy more than the max stacks
-            if modifier.is_stacking and player.is_modifier_at_max_stacks(modifier):
+            if modifier.is_stacking and player.get_modifier_stacks(modifier.id) + quantity > modifier.max_stacks:
                 stacks_string = player.get_modifier_stacks_string(modifier)
-                raise commands.BadArgument(f"You are at max stacks for {modifier.name} {stacks_string}")
+                raise commands.BadArgument(f"Can't buy that many stacks for {modifier.name} {stacks_string}")
 
             if player.get_coins() < modifier.price * quantity:
                 raise commands.BadArgument(f"Not enough coins to buy {quantity}x {modifier.name}")
