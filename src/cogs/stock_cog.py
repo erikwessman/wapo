@@ -106,7 +106,7 @@ class StockCog(commands.Cog):
                 )
             else:
                 raise commands.BadArgument(
-                    f"Available date ranges: {' '.join(date_ranges)}"
+                    f"Available date ranges: {', '.join(date_ranges)}"
                 )
         else:
             stock_prices = self.bot.stock_service.get_stock_prices(stock.ticker)
