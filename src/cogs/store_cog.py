@@ -118,7 +118,7 @@ class StoreCog(commands.Cog):
 
             player.add_item(item.id, quantity)
             player.remove_coins(item.price * quantity)
-            await ctx.send(content=f"Bought {quantity} {item.name}(s)")
+            await ctx.send(content=f"Bought {quantity} {item.name}(s)", ephemeral=True)
         else:
             # Product is a modifier
             modifier = self.bot.modifier_service.get_modifier_by_name(product_name, False)
@@ -133,7 +133,7 @@ class StoreCog(commands.Cog):
 
             player.add_modifier(modifier.id, quantity)
             player.remove_coins(modifier.price * quantity)
-            await ctx.send(content=f"Bought {quantity} {modifier.name}(s)")
+            await ctx.send(content=f"Bought {quantity} {modifier.name}(s)", ephemeral=True)
 
     @buy.error
     async def buy_error(self, ctx: commands.Context, error):
