@@ -127,7 +127,7 @@ class StoreCog(commands.Cog):
             player_modifier = player.get_modifier(modifier.id)
             if modifier.is_timed and not helper.has_hours_passed_since(player_modifier.last_used, modifier.duration):
                 time_left = helper.calculate_time_left(player_modifier.last_used, modifier.duration)
-                raise commands.BadArgument(f"Can't buy another {modifier.name} [{time_left}] because it is still active")
+                raise commands.BadArgument(f"Can't buy another {modifier.name} {modifier.symbol} [{time_left}] because you have one that is still active")
 
             # You should not be able to buy more than the max stacks
             if modifier.is_stacking and player.get_modifier_stacks(modifier.id) + quantity > modifier.max_stacks:
