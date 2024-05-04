@@ -51,6 +51,6 @@
         "symbol": "📀",
         "price": 50000,
         "is_purchasable": true,
-        "one_time_use": true
+        "one_time_use": false
     }
 ]

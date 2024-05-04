@@ -86,7 +86,7 @@
     {
         "id": "happy_hour",
         "name": "Happy Hour",
-        "description": "Rewards from horse races are increased by 20%",
+        "description": "Rewards from horse races are increased by 5%",
         "symbol": "🍻",
         "price": 0,
         "is_purchasable": false,

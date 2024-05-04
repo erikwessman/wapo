@@ -75,7 +75,7 @@ class GambleCog(commands.Cog):
         # Increase the coins won if Happy Hour is active
         happy_hour_modifier = self.bot.modifier_service.get_modifier("happy_hour")
         if player.is_modifier_valid(happy_hour_modifier):
-            nr_coins_won = round(nr_coins_won * 1.2)
+            nr_coins_won = round(nr_coins_won * 1.05)
 
         # Fetch player info again to avoid race condition
         player = self.bot.player_service.get_player(ctx.author.id)
