@@ -124,7 +124,7 @@ class StoreCog(commands.Cog):
             modifier = self.bot.modifier_service.get_modifier_by_name(product_name, False)
 
             # You should not be able to buy a timed modifier if you have one active
-            if player.has_modifier:
+            if player.has_modifier(modifier.id):
                 player_modifier = player.get_modifier(modifier.id)
                 if modifier.is_timed and not helper.has_hours_passed_since(player_modifier.last_used, modifier.duration):
                     time_left = helper.calculate_time_left(player_modifier.last_used, modifier.duration)
